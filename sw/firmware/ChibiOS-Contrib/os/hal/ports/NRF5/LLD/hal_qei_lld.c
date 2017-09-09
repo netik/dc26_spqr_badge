@@ -57,6 +57,7 @@ QEIDriver QEID1;
  * @param[in] qeip         pointer to an QEIDriver
  */
 static void serve_interrupt(QEIDriver *qeip) {
+  int16_t  acc;
   NRF_QDEC_Type *qdec = qeip->qdec;
 
 #if NRF5_QEI_USE_ACC_OVERFLOWED_CB == TRUE
@@ -83,8 +84,8 @@ static void serve_interrupt(QEIDriver *qeip) {
 #endif
     
     /* Read (and clear counters due to shortcut) */
-    int16_t  acc    = ( int16_t)qdec->ACCREAD;
-    uint16_t accdbl = (uint16_t)qdec->ACCDBLREAD;
+    acc    = ( int16_t)qdec->ACCREAD;
+    (void)qdec->ACCDBLREAD;
 
     /* Inverse direction if requested */
     if (qeip->config->dirinv)

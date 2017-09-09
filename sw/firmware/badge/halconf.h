@@ -35,6 +35,8 @@
  */
 #if !defined(HAL_USE_PAL) || defined(__DOXYGEN__)
 #define HAL_USE_PAL                 TRUE
+#define PAL_USE_CALLBACKS           FALSE
+#define PAL_USE_WAIT                FALSE
 #endif
 
 /**

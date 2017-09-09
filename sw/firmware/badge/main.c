@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "ch.h"
 #include "hal.h"
@@ -7,6 +8,7 @@
 #include "shell.h"
 
 #include "nrf_sdm.h"
+#include "ble.h"
 
 #define LED_EXT 14
 
@@ -88,8 +90,8 @@ static void cmd_watchdog(BaseSequentialStream *chp, int argc, char *argv[]) {
 		      WDG_MAX_TIMEOUT_MS/1000);
 	return;
     }
-    int timeout = atoi(argv[1]);
-    if ((timeout < 0) || (timeout > (WDG_MAX_TIMEOUT_MS/1000)))
+    unsigned int timeout = atoi(argv[1]);
+    if (timeout > (WDG_MAX_TIMEOUT_MS/1000))
 	goto usage;
 
     if (watchdog_started) {
@@ -107,18 +109,9 @@ static void cmd_watchdog(BaseSequentialStream *chp, int argc, char *argv[]) {
     watchdog_started = true;
 }
 
-
-
-
-static void cmd_info(BaseSequentialStream *chp, int argc, char *argv[]) {
-    chprintf(chp, "Watchdog max = %d ms\r\n", WDG_MAX_TIMEOUT_MS);
-}
-
-
 static THD_WORKING_AREA(shell_wa, 1024);
 
 static const ShellCommand commands[] = {
-  /*{"info",     cmd_info     },*/
   {"random",   cmd_random   },
   {"watchdog", cmd_watchdog },
   {NULL, NULL}
@@ -156,7 +149,7 @@ static THD_FUNCTION(Thread1, arg) {
     
     while (1) {
 	palTogglePad(IOPORT1, led);
-	chThdSleepMilliseconds(100);
+	chThdSleepMilliseconds(1000);
     }
 }
 
@@ -165,9 +158,11 @@ static THD_FUNCTION(Thread1, arg) {
     chprintf((BaseSequentialStream*)&SD1, fmt, ##__VA_ARGS__)
 
 
-
-nrf_clock_lf_cfg_t clock_source;
-extern void HardFault_Handler(void);
+void
+nordic_fault_handler (uint32_t id, uint32_t pc, uint32_t info)
+{
+	return;
+}
 
 void
 SVC_Handler (void)
@@ -175,16 +170,28 @@ SVC_Handler (void)
 	while (1) {}
 }
 
+/*
+ * This symbol is created by the linker script. Its address is
+ * the start of application RAM.
+ */
+
+extern uint32_t __ram0_start__;
+
 /**@brief Function for application main entry.
  */
 int main(void)
 {
     int r;
+    uint32_t ram_start = (uint32_t)&__ram0_start__;
+    nrf_clock_lf_cfg_t clock_source;
+
+
 #ifdef CRT0_VTOR_INIT
     __disable_irq();
     SCB->VTOR = 0;
     __enable_irq();
 #endif
+
     halInit();
     chSysInit();
     shellInit();
@@ -197,37 +204,38 @@ int main(void)
     palClearPad(IOPORT1, LED3);
     palClearPad(IOPORT1, LED4);
 
-#ifdef notdef
-    gptStart(&GPTD1, &gpt_config);
-    gptStartContinuous(&GPTD1, 31250);
-#endif
-
-#ifdef notdef
+    /* Launch test blinker thread. */
+    
     chThdCreateStatic(waThread1, sizeof(waThread1), NORMALPRIO+1,
 		      Thread1, NULL);
-#endif
-
-    
-
-
 
     chThdSleep(2);
     printf("SYSTEM START\r\n");
     chThdSleep(2);
     printf(PORT_INFO "\r\n");
     chThdSleep(2);
-    
 
+    /* Initialize the SoftDevice */
+
+    memset (&clock_source, 0, sizeof(clock_source));
     clock_source.source = NRF_CLOCK_LF_SRC_XTAL;
     clock_source.accuracy = NRF_CLOCK_LF_ACCURACY_75_PPM;
-    r = sd_softdevice_enable (&clock_source, HardFault_Handler);
+    r = sd_softdevice_enable (&clock_source, nordic_fault_handler);
 
     printf ("SOFTDEVICE ENABLE: %d\r\n", r);
+
+    /* Enable BLE support in SoftDevice */
+
+    r = sd_ble_enable (&ram_start);
+
+    printf ("BLE ENABLE: %d (RAM: %x)\r\n", r, ram_start);
 
     printf("Priority levels %d\r\n", CORTEX_PRIORITY_LEVELS);
     
     NRF_P0->DETECTMODE = 0;
-    
+
+    /* Launch shell thread */
+
     chThdCreateStatic(shell_wa, sizeof(shell_wa), NORMALPRIO+1,
 		      shellThread, (void *)&shell_cfg1);
 
