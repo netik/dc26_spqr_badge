@@ -9,6 +9,7 @@
 
 #include "nrf_sdm.h"
 #include "ble.h"
+#include "ble_gap.h"
 
 #define LED_EXT 14
 
@@ -25,6 +26,26 @@ WDGConfig WDG_config = {
     .pause_on_halt  = 0,
     .timeout_ms     = 5000,
     .callback       = watchdog_callback,
+};
+
+static void
+btnInterrupt (EXTDriver *extp, expchannel_t chan)
+{
+return;
+}
+
+static const EXTConfig ext_config = {
+    {
+    { EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART |
+      BTN2 << EXT_MODE_GPIO_OFFSET , btnInterrupt },
+    { 0 , NULL },
+    { 0 , NULL },
+    { 0 , NULL },
+    { 0 , NULL },
+    { 0 , NULL },
+    { 0 , NULL },
+    { 0 , NULL }
+    }
 };
 
 #ifdef notdef
@@ -184,7 +205,7 @@ int main(void)
     int r;
     uint32_t ram_start = (uint32_t)&__ram0_start__;
     nrf_clock_lf_cfg_t clock_source;
-
+    ble_gap_addr_t addr;
 
 #ifdef CRT0_VTOR_INIT
     __disable_irq();
@@ -195,7 +216,9 @@ int main(void)
     halInit();
     chSysInit();
     shellInit();
-  
+ 
+    extStart (&EXTD1, &ext_config);
+ 
     sdStart(&SD1, &serial_config);
     printf ("\r\n");
 
@@ -229,6 +252,17 @@ int main(void)
     r = sd_ble_enable (&ram_start);
 
     printf ("BLE ENABLE: %d (RAM: %x)\r\n", r, ram_start);
+
+    memset (&addr, 0, sizeof(addr));
+    r = sd_ble_gap_addr_get (&addr);
+
+    printf ("addr: (%d) %x:%x:%x:%x:%x:%x\r\n", r,
+       addr.addr[0],
+       addr.addr[1],
+       addr.addr[2],
+       addr.addr[3],
+       addr.addr[4],
+       addr.addr[5]);
 
     printf("Priority levels %d\r\n", CORTEX_PRIORITY_LEVELS);
     

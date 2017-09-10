@@ -15,6 +15,10 @@ endif
 ifneq ($(findstring HAL_USE_SPI TRUE,$(HALCONF)),)
 PLATFORMSRC += ${CHIBIOS_CONTRIB}/os/hal/ports/NRF5/LLD/hal_spi_lld.c
 endif
+ifneq ($(findstring HAL_USE_EXT TRUE,$(HALCONF)),)
+PLATFORMSRC += ${CHIBIOS_CONTRIB}/os/hal/ports/NRF5/NRF52832/hal_ext_lld_isr.c \
+               ${CHIBIOS_CONTRIB}/os/hal/ports/NRF5/NRF52832/hal_ext_lld.c
+endif
 ifneq ($(findstring HAL_USE_I2C TRUE,$(HALCONF)),)
 PLATFORMSRC += ${CHIBIOS_CONTRIB}/os/hal/ports/NRF5/LLD/hal_i2c_lld.c
 endif
@@ -33,6 +37,8 @@ endif
 else
 PLATFORMSRC  = ${CHIBIOS}/os/hal/ports/common/ARMCMx/nvic.c \
                ${CHIBIOS_CONTRIB}/os/hal/ports/NRF5/NRF52832/hal_lld.c \
+               ${CHIBIOS_CONTRIB}/os/hal/ports/NRF5/NRF52832/hal_ext_lld.c \
+               ${CHIBIOS_CONTRIB}/os/hal/ports/NRF5/NRF52832/hal_ext_lld_isr.c \
                ${CHIBIOS_CONTRIB}/os/hal/ports/NRF5/LLD/hal_pal_lld.c \
                ${CHIBIOS_CONTRIB}/os/hal/ports/NRF5/LLD/hal_serial_lld.c \
                ${CHIBIOS_CONTRIB}/os/hal/ports/NRF5/LLD/hal_spi_lld.c \
