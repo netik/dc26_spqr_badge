@@ -89,7 +89,7 @@ void ext_lld_start(EXTDriver *extp) {
     config = 0;
     pad = (extp->config->channels[i].mode & EXT_MODE_GPIO_MASK)
       >> EXT_MODE_GPIO_OFFSET;
-    mode = extp->config->channels[i].mode & ~EXT_MODE_GPIO_MASK;
+    mode = extp->config->channels[i].mode & EXT_CH_MODE_EDGES_MASK;
 
     if (mode == EXT_CH_MODE_BOTH_EDGES)
       config |= (GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos);
