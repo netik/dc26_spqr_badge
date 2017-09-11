@@ -7,10 +7,6 @@
 #include "chprintf.h"
 #include "shell.h"
 
-#include "nrf_sdm.h"
-#include "ble.h"
-#include "ble_gap.h"
-
 #define LED_EXT 14
 
 bool watchdog_started = false;
@@ -28,9 +24,14 @@ WDGConfig WDG_config = {
     .callback       = watchdog_callback,
 };
 
+static thread_reference_t btnThreadReference;
+
 static void
 btnInterrupt (EXTDriver *extp, expchannel_t chan)
 {
+	osalSysLockFromISR ();
+	osalThreadResumeI (&btnThreadReference, MSG_OK);
+	osalSysUnlockFromISR ();
 	return;
 }
 
@@ -154,6 +155,8 @@ static SerialConfig serial_config = {
 
 
 
+#define printf(fmt, ...)					\
+    chprintf((BaseSequentialStream*)&SD1, fmt, ##__VA_ARGS__)
 
 
 
@@ -173,16 +176,24 @@ static THD_FUNCTION(Thread1, arg) {
     }
 }
 
-
-#define printf(fmt, ...)					\
-    chprintf((BaseSequentialStream*)&SD1, fmt, ##__VA_ARGS__)
-
-
-void
-nordic_fault_handler (uint32_t id, uint32_t pc, uint32_t info)
+static THD_WORKING_AREA(waBtnThread, 64);
+static THD_FUNCTION(btnThread, arg)
 {
-	return;
+	(void)arg;
+    
+	chRegSetThreadName("BTNEvent");
+    
+	while (1) {
+		osalSysLock ();
+		osalThreadSuspendS (&btnThreadReference);
+		osalSysUnlock ();
+		printf ("button pushed...\r\n");
+	}
+
+	/* NOTREACHED */
 }
+
+
 
 void
 SVC_Handler (void)
@@ -190,21 +201,12 @@ SVC_Handler (void)
 	while (1) {}
 }
 
-/*
- * This symbol is created by the linker script. Its address is
- * the start of application RAM.
- */
-
-extern uint32_t __ram0_start__;
+extern void ble_start (void);
 
 /**@brief Function for application main entry.
  */
 int main(void)
 {
-    int r;
-    uint32_t ram_start = (uint32_t)&__ram0_start__;
-    nrf_clock_lf_cfg_t clock_source;
-    ble_gap_addr_t addr;
 
 #ifdef CRT0_VTOR_INIT
     __disable_irq();
@@ -234,39 +236,20 @@ int main(void)
     chThdCreateStatic(waThread1, sizeof(waThread1), NORMALPRIO+1,
 		      Thread1, NULL);
 
+    /* Launch test button thread. */
+
+    chThdCreateStatic(waBtnThread, sizeof(waBtnThread), NORMALPRIO+1,
+		      btnThread, NULL);
+
     chThdSleep(2);
     printf("SYSTEM START\r\n");
     chThdSleep(2);
     printf(PORT_INFO "\r\n");
     chThdSleep(2);
 
-    /* Initialize the SoftDevice */
-
-    memset (&clock_source, 0, sizeof(clock_source));
-    clock_source.source = NRF_CLOCK_LF_SRC_XTAL;
-    clock_source.accuracy = NRF_CLOCK_LF_ACCURACY_75_PPM;
-    r = sd_softdevice_enable (&clock_source, nordic_fault_handler);
-
-    printf ("SOFTDEVICE ENABLE: %d\r\n", r);
-
-    /* Enable BLE support in SoftDevice */
-
-    r = sd_ble_enable (&ram_start);
-
-    printf ("BLE ENABLE: %d (RAM: %x)\r\n", r, ram_start);
-
-    memset (&addr, 0, sizeof(addr));
-    r = sd_ble_gap_addr_get (&addr);
-
-    printf ("addr: (%d) %x:%x:%x:%x:%x:%x\r\n", r,
-       addr.addr[0],
-       addr.addr[1],
-       addr.addr[2],
-       addr.addr[3],
-       addr.addr[4],
-       addr.addr[5]);
-
     printf("Priority levels %d\r\n", CORTEX_PRIORITY_LEVELS);
+
+    ble_start ();
     
     NRF_P0->DETECTMODE = 0;
 
@@ -286,4 +269,3 @@ int main(void)
     }
 
 }
-

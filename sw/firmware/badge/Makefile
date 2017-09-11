@@ -33,7 +33,7 @@ endif
 
 # Enable this if you want link time optimizations (LTO)
 ifeq ($(USE_LTO),)
-  USE_LTO = yes
+  USE_LTO = no
 endif
 
 # If enabled, this option allows to compile the application in THUMB mode.
@@ -122,7 +122,8 @@ CSRC = $(STARTUPSRC) \
        $(CHIBIOS)/os/hal/lib/streams/memstreams.c \
        $(CHIBIOS)/os/hal/lib/streams/chprintf.c 
 
-CSRC += main.c
+CSRC += main.c \
+        ble.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
