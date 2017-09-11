@@ -15,8 +15,8 @@
 */
 
 /**
- * @file    NRF51822/ext_lld.c
- * @brief   NRF51822 EXT subsystem low level driver source.
+ * @file    NRF52832/ext_lld.c
+ * @brief   NRF52832 EXT subsystem low level driver source.
  *
  * @addtogroup EXT
  * @{
@@ -78,18 +78,22 @@ void ext_lld_init(void) {
 void ext_lld_start(EXTDriver *extp) {
 
   unsigned i;
+  uint32_t config;
+  uint32_t pad;
+  uint32_t mode;
 
   ext_lld_exti_irq_enable();
 
   /* Configuration of automatic channels.*/
   for (i = 0; i < EXT_MAX_CHANNELS; i++) {
-    uint32_t config = 0;
-    uint32_t pad = (extp->config->channels[i].mode & EXT_MODE_GPIO_MASK)
+    config = 0;
+    pad = (extp->config->channels[i].mode & EXT_MODE_GPIO_MASK)
       >> EXT_MODE_GPIO_OFFSET;
+    mode = extp->config->channels[i].mode & ~EXT_MODE_GPIO_MASK;
 
-    if (extp->config->channels[i].mode & EXT_CH_MODE_BOTH_EDGES)
+    if (mode == EXT_CH_MODE_BOTH_EDGES)
       config |= (GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos);
-    else if (extp->config->channels[i].mode & EXT_CH_MODE_RISING_EDGE)
+    else if (mode == EXT_CH_MODE_RISING_EDGE)
       config |= (GPIOTE_CONFIG_POLARITY_LoToHi << GPIOTE_CONFIG_POLARITY_Pos);
     else
       config |= (GPIOTE_CONFIG_POLARITY_HiToLo << GPIOTE_CONFIG_POLARITY_Pos);

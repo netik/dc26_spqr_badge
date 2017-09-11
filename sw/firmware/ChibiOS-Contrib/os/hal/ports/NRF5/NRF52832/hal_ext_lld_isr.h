@@ -15,8 +15,8 @@
 */
 
 /**
- * @file    NRF51x22/ext_lld_isr.h
- * @brief   NRF51x22 EXT subsystem low level driver ISR header.
+ * @file    NRF52832/ext_lld_isr.h
+ * @brief   NRF52832 EXT subsystem low level driver ISR header.
  *
  * @addtogroup EXT
  * @{
