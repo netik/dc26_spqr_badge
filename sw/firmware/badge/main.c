@@ -31,7 +31,7 @@ WDGConfig WDG_config = {
 static void
 btnInterrupt (EXTDriver *extp, expchannel_t chan)
 {
-return;
+	return;
 }
 
 static const EXTConfig ext_config = {
@@ -48,9 +48,8 @@ static const EXTConfig ext_config = {
     }
 };
 
-#ifdef notdef
 void gpt_callback(GPTDriver *gptp) {
-  /*palTogglePad(IOPORT1, LED2);*/
+  palTogglePad(IOPORT1, LED2);
 }
 
 /*
@@ -63,7 +62,7 @@ static const GPTConfig gpt_config = {
     .callback   = gpt_callback,
     .resolution = 16,
 };
-#endif
+
 
 /*
  * Command Random
@@ -226,6 +225,9 @@ int main(void)
     palClearPad(IOPORT1, LED2);
     palClearPad(IOPORT1, LED3);
     palClearPad(IOPORT1, LED4);
+
+    gptStart(&GPTD2, &gpt_config);
+    gptStartContinuous(&GPTD2, 31250);
 
     /* Launch test blinker thread. */
     
