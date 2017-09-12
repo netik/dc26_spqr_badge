@@ -50,7 +50,7 @@
 #include "ble_gap.h"
 #include "ble_srv_common.h"
 
-#define VERIFY_SUCCESS(x)
+#define VERIFY_SUCCESS(x) (void)(x)
 
 /**@brief Function for encoding a uint16 value.
  *
