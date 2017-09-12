@@ -123,7 +123,8 @@ CSRC = $(STARTUPSRC) \
        $(CHIBIOS)/os/hal/lib/streams/chprintf.c 
 
 CSRC += main.c \
-        ble.c
+	ble_advdata.c \
+	ble.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
