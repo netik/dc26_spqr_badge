@@ -150,8 +150,8 @@ ble_start(void)
 	r = sd_ble_gap_addr_get (&addr);
 
 	printf ("addr: (%d) %x:%x:%x:%x:%x:%x\r\n", r,
-	    addr.addr[0], addr.addr[1], addr.addr[2],
-	    addr.addr[3], addr.addr[4], addr.addr[5]);
+	    addr.addr[5], addr.addr[4], addr.addr[3],
+	    addr.addr[2], addr.addr[1], addr.addr[0]);
 
 	BLE_GAP_CONN_SEC_MODE_SET_OPEN(&perm);
 	r = sd_ble_gap_device_name_set (&perm, ble_name, 9);
