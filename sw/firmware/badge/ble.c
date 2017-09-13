@@ -12,6 +12,11 @@
 #include "ble_gap.h"
 #include "ble_advdata.h"
 
+static thread_reference_t sdThreadReference;
+static ble_evt_t ble_evt;
+static ble_gap_lesc_p256_pk_t peer_pk;
+static ble_gap_lesc_p256_pk_t my_pk;
+static uint16_t conn_handle;
 
 enum
 {
@@ -33,10 +38,91 @@ nordic_fault_handler (uint32_t id, uint32_t pc, uint32_t info)
 	return;
 }
 
-static thread_reference_t sdThreadReference;
-static ble_evt_t ble_evt;
 
-static THD_WORKING_AREA(waSdThread, 64);
+static void
+bleGapDispatch (ble_evt_t * evt)
+{
+	ble_gap_sec_keyset_t sec_keyset;
+	ble_gap_sec_params_t sec_params;
+	ble_gap_addr_t * addr;
+	int r;
+
+	switch (evt->header.evt_id) {
+		case BLE_GAP_EVT_CONNECTED:
+			conn_handle = evt->evt.gap_evt.conn_handle;
+			printf ("gap connected...(%x)\r\n", conn_handle);
+			addr =&evt->evt.gap_evt.params.connected.peer_addr;
+			printf ("peer: %x:%x:%x:%x:%x:%x\r\n",
+			    addr->addr[5], addr->addr[4], addr->addr[3],
+			    addr->addr[2], addr->addr[1], addr->addr[0]);
+			printf ("role; %d\r\n",
+			    evt->evt.gap_evt.params.connected.role);
+			break;
+
+		case BLE_GAP_EVT_DISCONNECTED:
+			printf ("gap disconnected...\r\n");
+			break;
+
+		case BLE_GAP_EVT_AUTH_STATUS:
+			printf ("gap auth status... (%d)\r\n",
+			    evt->evt.gap_evt.params.auth_status.auth_status);
+			break;
+
+		case BLE_GAP_EVT_CONN_SEC_UPDATE:
+			printf ("gap connections security update...\r\n");
+			break;
+
+		case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
+			memset (&sec_keyset, 0, sizeof(sec_keyset));
+			memset (&sec_params, 0, sizeof(sec_params));
+		        sec_keyset.keys_own.p_pk  = &my_pk;
+        		sec_keyset.keys_peer.p_pk = &peer_pk;
+			sec_params.min_key_size = 7;
+			sec_params.max_key_size = 16;
+			sec_params.io_caps = BLE_GAP_IO_CAPS_NONE;
+			r = sd_ble_gap_sec_params_reply (conn_handle,
+			    BLE_GAP_SEC_STATUS_SUCCESS, &sec_params,
+			    &sec_keyset);
+			printf ("gap security param request...(%d)\r\n", r);
+			break;
+
+		default:
+			printf ("invalid GAP event\r\n");
+			break;
+	}
+
+	return;
+}
+
+static void
+bleEventDispatch (ble_evt_t * evt)
+{
+	if (evt->header.evt_id >= BLE_EVT_BASE &&
+	    evt->header.evt_id <= BLE_EVT_LAST)
+		printf ("common BLE event\r\n");
+
+	if (evt->header.evt_id >= BLE_GAP_EVT_BASE &&
+	    evt->header.evt_id <= BLE_GAP_EVT_LAST) {
+		printf ("GAP event (%d)\r\n", evt->header.evt_id);
+		bleGapDispatch (evt);
+	}
+
+	if (evt->header.evt_id >= BLE_GATTC_EVT_BASE &&
+	    evt->header.evt_id <= BLE_GATTC_EVT_LAST)
+		printf ("GATT client event\r\n");
+
+	if (evt->header.evt_id >= BLE_GATTS_EVT_BASE &&
+	    evt->header.evt_id <= BLE_GATTS_EVT_LAST)
+		printf ("GATT server event\r\n");
+
+	if (evt->header.evt_id >= BLE_L2CAP_EVT_BASE &&
+	    evt->header.evt_id <= BLE_L2CAP_EVT_LAST)
+		printf ("L2CAP event\r\n");
+
+	return;
+}
+
+static THD_WORKING_AREA(waSdThread, 256);
 static THD_FUNCTION(sdThread, arg)
 {
 	uint8_t * p_dest;
@@ -51,14 +137,14 @@ static THD_FUNCTION(sdThread, arg)
 		osalSysLock ();
 		osalThreadSuspendS (&sdThreadReference);
 		osalSysUnlock ();
+
 		while (1) {
 			p_dest = (uint8_t *)&ble_evt;
 			p_len = sizeof (ble_evt);
-			r = sd_ble_evt_get(p_dest, &p_len);
+			r = sd_ble_evt_get (p_dest, &p_len);
 			if (r != NRF_SUCCESS)
 				break;
-			printf ("moo... %d %x %d\r\n", r,
-			    ble_evt.header.evt_id, ble_evt.header.evt_len);
+			bleEventDispatch (&ble_evt);
 		}
     	}
 
@@ -100,7 +186,6 @@ ble_start(void)
 	ble_gap_conn_params_t conn_params;
 	ble_cfg_t cfg;
 #endif
-
 	const uint8_t * ble_name = (uint8_t *)"DC26 IDES";
 
 	/* Create SoftDevice event thread */
@@ -116,7 +201,7 @@ ble_start(void)
 
 	memset (&clock_source, 0, sizeof(clock_source));
 	clock_source.source = NRF_CLOCK_LF_SRC_XTAL;
-	clock_source.accuracy = NRF_CLOCK_LF_ACCURACY_75_PPM;
+	clock_source.accuracy = NRF_CLOCK_LF_ACCURACY_20_PPM;
 	r = sd_softdevice_enable (&clock_source, nordic_fault_handler);
 
 	printf ("SOFTDEVICE ENABLE: %d\r\n", r);
@@ -172,8 +257,7 @@ ble_start(void)
 
 	memset(&advdata, 0, sizeof(advdata));
 	advdata.name_type = BLE_ADVDATA_FULL_NAME;
-	advdata.short_name_len = 9;
-	advdata.include_appearance = true;
+	advdata.include_appearance = TRUE;
 	advdata.flags = BLE_GAP_ADV_FLAG_BR_EDR_NOT_SUPPORTED |
 	    BLE_GAP_ADV_FLAG_LE_GENERAL_DISC_MODE;
 
@@ -184,8 +268,12 @@ ble_start(void)
 	adv_params.type        = BLE_GAP_ADV_TYPE_ADV_IND;
 	adv_params.p_peer_addr = NULL;
 	adv_params.fp          = BLE_GAP_ADV_FP_ANY;
-	adv_params.interval    = MSEC_TO_UNITS(500, UNIT_0_625_MS);
+	adv_params.interval    = MSEC_TO_UNITS(33, UNIT_0_625_MS);
 	adv_params.timeout     = 0 /*ADV_TIMEOUT_IN_SECONDS*/;
+
+	r = sd_ble_gap_tx_power_set (4);
+
+	printf ("POWER SET: %d\r\n", r);
 
 	r = sd_ble_gap_adv_start (&adv_params, BLE_CONN_CFG_TAG_DEFAULT);
 
@@ -193,4 +281,3 @@ ble_start(void)
 
 	return;
 }
-

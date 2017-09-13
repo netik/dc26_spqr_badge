@@ -220,16 +220,16 @@ int main(void)
  
     extStart (&EXTD1, &ext_config);
  
-    sdStart(&SD1, &serial_config);
+    sdStart (&SD1, &serial_config);
     printf ("\r\n");
 
-    palClearPad(IOPORT1, LED1);
-    palClearPad(IOPORT1, LED2);
-    palClearPad(IOPORT1, LED3);
-    palClearPad(IOPORT1, LED4);
+    palClearPad (IOPORT1, LED1);
+    palClearPad (IOPORT1, LED2);
+    palClearPad (IOPORT1, LED3);
+    palClearPad (IOPORT1, LED4);
 
-    gptStart(&GPTD2, &gpt_config);
-    gptStartContinuous(&GPTD2, 31250);
+    gptStart (&GPTD2, &gpt_config);
+    gptStartContinuous (&GPTD2, NRF5_GPT_FREQ_31250HZ);
 
     /* Launch test blinker thread. */
     
