@@ -12,3 +12,5 @@ rm -f softdevice.bin
 arm-none-eabi-objcopy -I elf32-littlearm --rename-section .data=.softdevice softdevice.o
 arm-none-eabi-objcopy -I elf32-littlearm --set-section-flags .softdevice=CONTENTS,ALLOC,LOAD,CODE softdevice.o
 arm-none-eabi-objcopy -I elf32-littlearm --add-symbol softdeviceEntry=.softdevice:0x000008e9,global,function softdevice.o
+arm-none-eabi-ar rcs libsoftdevice.a softdevice.o
+rm -f softdevice.o

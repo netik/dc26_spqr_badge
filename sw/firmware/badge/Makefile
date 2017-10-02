@@ -237,7 +237,7 @@ UINCDIR = softdevice/include
 ULIBDIR =
 
 # List all user libraries here
-ULIBS = softdevice/lib/softdevice.o -lc_nano -lnosys
+ULIBS = -Lsoftdevice/lib -lsoftdevice -lc_nano -lnosys
 
 #
 # End of user defines
