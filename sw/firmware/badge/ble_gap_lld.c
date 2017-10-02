@@ -178,9 +178,7 @@ bleGapStart (void)
 {
 	ble_gap_scan_params_t scan;
 	ble_gap_conn_sec_mode_t perm;
-#ifdef notdef
-	ble_gap_addr_t peer;
-#endif
+
 	uint8_t * ble_name = (uint8_t *)"DC26 IDES";
 	uint8_t * pkt;
 	uint8_t size;
@@ -234,20 +232,7 @@ bleGapStart (void)
 	scan.window = MSEC_TO_UNITS(50, UNIT_0_625_MS);
 
 	sd_ble_gap_scan_start (&scan);
-#ifdef notdef
-	memset (&peer, 0, sizeof(peer));
 
-	peer.addr_id_peer = TRUE;
-	peer.addr_type = BLE_GAP_ADDR_TYPE_RANDOM_STATIC;
-	peer.addr[5] = 0xE3;
-	peer.addr[4] = 0x03;
-	peer.addr[3] = 0xBB;
-	peer.addr[2] = 0xF5;
-	peer.addr[1] = 0xC0;
-	peer.addr[0] = 0x33;
-
-	bleGapConnect (&peer);
-#endif
 	return;
 }
 

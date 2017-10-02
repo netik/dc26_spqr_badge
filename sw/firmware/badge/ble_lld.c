@@ -104,7 +104,7 @@ OSAL_IRQ_HANDLER(Vector98)
 extern uint32_t __ram0_start__;
 
 void
-ble_start(void)
+bleStart (void)
 {
 	int r;
  	uint32_t ram_start = (uint32_t)&__ram0_start__;
@@ -134,6 +134,11 @@ ble_start(void)
 		printf ("Enabling softdevice failed (%x)\r\n", r);
 		return;
 	}
+
+	/*
+	 * Set up SoftDevice internal configuration to support
+	 * L2CAP connections.
+	 */
 
 	memset (&cfg, 0, sizeof(cfg));
 
@@ -180,6 +185,8 @@ ble_start(void)
 	printf ("Station address: %x:%x:%x:%x:%x:%x\r\n",
 	    addr.addr[5], addr.addr[4], addr.addr[3],
 	    addr.addr[2], addr.addr[1], addr.addr[0]);
+
+	/* Initiallize GAP and L2CAP submodules */
 
 	bleGapStart ();
 	bleL2CapStart ();

@@ -9,6 +9,8 @@
 
 #include "gfx.h"
 
+#include "ble_lld.h"
+
 #define LED_EXT 14
 
 extern void cmd_radio (BaseSequentialStream *chp, int argc, char *argv[]);
@@ -206,8 +208,6 @@ SVC_Handler (void)
 	while (1) {}
 }
 
-extern void ble_start (void);
-
 /**@brief Function for application main entry.
  */
 int main(void)
@@ -256,7 +256,7 @@ int main(void)
 
     gfxInit ();
 
-    ble_start ();
+    bleStart ();
     
     NRF_P0->DETECTMODE = 0;
 
