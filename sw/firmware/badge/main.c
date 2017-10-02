@@ -7,7 +7,11 @@
 #include "chprintf.h"
 #include "shell.h"
 
+#include "gfx.h"
+
 #define LED_EXT 14
+
+extern void cmd_radio (BaseSequentialStream *chp, int argc, char *argv[]);
 
 bool watchdog_started = false;
 
@@ -135,6 +139,7 @@ static THD_WORKING_AREA(shell_wa, 1024);
 static const ShellCommand commands[] = {
   {"random",   cmd_random   },
   {"watchdog", cmd_watchdog },
+  {"radio",    cmd_radio },
   {NULL, NULL}
 };
 
@@ -248,6 +253,8 @@ int main(void)
     chThdSleep(2);
 
     printf("Priority levels %d\r\n", CORTEX_PRIORITY_LEVELS);
+
+    gfxInit ();
 
     ble_start ();
     

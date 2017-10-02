@@ -8,7 +8,9 @@ BOARD=NRF52-DK
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -Os -ggdb -fomit-frame-pointer -falign-functions=16 -std=c11
+  USE_OPT = -Os -ggdb -fomit-frame-pointer -falign-functions=16
+  USE_OPT += -DBIG_ENDIAN=0 -DLITTLE_ENDIAN=1
+  USE_OPT+= -ansi -std=c99 -Dinline=__inline__ -Dasm=__asm__
 endif
 
 # C specific options here (added to USE_OPT).
@@ -105,6 +107,14 @@ include $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC/mk/port_v7m.mk
 # Other files (optional).
 include $(CHIBIOS)/os/various/shell/shell.mk
 
+# uGFX includes
+GFXLIB = $(CHIBIOS)/../uGFX
+include $(GFXLIB)/gfx.mk
+include $(GFXLIB)/boards/base/Nonstandard-NRF52-Ides-Of-Defcon/board.mk
+include $(GFXLIB)/drivers/gdisp/ILI9341/driver.mk
+include $(GFXLIB)/drivers/ginput/touch/MCU/driver.mk
+
+
 # Define linker script file here
 LDSCRIPT= NRF52832_softdecvice.ld
 
@@ -123,8 +133,11 @@ CSRC = $(STARTUPSRC) \
        $(CHIBIOS)/os/hal/lib/streams/chprintf.c 
 
 CSRC += main.c \
+	cmd-radio.c \
 	ble_gap_lld.c \
-	ble.c
+	ble_l2cap_lld.c \
+	ble_lld.c \
+        $(GFXSRC)
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -158,7 +171,7 @@ ASMXSRC = $(STARTUPASM) $(PORTASM) $(OSALASM)
 INCDIR = $(CHIBIOS)/os/license \
          $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) $(TESTINC) \
-	 $(SHELLINC) \
+	 $(SHELLINC) $(GFXINC) \
 	 $(CHIBIOS)/os/hal/lib/streams $(CHIBIOS)/os/various
 
 
@@ -224,7 +237,7 @@ UINCDIR = softdevice/include
 ULIBDIR =
 
 # List all user libraries here
-ULIBS = softdevice/lib/softdevice.o 
+ULIBS = softdevice/lib/softdevice.o -lc_nano -lnosys
 
 #
 # End of user defines

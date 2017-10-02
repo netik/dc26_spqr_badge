@@ -1,6 +1,8 @@
 #ifndef _BLE_GAP_LLD_H_
 #define _BLE_GAP_LLD_H_
 
+extern uint16_t ble_conn_handle;
+
 enum
 {
     UNIT_0_625_MS = 625,        /**< Number of microseconds in 0.625 milliseconds. */
@@ -18,5 +20,8 @@ extern uint32_t bleGapAdvElementAdd (void * pElem, uint8_t len, uint8_t etype,
 extern uint32_t bleGapAdvFinish (uint8_t *, uint8_t);
 
 extern void bleGapStart (void);
+
+extern int bleGapConnect (ble_gap_addr_t *);
+extern int bleGapDisconnect (void);
 
 #endif /* __BLE_GAP_LLD_H */
