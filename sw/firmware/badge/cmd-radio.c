@@ -74,8 +74,6 @@ radio_send (BaseSequentialStream *chp, int argc, char *argv[])
 		return;
 	}
 
-printf ("sending: [%s]\r\n", argv[1]);
-
 	bleL2CapSend (argv[1]);
 	return;
 }
