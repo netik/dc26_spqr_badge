@@ -24,9 +24,11 @@
 #define GMOUSE_MCU_BOARD_DATA_SIZE			0
 
 static bool_t init_board(GMouse *m, unsigned driverinstance) {
+	return (FALSE);
 }
 
 static bool_t read_xyz(GMouse *m, GMouseReading *prd) {
+	return (FALSE);
 }
 
 #endif /* _LLD_GMOUSE_MCU_BOARD_H */

@@ -647,7 +647,7 @@ void _gmouseInit(void) {
 	// One and only one mouse
 	#else
 		{
-			extern const GMouseVMT const GMOUSEVMT_OnlyOne[1];
+			extern const GMouseVMT GMOUSEVMT_OnlyOne[1];
 
             if (!(GMOUSEVMT_OnlyOne->d.flags & GMOUSE_VFLG_DYNAMICONLY))
 					gdriverRegister(&GMOUSEVMT_OnlyOne->d, GDISP);
@@ -678,8 +678,8 @@ bool_t _gmouseInitDriver(GDriver *g, void *display, unsigned driverinstance, uns
         return FALSE;
 
 	// Ensure the Poll timer is started
-	if (!gtimerIsActive(&MouseTimer))
-		gtimerStart(&MouseTimer, MousePoll, 0, TRUE, GINPUT_MOUSE_POLL_PERIOD);
+    if (!gtimerIsActive(&MouseTimer))
+	gtimerStart(&MouseTimer, MousePoll, 0, TRUE, GINPUT_MOUSE_POLL_PERIOD);
 
     return TRUE;
 
