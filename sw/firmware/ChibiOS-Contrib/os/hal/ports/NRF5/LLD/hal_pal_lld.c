@@ -99,6 +99,14 @@ void _pal_lld_setpadmode(ioportid_t port, uint8_t pad, iomode_t mode)
       (GPIO_PIN_CNF_INPUT_Disconnect << GPIO_PIN_CNF_INPUT_Pos) |
       (GPIO_PIN_CNF_DIR_Output << GPIO_PIN_CNF_DIR_Pos);
     break;
+  case PAL_MODE_OUTPUT_PULLUP:
+    IOPORT1->PIN_CNF[pad] =
+      (GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos) |
+      (GPIO_PIN_CNF_DRIVE_S0S1 << GPIO_PIN_CNF_DRIVE_Pos) |
+      (GPIO_PIN_CNF_PULL_Pullup << GPIO_PIN_CNF_PULL_Pos) |
+      (GPIO_PIN_CNF_INPUT_Disconnect << GPIO_PIN_CNF_INPUT_Pos) |
+      (GPIO_PIN_CNF_DIR_Output << GPIO_PIN_CNF_DIR_Pos);
+    break;
   default:
     osalDbgAssert(FALSE, "invalid pal mode");
     break;

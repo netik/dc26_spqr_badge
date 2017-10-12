@@ -35,6 +35,8 @@
 /* I/O Ports Types and constants.                                            */
 /*===========================================================================*/
 
+#define PAL_MODE_OUTPUT_PULLUP       8U
+
 #define TOTAL_GPIO_PADS 32
 
 /**
