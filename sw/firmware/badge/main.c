@@ -36,7 +36,8 @@ static void
 btnInterrupt (EXTDriver *extp, expchannel_t chan)
 {
 	osalSysLockFromISR ();
-	osalThreadResumeI (&btnThreadReference, MSG_OK);
+	if (palReadPad(IOPORT1, BTN2) == 0)
+		osalThreadResumeI (&btnThreadReference, MSG_OK);
 	osalSysUnlockFromISR ();
 	return;
 }
@@ -212,6 +213,7 @@ SVC_Handler (void)
  */
 int main(void)
 {
+    font_t font;
 
 #ifdef CRT0_VTOR_INIT
     __disable_irq();
@@ -255,6 +257,24 @@ int main(void)
     printf("Priority levels %d\r\n", CORTEX_PRIORITY_LEVELS);
 
     gfxInit ();
+
+    gdispClear (Blue);
+
+    font = gdispOpenFont ("DejaVuSans24");
+
+    gdispDrawStringBox (0, 0, gdispGetWidth(),
+        gdispGetFontMetric(font, fontHeight),
+        "Hello world......", font, White, justifyCenter);
+
+    gdispCloseFont (font);
+
+    font = gdispOpenFont ("fixed_10x20");
+
+    gdispDrawStringBox (0, 40, gdispGetWidth(),
+        gdispGetFontMetric(font, fontHeight),
+        "Hello world......", font, White, justifyCenter);
+
+    gdispCloseFont (font);
 
     bleStart ();
     

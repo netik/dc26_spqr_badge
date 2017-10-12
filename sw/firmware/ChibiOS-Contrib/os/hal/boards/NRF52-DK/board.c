@@ -35,10 +35,10 @@ const PALConfig pal_default_config =
         PAL_MODE_OUTPUT_PUSHPULL,     /* P0.6 : UART_TX        */
         PAL_MODE_INPUT_PULLUP,        /* P0.7 : UART_CTS       */
         PAL_MODE_INPUT_PULLUP,        /* P0.8 : UART_RX        */
-        PAL_MODE_UNCONNECTED,         /* P0.9                  */
-        PAL_MODE_UNCONNECTED,         /* P0.10                 */
-        PAL_MODE_UNCONNECTED,         /* P0.11                 */
-        PAL_MODE_UNCONNECTED,         /* P0.12                 */
+        PAL_MODE_OUTPUT_PULLUP,       /* P0.9 : screen RD      */
+        PAL_MODE_OUTPUT_PULLUP,       /* P0.10: screen WR      */
+        PAL_MODE_OUTPUT_PULLUP,       /* P0.11: screen C/D     */
+        PAL_MODE_OUTPUT_PULLUP,       /* P0.12: screen CS      */
         PAL_MODE_INPUT_PULLUP,        /* P0.13: BTN1           */
         PAL_MODE_INPUT_PULLUP,        /* P0.14: BTN2           */
         PAL_MODE_INPUT_PULLUP,        /* P0.15: BTN3           */
@@ -50,14 +50,14 @@ const PALConfig pal_default_config =
         PAL_MODE_UNCONNECTED,         /* P0.21                 */
         PAL_MODE_OUTPUT_PUSHPULL,     /* P0.22: SPI_SS         */
         PAL_MODE_INPUT_PULLUP,        /* P0.23: SPI_MISO       */
-        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.24: SPI_MOSI       */
-        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.25: SPI_SCK        */
-        PAL_MODE_OUTPUT_OPENDRAIN,    /* P0.26: SDA            */
-        PAL_MODE_OUTPUT_OPENDRAIN,    /* P0.27: SCL            */
-        PAL_MODE_UNCONNECTED,         /* P0.28                 */
-        PAL_MODE_UNCONNECTED,         /* P0.29                 */
-        PAL_MODE_UNCONNECTED,         /* P0.30                 */
-        PAL_MODE_UNCONNECTED,         /* P0.31                 */
+        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.24: screen D0      */
+        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.25: screen D1      */
+        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.26: screen D2      */
+        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.27: screen D3      */
+        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.28: screen D4      */
+        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.29: screen D5      */
+        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.30: screen D6      */
+        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.31: screen D7      */
   },
 };
 #endif

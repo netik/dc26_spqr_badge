@@ -50,7 +50,9 @@
 // Some common routines and macros
 #define dummy_read(g)				{ volatile uint16_t dummy; dummy = read_data(g); (void) dummy; }
 #define write_reg(g, reg, data)		{ write_index(g, reg); write_data(g, data); }
+#ifdef notdef
 #define write_data16(g, data)		{ write_data(g, data >> 8); write_data(g, (uint8_t)data); }
+#endif
 #define delay(us)					gfxSleepMicroseconds(us)
 #define delayms(ms)					gfxSleepMilliseconds(ms)
 
@@ -140,7 +142,8 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	write_index(g, 0xb1);
 	// frame rate
 	write_data(g, 0x00);
-	write_data(g, 0x1B); //70
+	/* Set the refresh rate to max (119 fps) for cleaner scrolling */
+	write_data(g, 0x10);
 	//----------------Gamma---------------------------------
 	write_index(g, 0xf2); // 3Gamma Function Disable
 	write_data(g, 0x08);

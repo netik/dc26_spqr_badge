@@ -22,6 +22,8 @@
 #ifndef _GFXCONF_H
 #define _GFXCONF_H
 
+#define GOS_NEED_X_THREADS                             FALSE
+#define GOS_NEED_X_HEAP                                FALSE
 
 ///////////////////////////////////////////////////////////////////////////
 // GOS - One of these must be defined, preferably in your Makefile       //
