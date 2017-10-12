@@ -34,6 +34,24 @@ ble_gap_addr_t ble_peer_addr;
 
 extern uint32_t __ram0_start__;
 
+static int
+bleGapScanStart (void)
+{
+	ble_gap_scan_params_t scan;
+	int r;
+
+	scan.active = FALSE;
+	scan.use_whitelist = FALSE;
+	scan.adv_dir_report = FALSE;
+	scan.timeout = 0;
+	scan.interval = MSEC_TO_UNITS(1000, UNIT_0_625_MS);
+	scan.window = MSEC_TO_UNITS(50, UNIT_0_625_MS);
+
+	r = sd_ble_gap_scan_start (&scan);
+
+	return (r);
+}
+
 void
 bleGapDispatch (ble_evt_t * evt)
 {
@@ -55,6 +73,8 @@ bleGapDispatch (ble_evt_t * evt)
 			    addr->addr[2], addr->addr[1], addr->addr[0]);
 			printf ("role; %d\r\n",
 			    evt->evt.gap_evt.params.connected.role);
+
+			bleGapScanStart ();
 
 			break;
 
@@ -88,13 +108,11 @@ bleGapDispatch (ble_evt_t * evt)
 			break;
 
 		case BLE_GAP_EVT_ADV_REPORT:
-#ifdef testing
 			printf ("GAP scan report...\r\n");
 			addr =&evt->evt.gap_evt.params.adv_report.peer_addr;
 			printf ("peer: %x:%x:%x:%x:%x:%x\r\n",
 			    addr->addr[5], addr->addr[4], addr->addr[3],
 			    addr->addr[2], addr->addr[1], addr->addr[0]);
-#endif
 			break;
 
 		case BLE_GAP_EVT_TIMEOUT:
@@ -176,7 +194,6 @@ bleGapAdvFinish (uint8_t * pkt, uint8_t len)
 void
 bleGapStart (void)
 {
-	ble_gap_scan_params_t scan;
 	ble_gap_conn_sec_mode_t perm;
 
 	uint8_t * ble_name = (uint8_t *)"DC26 IDES";
@@ -224,14 +241,7 @@ bleGapStart (void)
 
 	bleGapAdvFinish (pkt, BLE_GAP_ADV_MAX_SIZE - size);
 
-	scan.active = FALSE;
-	scan.use_whitelist = FALSE;
-	scan.adv_dir_report = FALSE;
-	scan.timeout = 0;
-	scan.interval = MSEC_TO_UNITS(1000, UNIT_0_625_MS);
-	scan.window = MSEC_TO_UNITS(50, UNIT_0_625_MS);
-
-	sd_ble_gap_scan_start (&scan);
+	bleGapScanStart ();
 
 	return;
 }
@@ -260,7 +270,7 @@ bleGapConnect (ble_gap_addr_t * peer)
 
 	/* Can't scan and connect at the same time. */
 
-	sd_ble_gap_scan_stop ();
+	/*sd_ble_gap_scan_stop ();*/
 
 	r = sd_ble_gap_connect (peer, &sparams,
 	    &cparams, BLE_IDES_APP_TAG);
