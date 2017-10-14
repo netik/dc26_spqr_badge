@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------*/
-/* Low level disk I/O module skeleton for FatFs     (C)ChaN, 2016        */
+/* Low level disk I/O module glue functions         (C)ChaN, 2016        */
 /*-----------------------------------------------------------------------*/
 /* If a working storage control module is available, it should be        */
 /* attached to the FatFs via a glue function rather than modifying it.   */
@@ -8,11 +8,12 @@
 /*-----------------------------------------------------------------------*/
 
 #include "diskio.h"		/* FatFs lower layer API */
-
-/* Definitions of physical drive number for each drive */
-#define DEV_RAM		0	/* Example: Map Ramdisk to physical drive 0 */
-#define DEV_MMC		1	/* Example: Map MMC/SD card to physical drive 1 */
-#define DEV_USB		2	/* Example: Map USB MSD to physical drive 2 */
+#ifdef DRV_CFC
+#include "cfc.h"	/* Header file of existing CF control module */
+#endif
+#ifdef DRV_MMC
+#include "mmc.h"	/* Header file of existing SD control module */
+#endif
 
 
 /*-----------------------------------------------------------------------*/
@@ -23,30 +24,15 @@ DSTATUS disk_status (
 	BYTE pdrv		/* Physical drive nmuber to identify the drive */
 )
 {
-	DSTATUS stat;
-	int result;
-
 	switch (pdrv) {
-	case DEV_RAM :
-		result = RAM_disk_status();
-
-		// translate the reslut code here
-
-		return stat;
-
-	case DEV_MMC :
-		result = MMC_disk_status();
-
-		// translate the reslut code here
-
-		return stat;
-
-	case DEV_USB :
-		result = USB_disk_status();
-
-		// translate the reslut code here
-
-		return stat;
+#ifdef DRV_CFC
+	case DRV_CFC :
+		return cf_disk_status();
+#endif
+#ifdef DRV_MMC
+	case DRV_MMC :
+		return mmc_disk_status();
+#endif
 	}
 	return STA_NOINIT;
 }
@@ -61,30 +47,15 @@ DSTATUS disk_initialize (
 	BYTE pdrv				/* Physical drive nmuber to identify the drive */
 )
 {
-	DSTATUS stat;
-	int result;
-
 	switch (pdrv) {
-	case DEV_RAM :
-		result = RAM_disk_initialize();
-
-		// translate the reslut code here
-
-		return stat;
-
-	case DEV_MMC :
-		result = MMC_disk_initialize();
-
-		// translate the reslut code here
-
-		return stat;
-
-	case DEV_USB :
-		result = USB_disk_initialize();
-
-		// translate the reslut code here
-
-		return stat;
+#ifdef DRV_CFC
+	case DRV_CFC :
+		return cf_disk_initialize();
+#endif
+#ifdef DRV_MMC
+	case DRV_MMC :
+		return mmc_disk_initialize();
+#endif
 	}
 	return STA_NOINIT;
 }
@@ -98,42 +69,20 @@ DSTATUS disk_initialize (
 DRESULT disk_read (
 	BYTE pdrv,		/* Physical drive nmuber to identify the drive */
 	BYTE *buff,		/* Data buffer to store read data */
-	DWORD sector,	/* Start sector in LBA */
+	DWORD sector,	/* Sector address in LBA */
 	UINT count		/* Number of sectors to read */
 )
 {
-	DRESULT res;
-	int result;
-
 	switch (pdrv) {
-	case DEV_RAM :
-		// translate the arguments here
-
-		result = RAM_disk_read(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
-
-	case DEV_MMC :
-		// translate the arguments here
-
-		result = MMC_disk_read(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
-
-	case DEV_USB :
-		// translate the arguments here
-
-		result = USB_disk_read(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
+#ifdef DRV_CFC
+	case DRV_CFC :
+		return cf_disk_read(buff, sector, count);
+#endif
+#ifdef DRV_MMC
+	case DRV_MMC :
+		return mmc_disk_read(buff, sector, count);
+#endif
 	}
-
 	return RES_PARERR;
 }
 
@@ -143,83 +92,66 @@ DRESULT disk_read (
 /* Write Sector(s)                                                       */
 /*-----------------------------------------------------------------------*/
 
+#if _USE_WRITE
 DRESULT disk_write (
 	BYTE pdrv,			/* Physical drive nmuber to identify the drive */
 	const BYTE *buff,	/* Data to be written */
-	DWORD sector,		/* Start sector in LBA */
+	DWORD sector,		/* Sector address in LBA */
 	UINT count			/* Number of sectors to write */
 )
 {
-	DRESULT res;
-	int result;
-
 	switch (pdrv) {
-	case DEV_RAM :
-		// translate the arguments here
-
-		result = RAM_disk_write(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
-
-	case DEV_MMC :
-		// translate the arguments here
-
-		result = MMC_disk_write(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
-
-	case DEV_USB :
-		// translate the arguments here
-
-		result = USB_disk_write(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
+#ifdef DRV_CFC
+	case DRV_CFC :
+		return cf_disk_write(buff, sector, count);
+#endif
+#ifdef DRV_MMC
+	case DRV_MMC :
+		return mmc_disk_write(buff, sector, count);
+#endif
 	}
-
 	return RES_PARERR;
 }
-
+#endif
 
 
 /*-----------------------------------------------------------------------*/
 /* Miscellaneous Functions                                               */
 /*-----------------------------------------------------------------------*/
 
+#if _USE_IOCTL
 DRESULT disk_ioctl (
 	BYTE pdrv,		/* Physical drive nmuber (0..) */
 	BYTE cmd,		/* Control code */
 	void *buff		/* Buffer to send/receive control data */
 )
 {
-	DRESULT res;
-	int result;
-
 	switch (pdrv) {
-	case DEV_RAM :
-
-		// Process of the command for the RAM drive
-
-		return res;
-
-	case DEV_MMC :
-
-		// Process of the command for the MMC/SD card
-
-		return res;
-
-	case DEV_USB :
-
-		// Process of the command the USB drive
-
-		return res;
+#ifdef DRV_CFC
+	case DRV_CFC :
+		return cf_disk_ioctl(cmd, buff);
+#endif
+#ifdef DRV_MMC
+	case DRV_MMC :
+		return mmc_disk_ioctl(cmd, buff);
+#endif
 	}
-
 	return RES_PARERR;
 }
+#endif
 
+
+/*-----------------------------------------------------------------------*/
+/* Timer driven procedure                                                */
+/*-----------------------------------------------------------------------*/
+
+
+void disk_timerproc (void)
+{
+#ifdef DRV_CFC
+	cf_disk_timerproc();
+#endif
+#ifdef DRV_MMC
+	mmc_disk_timerproc();
+#endif
+}

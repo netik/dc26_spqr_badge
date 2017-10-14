@@ -114,6 +114,9 @@ include $(GFXLIB)/boards/base/Nonstandard-NRF52-Ides-Of-Defcon/board.mk
 include $(GFXLIB)/drivers/gdisp/ILI9341/driver.mk
 include $(GFXLIB)/drivers/ginput/touch/MCU/driver.mk
 
+#FatFS library
+FATFS = $(CHIBIOS)/../FatFs
+include $(FATFS)/build.mk
 
 # Define linker script file here
 LDSCRIPT= NRF52832_softdecvice.ld
@@ -130,14 +133,16 @@ CSRC = $(STARTUPSRC) \
        $(TESTSRC) \
        $(SHELLSRC) \
        $(CHIBIOS)/os/hal/lib/streams/memstreams.c \
-       $(CHIBIOS)/os/hal/lib/streams/chprintf.c 
+       $(CHIBIOS)/os/hal/lib/streams/chprintf.c
 
 CSRC += main.c \
 	cmd-radio.c \
 	ble_gap_lld.c \
 	ble_l2cap_lld.c \
 	ble_lld.c \
-        $(GFXSRC)
+	mmc_spi_lld.c \
+        $(GFXSRC) \
+	$(FATFSSRC)
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -171,7 +176,7 @@ ASMXSRC = $(STARTUPASM) $(PORTASM) $(OSALASM)
 INCDIR = $(CHIBIOS)/os/license \
          $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) $(TESTINC) \
-	 $(SHELLINC) $(GFXINC) \
+	 $(SHELLINC) $(GFXINC) $(FATFSINC) \
 	 $(CHIBIOS)/os/hal/lib/streams $(CHIBIOS)/os/various
 
 
