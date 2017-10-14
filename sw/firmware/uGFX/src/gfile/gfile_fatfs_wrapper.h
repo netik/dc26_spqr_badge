@@ -23,10 +23,15 @@
 	#define _INC_TCHAR
 #endif
 
+#ifdef GFILE_FATFS_EXTERNAL_LIB
+#include "ff.h"
+#include "ffconf.h"
+#else
 // Include the fatfs API
 #include "../../3rdparty/fatfs-0.10b/src/ff.h"
 
 // Include the fatfs diskio API
 #include "../../3rdparty/fatfs-0.10b/src/diskio.h"
+#endif
 
 #endif //_FATFS_WRAPPER
