@@ -23,16 +23,16 @@
 static ble_gap_lesc_p256_pk_t peer_pk;
 static ble_gap_lesc_p256_pk_t my_pk;
 
+static uint8_t * bleGapAdvBlockStart (uint8_t *);
+static uint32_t bleGapAdvBlockAdd (void * pElem, uint8_t len, uint8_t etype,
+	uint8_t * pkt, uint8_t * size);
+static uint32_t bleGapAdvBlockFinish (uint8_t *, uint8_t);
+static int bleGapScanStart (void);
+static int bleGapAdvStart (void);
+
 uint16_t ble_conn_handle;
 uint8_t ble_gap_role;
 ble_gap_addr_t ble_peer_addr;
-
-/*
- * This symbol is created by the linker script. Its address is
- * the start of application RAM.
- */
-
-extern uint32_t __ram0_start__;
 
 static int
 bleGapScanStart (void)
@@ -43,11 +43,68 @@ bleGapScanStart (void)
 	scan.active = FALSE;
 	scan.use_whitelist = FALSE;
 	scan.adv_dir_report = FALSE;
-	scan.timeout = 0;
+	scan.timeout = BLE_IDES_SCAN_TIMEOUT;
 	scan.interval = MSEC_TO_UNITS(1000, UNIT_0_625_MS);
 	scan.window = MSEC_TO_UNITS(50, UNIT_0_625_MS);
 
 	r = sd_ble_gap_scan_start (&scan);
+
+	return (r);
+}
+
+static int
+bleGapAdvStart (void)
+{
+	uint8_t * pkt;
+	uint8_t size;
+	uint16_t val;
+	uint8_t ble_name[BLE_GAP_DEVNAME_MAX_LEN];
+	uint16_t len = BLE_GAP_DEVNAME_MAX_LEN;
+	int r;
+
+	pkt = bleGapAdvBlockStart (&size);
+
+	/* Set our full name */
+
+	sd_ble_gap_device_name_get (ble_name, &len);
+
+	r = bleGapAdvBlockAdd (ble_name, strlen ((char *)ble_name),
+	    BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME, pkt, &size);
+
+	if (r != NRF_SUCCESS)
+		return (r);
+
+	/* Set our appearance */
+
+	val = BLE_APPEARANCE_GENERIC_COMPUTER;
+	r = bleGapAdvBlockAdd (&val, 2,
+	    BLE_GAP_AD_TYPE_APPEARANCE, pkt, &size);
+
+	if (r != NRF_SUCCESS)
+		return (r);
+
+	/* Set flags */
+
+	val = BLE_GAP_ADV_FLAG_BR_EDR_NOT_SUPPORTED |
+            BLE_GAP_ADV_FLAG_LE_GENERAL_DISC_MODE;
+	r = bleGapAdvBlockAdd (&val, 1,
+	    BLE_GAP_AD_TYPE_FLAGS, pkt, &size);
+
+	if (r != NRF_SUCCESS)
+		return (r);
+
+	/* Set role */
+
+	val = 2 /*BLE_GAP_ROLE_PERIPH*/;
+	r = bleGapAdvBlockAdd (&val, 1,
+	    BLE_GAP_AD_TYPE_LE_ROLE, pkt, &size);
+
+	if (r != NRF_SUCCESS)
+		return (r);
+
+	/* Begin advertisement */
+
+	r = bleGapAdvBlockFinish (pkt, BLE_GAP_ADV_MAX_SIZE - size);
 
 	return (r);
 }
@@ -57,6 +114,7 @@ bleGapDispatch (ble_evt_t * evt)
 {
 	ble_gap_sec_keyset_t sec_keyset;
 	ble_gap_sec_params_t sec_params;
+	ble_gap_evt_timeout_t * timeout;
 	ble_gap_addr_t * addr;
 	int r;
 
@@ -66,22 +124,18 @@ bleGapDispatch (ble_evt_t * evt)
 			addr =&evt->evt.gap_evt.params.connected.peer_addr;
 			memcpy (&ble_peer_addr, addr, sizeof(ble_gap_addr_t));
 			ble_gap_role = evt->evt.gap_evt.params.connected.role;
-
 			printf ("gap connected (handle: %x) ", ble_conn_handle);
 			printf ("peer: %x:%x:%x:%x:%x:%x ",
 			    addr->addr[5], addr->addr[4], addr->addr[3],
 			    addr->addr[2], addr->addr[1], addr->addr[0]);
-			printf ("role; %d\r\n",
-			    evt->evt.gap_evt.params.connected.role);
-
-			bleGapScanStart ();
-
+			printf ("role; %d\r\n", ble_gap_role);
+			if (ble_gap_role == BLE_GAP_ROLE_CENTRAL)
+				bleGapScanStart ();
 			break;
 
 		case BLE_GAP_EVT_DISCONNECTED:
 			printf ("gap disconnected...\r\n");
 			bleGapStart ();
-
 			break;
 
 		case BLE_GAP_EVT_AUTH_STATUS:
@@ -116,8 +170,15 @@ bleGapDispatch (ble_evt_t * evt)
 			break;
 
 		case BLE_GAP_EVT_TIMEOUT:
-			printf ("GAP timeout event\r\n");
-			bleGapStart ();
+			timeout = &evt->evt.gap_evt.params.timeout;
+			printf ("GAP timeout event, src: %d\r\n", timeout->src);
+			if (timeout->src == BLE_GAP_TIMEOUT_SRC_ADVERTISING &&
+			    ble_conn_handle == BLE_CONN_HANDLE_INVALID)
+				bleGapAdvStart ();
+			if (timeout->src == BLE_GAP_TIMEOUT_SRC_SCAN)
+				bleGapScanStart ();
+			if (timeout->src == BLE_GAP_TIMEOUT_SRC_CONN)
+				bleGapStart ();
 			break;
 
 		default:
@@ -129,8 +190,8 @@ bleGapDispatch (ble_evt_t * evt)
 	return;
 }
 
-uint8_t *
-bleGapAdvStart (uint8_t * size)
+static uint8_t *
+bleGapAdvBlockStart (uint8_t * size)
 {
 	uint8_t * pkt;
 
@@ -147,9 +208,9 @@ bleGapAdvStart (uint8_t * size)
 	return (pkt);
 }
 
-uint32_t
-bleGapAdvElementAdd (void * pElem, uint8_t len, uint8_t etype,
-		  uint8_t * pkt, uint8_t * size)
+static uint32_t
+bleGapAdvBlockAdd (void * pElem, uint8_t len, uint8_t etype,
+	uint8_t * pkt, uint8_t * size)
 {
 	uint8_t * p;
 
@@ -167,8 +228,8 @@ bleGapAdvElementAdd (void * pElem, uint8_t len, uint8_t etype,
 	return (NRF_SUCCESS);
 }
 
-uint32_t
-bleGapAdvFinish (uint8_t * pkt, uint8_t len)
+static uint32_t
+bleGapAdvBlockFinish (uint8_t * pkt, uint8_t len)
 {
         ble_gap_adv_params_t adv_params;
 	uint32_t r;
@@ -182,7 +243,7 @@ bleGapAdvFinish (uint8_t * pkt, uint8_t len)
 	adv_params.p_peer_addr = NULL;
 	adv_params.fp = BLE_GAP_ADV_FP_ANY;
 	adv_params.interval = MSEC_TO_UNITS(33, UNIT_0_625_MS);
-	adv_params.timeout = 0 /*ADV_TIMEOUT_IN_SECONDS*/;
+	adv_params.timeout = BLE_IDES_ADV_TIMEOUT;
 
 	r = sd_ble_gap_adv_start (&adv_params, BLE_IDES_APP_TAG);
 
@@ -195,11 +256,7 @@ void
 bleGapStart (void)
 {
 	ble_gap_conn_sec_mode_t perm;
-
 	uint8_t * ble_name = (uint8_t *)"DC26 IDES";
-	uint8_t * pkt;
-	uint8_t size;
-	uint16_t val;
 
 	ble_conn_handle = BLE_CONN_HANDLE_INVALID;
 
@@ -211,36 +268,7 @@ bleGapStart (void)
 
 	sd_ble_gap_appearance_set (BLE_APPEARANCE_GENERIC_COMPUTER);
 
-	pkt = bleGapAdvStart (&size);
-
-	/* Set our full name */
-
-	bleGapAdvElementAdd (ble_name, strlen ((char *)ble_name),
-	    BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME, pkt, &size);
-
-	/* Set our appearance */
-
-	val = BLE_APPEARANCE_GENERIC_COMPUTER;
-	bleGapAdvElementAdd (&val, 2,
-	    BLE_GAP_AD_TYPE_APPEARANCE, pkt, &size);
-
-	/* Set flags */
-
-	val = BLE_GAP_ADV_FLAG_BR_EDR_NOT_SUPPORTED |
-            BLE_GAP_ADV_FLAG_LE_GENERAL_DISC_MODE;
-	bleGapAdvElementAdd (&val, 1,
-	    BLE_GAP_AD_TYPE_FLAGS, pkt, &size);
-
-	/* Set role */
-
-	val = 2 /*BLE_GAP_ROLE_PERIPH*/;
-	bleGapAdvElementAdd (&val, 1,
-	    BLE_GAP_AD_TYPE_LE_ROLE, pkt, &size);
-
-	/* Begin advertisement */
-
-	bleGapAdvFinish (pkt, BLE_GAP_ADV_MAX_SIZE - size);
-
+	bleGapAdvStart ();
 	bleGapScanStart ();
 
 	return;
@@ -268,15 +296,12 @@ bleGapConnect (ble_gap_addr_t * peer)
 	cparams.slave_latency = 0;
 	cparams.conn_sup_timeout = MSEC_TO_UNITS(400, UNIT_10_MS);
 
-	/* Can't scan and connect at the same time. */
-
-	/*sd_ble_gap_scan_stop ();*/
-
 	r = sd_ble_gap_connect (peer, &sparams,
 	    &cparams, BLE_IDES_APP_TAG);
 
 	if (r != NRF_SUCCESS) {
 		printf ("GAP connect failed: %x\r\n", r);
+		bleGapStart ();
 		return (r);
 	}
 
@@ -293,4 +318,3 @@ bleGapDisconnect (void)
 
 	return (r);
 }
-

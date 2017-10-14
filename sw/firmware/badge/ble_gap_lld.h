@@ -2,6 +2,11 @@
 #define _BLE_GAP_LLD_H_
 
 extern uint16_t ble_conn_handle;
+extern uint8_t ble_gap_role;
+extern ble_gap_addr_t ble_peer_addr;
+
+#define BLE_IDES_SCAN_TIMEOUT		30
+#define BLE_IDES_ADV_TIMEOUT		30
 
 enum
 {
@@ -14,10 +19,6 @@ enum
 #define MSEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000) / (RESOLUTION))
 
 extern void bleGapDispatch (ble_evt_t *);
-extern uint8_t * bleGapAdvStart (uint8_t *);
-extern uint32_t bleGapAdvElementAdd (void * pElem, uint8_t len, uint8_t etype,
-	uint8_t * pkt, uint8_t * size);
-extern uint32_t bleGapAdvFinish (uint8_t *, uint8_t);
 
 extern void bleGapStart (void);
 
