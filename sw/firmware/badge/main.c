@@ -10,6 +10,7 @@
 #include "gfx.h"
 
 #include "ble_lld.h"
+#include "joypad_lld.h"
 
 #define LED_EXT 14
 
@@ -28,32 +29,6 @@ WDGConfig WDG_config = {
     .pause_on_halt  = 0,
     .timeout_ms     = 5000,
     .callback       = watchdog_callback,
-};
-
-static thread_reference_t btnThreadReference;
-
-static void
-btnInterrupt (EXTDriver *extp, expchannel_t chan)
-{
-	osalSysLockFromISR ();
-	if (palReadPad(IOPORT1, BTN2) == 0)
-		osalThreadResumeI (&btnThreadReference, MSG_OK);
-	osalSysUnlockFromISR ();
-	return;
-}
-
-static const EXTConfig ext_config = {
-    {
-    { EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART |
-      BTN2 << EXT_MODE_GPIO_OFFSET , btnInterrupt },
-    { 0 , NULL },
-    { 0 , NULL },
-    { 0 , NULL },
-    { 0 , NULL },
-    { 0 , NULL },
-    { 0 , NULL },
-    { 0 , NULL }
-    }
 };
 
 void gpt_callback(GPTDriver *gptp) {
@@ -184,25 +159,6 @@ static THD_FUNCTION(Thread1, arg) {
     }
 }
 
-static THD_WORKING_AREA(waBtnThread, 64);
-static THD_FUNCTION(btnThread, arg)
-{
-	(void)arg;
-    
-	chRegSetThreadName("BTNEvent");
-    
-	while (1) {
-		osalSysLock ();
-		osalThreadSuspendS (&btnThreadReference);
-		osalSysUnlock ();
-		printf ("button pushed...\r\n");
-	}
-
-	/* NOTREACHED */
-}
-
-
-
 void
 SVC_Handler (void)
 {
@@ -225,8 +181,6 @@ int main(void)
     chSysInit();
     shellInit();
  
-    extStart (&EXTD1, &ext_config);
- 
     sdStart (&SD1, &serial_config);
     printf ("\r\n");
 
@@ -243,11 +197,6 @@ int main(void)
     chThdCreateStatic(waThread1, sizeof(waThread1), NORMALPRIO+1,
 		      Thread1, NULL);
 
-    /* Launch test button thread. */
-
-    chThdCreateStatic(waBtnThread, sizeof(waBtnThread), NORMALPRIO+1,
-		      btnThread, NULL);
-
     chThdSleep(2);
     printf("SYSTEM START\r\n");
     chThdSleep(2);
@@ -255,6 +204,8 @@ int main(void)
     chThdSleep(2);
 
     printf("Priority levels %d\r\n", CORTEX_PRIORITY_LEVELS);
+
+    joyStart ();
 
     gfxInit ();
 
