@@ -80,10 +80,14 @@ uint16_t xptGet (uint8_t cmd)
 	uint8_t		reg;
 	uint8_t		v[2];
 	uint16_t	val;
+	uint32_t	freq;
 
 	reg = cmd | XPT_CTL_START;
 
 	spiAcquireBus (&SPID1);
+	freq = SPID1.port->FREQUENCY;
+	SPID1.port->FREQUENCY = NRF5_SPI_FREQ_125KBPS;
+
 	palClearPad (IOPORT1, IOPORT1_TOUCH_CS);
 
 	/* Send command byte */
@@ -99,6 +103,7 @@ uint16_t xptGet (uint8_t cmd)
 	spiReceive (&SPID1, 1, &v[1]);
 
 	palSetPad (IOPORT1, IOPORT1_TOUCH_CS);
+	SPID1.port->FREQUENCY = freq;
 	spiReleaseBus (&SPID1);
 
 	val = v[1] >> 3;
