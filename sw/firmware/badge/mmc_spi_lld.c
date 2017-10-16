@@ -4,20 +4,16 @@
 
 /*
  * This module implements a FatFs SDIO driver for ChibiOS using the
- * Freescale/NXP Kinetis ARM processor SPI interface. It's based on the
- * mmc_avr_sdio.c sample provided as a supplement to the FatFs source
+ * Nordic Semiconductor NRF52832 ARM processor SPI interface. It's based
+ * on the mmc_avr_sdio.c sample provided as a supplement to the FatFs source
  * code.
  *
- * The KW01 chip has two SPI channels. Channel 0 is tied directly to
- * the built-in radio chip, so we use channel 1 for SDIO.
+ * The NRF52 supports up to three SPI channels, but we only use one.
+ * This channel is used for both the SD card and touch controller. 
  *
  * The SD card that we're targeting doesn't have pin connections for
  * insertion detection or write protect signals, so those are hard
  * wired (card detect always true, write protect always false).
- *
- * Chip select is currently set to port B, pin 0. This is wired to
- * the blue segment of the tri-color LED on the Freescale KW019032 board,
- * which means we can use it to indicate disk activity.
  */
 
 /*
