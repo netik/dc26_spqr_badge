@@ -171,11 +171,13 @@ void spi_lld_start(SPIDriver *spip) {
   if (spip->state == SPI_STOP) {
 #if NRF5_SPI_USE_SPI0
     if (&SPID1 == spip)
-      nvicEnableVector(SPI0_TWI0_IRQn, NRF5_SPI_SPI0_IRQ_PRIORITY);
+      nvicEnableVector(SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0_IRQn,
+        NRF5_SPI_SPI0_IRQ_PRIORITY);
 #endif
 #if NRF5_SPI_USE_SPI1
     if (&SPID2 == spip)
-      nvicEnableVector(SPI1_TWI1_IRQn, NRF5_SPI_SPI1_IRQ_PRIORITY);
+      nvicEnableVector(SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn,
+        NRF5_SPI_SPI1_IRQ_PRIORITY);
 #endif
   }
 
@@ -237,11 +239,11 @@ void spi_lld_stop(SPIDriver *spip) {
     spip->port->INTENCLR = (SPI_INTENCLR_READY_Clear << SPI_INTENCLR_READY_Pos);
 #if NRF5_SPI_USE_SPI0
     if (&SPID1 == spip)
-      nvicDisableVector(SPI0_TWI0_IRQn);
+      nvicDisableVector(SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0_IRQn);
 #endif
 #if NRF5_SPI_USE_SPI1
     if (&SPID2 == spip)
-      nvicDisableVector(SPI1_TWI1_IRQn);
+      nvicDisableVector(SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn);
 #endif
   }
 }
