@@ -1,6 +1,25 @@
 /*-----------------------------------------------------------------------*/
-/* MMCv3/SDv1/SDv2 Controls via AVR SPI module                           */
+/* MMCv3/SDv1/SDv2 Controls via NRF52832 SPI module                      */
 /*-----------------------------------------------------------------------*/
+
+/*
+ * This module implements a FatFs SDIO driver for ChibiOS using the
+ * Freescale/NXP Kinetis ARM processor SPI interface. It's based on the
+ * mmc_avr_sdio.c sample provided as a supplement to the FatFs source
+ * code.
+ *
+ * The KW01 chip has two SPI channels. Channel 0 is tied directly to
+ * the built-in radio chip, so we use channel 1 for SDIO.
+ *
+ * The SD card that we're targeting doesn't have pin connections for
+ * insertion detection or write protect signals, so those are hard
+ * wired (card detect always true, write protect always false).
+ *
+ * Chip select is currently set to port B, pin 0. This is wired to
+ * the blue segment of the tri-color LED on the Freescale KW019032 board,
+ * which means we can use it to indicate disk activity.
+ */
+
 /*
 /  Copyright (C) 2016, ChaN, all right reserved.
 /
@@ -11,16 +30,28 @@
 /
 /-------------------------------------------------------------------------*/
 
+#include "ch.h"
+#include "hal.h"
+#include "hal_spi.h"
 #include "diskio.h"
 #include "mmc.h"
 
+#include "chprintf.h"
+
+#define printf(fmt, ...)                                        \
+    chprintf((BaseSequentialStream*)&SD1, fmt, ##__VA_ARGS__)
+
+#define MMC_FORCE_MULTIBLOCK_READ
+
 /* Peripheral controls (Platform dependent) */
-#define CS_LOW()		/*To be filled*/	/* Set MMC_CS = low */
-#define	CS_HIGH()		/*To be filled*/	/* Set MMC_CS = high */
-#define MMC_CD			1			/* Test if card detected.   yes:true, no:false, default:true */
-#define MMC_WP			0			/* Test if write protected. yes:true, no:false, default:false */
-#define	FCLK_SLOW()		/*To be filled*/	/* Set SPI clock for initialization (100-400kHz) */
-#define	FCLK_FAST()		/*To be filled*/	/* Set SPI clock for read/write (20MHz max) */
+#define CS_LOW() 		/* Set MMC_CS = low */		\
+	spiSelect (&SPID1)
+#define	CS_HIGH()		/* Set MMC_CS = high */		\
+	spiUnselect (&SPID1)
+#define MMC_CD		1			/* Test if card detected.   yes:true, no:false, default:true */
+#define MMC_WP		0			/* Test if write protected. yes:true, no:false, default:false */
+#define	FCLK_SLOW()				/* Set SPI slow clock (100-400kHz) */
+#define	FCLK_FAST()				/* Set SPI fast clock (20MHz max) */
 
 
 /*--------------------------------------------------------------------------
@@ -30,11 +61,11 @@
 ---------------------------------------------------------------------------*/
 
 /* Definitions for MMC/SDC command */
-#define CMD0	(0)			/* GO_IDLE_STATE */
-#define CMD1	(1)			/* SEND_OP_COND (MMC) */
+#define CMD0	(0)		/* GO_IDLE_STATE */
+#define CMD1	(1)		/* SEND_OP_COND (MMC) */
 #define	ACMD41	(0x80+41)	/* SEND_OP_COND (SDC) */
-#define CMD8	(8)			/* SEND_IF_COND */
-#define CMD9	(9)			/* SEND_CSD */
+#define CMD8	(8)		/* SEND_IF_COND */
+#define CMD9	(9)		/* SEND_CSD */
 #define CMD10	(10)		/* SEND_CID */
 #define CMD12	(12)		/* STOP_TRANSMISSION */
 #define ACMD13	(0x80+13)	/* SD_STATUS (SDC) */
@@ -54,13 +85,13 @@
 #define CMD58	(58)		/* READ_OCR */
 
 
-static volatile
+static volatile __attribute__((section(".fsdata")))
 DSTATUS Stat = STA_NOINIT;	/* Disk status */
 
-static volatile
+static volatile __attribute__((section(".fsbss")))
 BYTE Timer1, Timer2;	/* 100Hz decrement timer */
 
-static
+static __attribute__((section(".fsbss")))
 BYTE CardType;			/* Card type flags (b0:MMC, b1:SDv1, b2:SDv2, b3:Block addressing) */
 
 
@@ -74,32 +105,14 @@ BYTE CardType;			/* Card type flags (b0:MMC, b1:SDv1, b2:SDv2, b3:Block addressi
 static
 void power_on (void)
 {
-	/* Trun socket power on and wait for 10ms+ (nothing to do if no power controls) */
-	/*To be filled*/
-
-
-	/* Configure MOSI/MISO/SCLK/CS pins */
-	/*To be filled*/
-
-
-	/* Enable SPI module in SPI mode 0 */
-	/*To be filled*/
+	/* Nothing to do for our board */
 }
 
 
 static
 void power_off (void)
 {
-	/* Disable SPI function */
-	/*To be filled*/
-
-
-	/* De-configure MOSI/MISO/SCLK/CS pins (set hi-z) */
-	/*To be filled*/
-
-
-	/* Trun socket power off (nothing to do if no power controls) */
-	/*To be filled*/
+	/* Nothing to do for our board */
 }
 
 
@@ -114,9 +127,9 @@ BYTE xchg_spi (		/* Returns received data */
 	BYTE dat		/* Data to be sent */
 )
 {
+	spiExchange (&SPID1, 1, &dat, &dat);
 	return (dat);
 }
-
 
 /* Receive a data block fast */
 static
@@ -125,6 +138,7 @@ void rcvr_spi_multi (
 	UINT cnt	/* Size of data block */
 )
 {
+	spiReceive (&SPID1, cnt, p);
 	return;
 }
 
@@ -136,6 +150,7 @@ void xmit_spi_multi (
 	UINT cnt		/* Size of data block */
 )
 {
+	spiSend (&SPID1, cnt, p);
 	return;
 }
 
@@ -156,9 +171,6 @@ int wait_ready (	/* 1:Ready, 0:Timeout */
 	Timer2 = wt / 10;
 	do
 		d = xchg_spi(0xFF);
-
-		/* This loop takes a time. Insert rot_rdq() here for multitask envilonment. */
-
 	while (d != 0xFF && Timer2);
 
 	return (d == 0xFF) ? 1 : 0;
@@ -188,11 +200,10 @@ int select (void)	/* 1:Successful, 0:Timeout */
 {
 	CS_LOW();		/* Set CS# low */
 	xchg_spi(0xFF);	/* Dummy clock (force DO enabled) */
+	if (wait_ready(500)) return 1;	/* Wait for card ready */
 
-	if (wait_ready(500)) return 1;	/* Leading busy check: Wait for card ready */
-
-	deselect();		/* Timeout */
-	return 0;
+	deselect();
+	return 0;	/* Timeout */
 }
 
 
@@ -239,19 +250,19 @@ int xmit_datablock (
 	BYTE resp;
 
 
-	if (!wait_ready(500)) return 0;		/* Leading busy check: Wait for card ready to accept data block */
+	if (!wait_ready(500)) return 0;
 
 	xchg_spi(token);					/* Xmit data token */
-	if (token == 0xFD) return 1;		/* Do not send data if token is StopTran */
+	if (token != 0xFD) {	/* Is data token */
+		xmit_spi_multi(buff, 512);		/* Xmit the data block to the MMC */
+		xchg_spi(0xFF);					/* CRC (Dummy) */
+		xchg_spi(0xFF);
+		resp = xchg_spi(0xFF);			/* Reveive data response */
+		if ((resp & 0x1F) != 0x05)		/* If not accepted, return with error */
+			return 0;
+	}
 
-	xmit_spi_multi(buff, 512);			/* Data */
-	xchg_spi(0xFF); xchg_spi(0xFF);		/* Dummy CRC */
-
-	resp = xchg_spi(0xFF);				/* Receive data resp */
-
-	return (resp & 0x1F) == 0x05 ? 1 : 0;	/* Data was accepted or not */
-
-	/* Busy check is done at next transmission */
+	return 1;
 }
 #endif
 
@@ -320,11 +331,14 @@ DSTATUS mmc_disk_initialize (void)
 {
 	BYTE n, cmd, ty, ocr[4];
 
-
 	power_off();						/* Turn off the socket power to reset the card */
+	gptStartContinuous (&GPTD3, 100);
 	for (Timer1 = 10; Timer1; ) ;		/* Wait for 100ms */
+	gptStopTimer (&GPTD3);
 	if (Stat & STA_NODISK) return Stat;	/* No card in the socket? */
 
+	spiAcquireBus (&SPID1);
+	gptStartContinuous (&GPTD3, 100);
 	power_on();							/* Turn on the socket power */
 	FCLK_SLOW();
 	for (n = 10; n; n--) xchg_spi(0xFF);	/* 80 dummy clocks */
@@ -362,6 +376,9 @@ DSTATUS mmc_disk_initialize (void)
 		power_off();
 	}
 
+	gptStopTimer (&GPTD3);
+	spiReleaseBus (&SPID1);
+
 	return Stat;
 }
 
@@ -396,15 +413,31 @@ DRESULT mmc_disk_read (
 
 	if (!(CardType & CT_BLOCK)) sector *= 512;	/* Convert to byte address if needed */
 
+#ifdef MMC_FORCE_MULTIBLOCK_READ
+	/*
+	 * Always use command 18 (multiple block read). There seem to
+	 * be some SD cards that don't perform quite as well when using
+	 * single the single block read command.
+	 */
+	cmd = CMD18;
+#else
 	cmd = count > 1 ? CMD18 : CMD17;			/*  READ_MULTIPLE_BLOCK : READ_SINGLE_BLOCK */
+#endif
+	spiAcquireBus (&SPID1);
+	gptStartContinuous (&GPTD3, 100);
 	if (send_cmd(cmd, sector) == 0) {
 		do {
 			if (!rcvr_datablock(buff, 512)) break;
 			buff += 512;
 		} while (--count);
-		if (cmd == CMD18) send_cmd(CMD12, 0);	/* STOP_TRANSMISSION */
+#ifndef MMC_FORCE_MULTIBLOCK_READ
+		if (cmd == CMD18)
+#endif
+			send_cmd(CMD12, 0);	/* STOP_TRANSMISSION */
 	}
 	deselect();
+	gptStopTimer (&GPTD3);
+	spiReleaseBus (&SPID1);
 
 	return count ? RES_ERROR : RES_OK;
 }
@@ -428,11 +461,12 @@ DRESULT mmc_disk_write (
 
 	if (!(CardType & CT_BLOCK)) sector *= 512;	/* Convert to byte address if needed */
 
+	spiAcquireBus (&SPID1);
+	gptStartContinuous (&GPTD3, 100);
 	if (count == 1) {	/* Single block write */
 		if ((send_cmd(CMD24, sector) == 0)	/* WRITE_BLOCK */
-			&& xmit_datablock(buff, 0xFE)) {
+			&& xmit_datablock(buff, 0xFE))
 			count = 0;
-		}
 	}
 	else {				/* Multiple block write */
 		if (CardType & CT_SDC) send_cmd(ACMD23, count);
@@ -441,10 +475,13 @@ DRESULT mmc_disk_write (
 				if (!xmit_datablock(buff, 0xFC)) break;
 				buff += 512;
 			} while (--count);
-			if (!xmit_datablock(0, 0xFD)) count = 1;	/* STOP_TRAN token */
+			if (!xmit_datablock(0, 0xFD))	/* STOP_TRAN token */
+				count = 1;
 		}
 	}
 	deselect();
+	gptStopTimer (&GPTD3);
+	spiReleaseBus (&SPID1);
 
 	return count ? RES_ERROR : RES_OK;
 }
@@ -472,6 +509,8 @@ DRESULT mmc_disk_ioctl (
 
 	if (Stat & STA_NOINIT) return RES_NOTRDY;
 
+	spiAcquireBus (&SPID1);
+	gptStartContinuous (&GPTD3, 100);
 	res = RES_ERROR;
 	switch (cmd) {
 	case CTRL_SYNC :		/* Make sure that no pending write process. Do not remove this or written sector might not left updated. */
@@ -525,9 +564,8 @@ DRESULT mmc_disk_ioctl (
 		if (!(CardType & CT_BLOCK)) {
 			st *= 512; ed *= 512;
 		}
-		if (send_cmd(CMD32, st) == 0 && send_cmd(CMD33, ed) == 0 && send_cmd(CMD38, 0) == 0 && wait_ready(30000)) {	/* Erase sector block */
+		if (send_cmd(CMD32, st) == 0 && send_cmd(CMD33, ed) == 0 && send_cmd(CMD38, 0) == 0 && wait_ready(30000))	/* Erase sector block */
 			res = RES_OK;	/* FatFs does not check result of this command */
-		}
 		break;
 
 	/* Following commands are never used by FatFs module */
@@ -538,16 +576,15 @@ DRESULT mmc_disk_ioctl (
 		break;
 
 	case MMC_GET_CSD :		/* Receive CSD as a data block (16 bytes) */
-		if (send_cmd(CMD9, 0) == 0 && rcvr_datablock(ptr, 16)) {	/* READ_CSD */
+		if (send_cmd(CMD9, 0) == 0 && rcvr_datablock(ptr, 16))		/* READ_CSD */
 			res = RES_OK;
-		}
 		deselect();
 		break;
 
 	case MMC_GET_CID :		/* Receive CID as a data block (16 bytes) */
-		if (send_cmd(CMD10, 0) == 0 && rcvr_datablock(ptr, 16)) {	/* READ_CID */
+		if (send_cmd(CMD10, 0) == 0 && rcvr_datablock(ptr, 16))		/* READ_CID */
+			
 			res = RES_OK;
-		}
 		deselect();
 		break;
 
@@ -612,6 +649,8 @@ DRESULT mmc_disk_ioctl (
 		res = RES_PARERR;
 	}
 
+	gptStopTimer (&GPTD3);
+	spiReleaseBus (&SPID1);
 	return res;
 }
 #endif
@@ -634,15 +673,20 @@ void mmc_disk_timerproc (void)
 
 	s = Stat;
 
-	if (MMC_WP) {			/* Write protected */
+	if (MMC_WP)				/* Write protected */
 		s |= STA_PROTECT;
-	} else {				/* Write enabled */
+	else					/* Write enabled */
 		s &= ~STA_PROTECT;
-	}
-	if (MMC_CD) {			/* Card inserted */
+
+	if (MMC_CD)				/* Card inserted */
 		s &= ~STA_NODISK;
-	} else {				/* Socket empty */
+	else					/* Socket empty */
 		s |= (STA_NODISK | STA_NOINIT);
-	}
+
 	Stat = s;				/* Update MMC status */
+}
+
+DWORD get_fattime(void)
+{
+	return (0);
 }

@@ -87,10 +87,12 @@
 #define IOPORT1_RESET          21U
 
 /* Our definitions */
-#define IOPORT1_SPI_SCK        25U
-#define IOPORT1_SPI_MOSI       24U
+#define IOPORT1_SPI_SCK        04U
+#define IOPORT1_SPI_MOSI       22U
 #define IOPORT1_SPI_MISO       23U
-#define IOPORT1_SPI_SS         22U
+
+#define IOPORT1_SDCARD_CS      03U
+#define IOPORT1_TOUCH_CS       02U
 
 /* Analog inpupt */
 #define IOPORT1_AIN0            2U

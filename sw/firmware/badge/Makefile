@@ -142,6 +142,7 @@ CSRC += main.c \
 	ble_lld.c \
 	mmc_spi_lld.c \
 	joypad_lld.c \
+	xpt2046_lld.c \
 	badge_vectors.c \
         $(GFXSRC) \
 	$(FATFSSRC)

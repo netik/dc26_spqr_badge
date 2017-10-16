@@ -28,9 +28,9 @@ const PALConfig pal_default_config =
   .pads = {
         PAL_MODE_UNCONNECTED,         /* P0.0 : XTAL (32MHz)   */
         PAL_MODE_UNCONNECTED,         /* P0.1 : XTAL (32MHz)   */
-        PAL_MODE_UNCONNECTED,         /* P0.2                  */
-        PAL_MODE_UNCONNECTED,         /* P0.3                  */
-        PAL_MODE_UNCONNECTED,         /* P0.4                  */
+        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.2 : SD card CS     */
+        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.3 : Touch CS       */
+        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.4 : SPI_SCK        */
         PAL_MODE_OUTPUT_PUSHPULL,     /* P0.5 : UART_RTS       */
         PAL_MODE_OUTPUT_PUSHPULL,     /* P0.6 : UART_TX        */
         PAL_MODE_INPUT_PULLUP,        /* P0.7 : UART_CTS       */
@@ -47,8 +47,8 @@ const PALConfig pal_default_config =
         PAL_MODE_OUTPUT_PUSHPULL,     /* P0.18: LED2           */
         PAL_MODE_OUTPUT_PUSHPULL,     /* P0.19: LED3           */
         PAL_MODE_OUTPUT_PUSHPULL,     /* P0.20: LED4           */
-        PAL_MODE_UNCONNECTED,         /* P0.21                 */
-        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.22: SPI_SS         */
+        PAL_MODE_UNCONNECTED,         /* P0.21: RESET          */
+        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.22: SPI_MOSI       */
         PAL_MODE_INPUT_PULLUP,        /* P0.23: SPI_MISO       */
         PAL_MODE_OUTPUT_PUSHPULL,     /* P0.24: screen D0      */
         PAL_MODE_OUTPUT_PUSHPULL,     /* P0.25: screen D1      */

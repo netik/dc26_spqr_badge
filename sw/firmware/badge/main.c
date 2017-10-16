@@ -4,6 +4,7 @@
 
 #include "ch.h"
 #include "hal.h"
+#include "hal_spi.h"
 #include "chprintf.h"
 #include "shell.h"
 
@@ -11,6 +12,10 @@
 
 #include "ble_lld.h"
 #include "joypad_lld.h"
+
+#include "ff.h"
+#include "ffconf.h"
+#include "diskio.h"
 
 #define LED_EXT 14
 
@@ -31,8 +36,27 @@ WDGConfig WDG_config = {
     .callback       = watchdog_callback,
 };
 
-void gpt_callback(GPTDriver *gptp) {
-  palTogglePad(IOPORT1, LED2);
+SPIConfig spi1_config = {
+	NULL,			/* enc_cp */
+	NRF5_SPI_FREQ_8MBPS,	/* freq */
+	IOPORT1_SPI_SCK,	/* sckpad */
+	IOPORT1_SPI_MOSI,	/* mosipad */
+	IOPORT1_SPI_MISO,	/* misopad */
+	IOPORT1_SDCARD_CS,	/* sspad */
+	FALSE,			/* lsbfirst */
+	1			/* mode */
+};
+
+void gpt_callback(GPTDriver *gptp)
+{
+	(void)gptp;
+	palTogglePad(IOPORT1, LED2);
+}
+
+void mmc_callback(GPTDriver *gptp)
+{
+	(void)gptp;
+	disk_timerproc ();
 }
 
 /*
@@ -40,12 +64,18 @@ void gpt_callback(GPTDriver *gptp) {
  * Frequency: 31250Hz (32us period)
  * Resolution: 16 bits
  */
-static const GPTConfig gpt_config = {
-    .frequency  = 31250,
+
+static const GPTConfig gpt1_config = {
+    .frequency  = NRF5_GPT_FREQ_62500HZ,
     .callback   = gpt_callback,
     .resolution = 16,
 };
 
+static const GPTConfig gpt2_config = {
+    .frequency  = NRF5_GPT_FREQ_62500HZ,
+    .callback   = mmc_callback,
+    .resolution = 16,
+};
 
 /*
  * Command Random
@@ -189,7 +219,9 @@ int main(void)
     palClearPad (IOPORT1, LED3);
     palClearPad (IOPORT1, LED4);
 
-    gptStart (&GPTD2, &gpt_config);
+    gptStart (&GPTD2, &gpt1_config);
+    gptStart (&GPTD3, &gpt2_config);
+
     gptStartContinuous (&GPTD2, NRF5_GPT_FREQ_31250HZ);
 
     /* Launch test blinker thread. */
@@ -207,7 +239,22 @@ int main(void)
 
     joyStart ();
 
+    palSetPad (IOPORT1, IOPORT1_SPI_MOSI);
+    palSetPad (IOPORT1, IOPORT1_SPI_MISO);
+    palSetPad (IOPORT1, IOPORT1_SPI_SCK);
+    palSetPad (IOPORT1, IOPORT1_SDCARD_CS);
+    palSetPad (IOPORT1, IOPORT1_TOUCH_CS);
+
+    spiStart (&SPID1, &spi1_config);
+
+    disk_initialize (DRV_MMC);
+
     gfxInit ();
+
+    if (gfileMount ('F', "0:") == FALSE)
+        printf ("No SD card found.\r\n");
+    else
+        printf ("SD card detected.\r\n");
 
     gdispClear (Blue);
 
@@ -228,7 +275,7 @@ int main(void)
     gdispCloseFont (font);
 
     bleStart ();
-    
+
     NRF_P0->DETECTMODE = 0;
 
     /* Launch shell thread */
