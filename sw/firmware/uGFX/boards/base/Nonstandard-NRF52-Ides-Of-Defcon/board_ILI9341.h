@@ -97,6 +97,7 @@ static void write_index(GDisplay *g, uint16_t index) {
 
 	*pClr = ILI9341_CD|ILI9341_DATA;
 	*pSet = ILI9341_PIXEL_LO(index);
+	__asm__("nop");
 
 	*pClr = ILI9341_WR;
 	__asm__("nop");
