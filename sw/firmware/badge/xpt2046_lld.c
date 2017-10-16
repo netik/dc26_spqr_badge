@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2016
+ * Copyright (c) 2016-2017
  *      Bill Paul <wpaul@windriver.com>.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -112,6 +112,7 @@ uint16_t xptGet (uint8_t cmd)
 	return (val);
 }
 
+#ifdef notdef
 #include "chprintf.h"
 
 #define printf(fmt, ...)                                        \
@@ -138,3 +139,4 @@ void xptTest(void)
 
 	return;
 }
+#endif
