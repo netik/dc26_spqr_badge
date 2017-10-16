@@ -163,12 +163,14 @@ static void write_data16(GDisplay *g, uint16_t data) {
 	__asm__("nop");
 	__asm__("nop");
 	*pSet = ILI9341_WR;
+	__enable_irq();
 
 	__asm__("nop");
 	__asm__("nop");
 	__asm__("nop");
 	__asm__("nop");
 
+	__disable_irq();
 	*pClr = ILI9341_DATA;
 	*pSet = ILI9341_PIXEL_LO(data);
 
