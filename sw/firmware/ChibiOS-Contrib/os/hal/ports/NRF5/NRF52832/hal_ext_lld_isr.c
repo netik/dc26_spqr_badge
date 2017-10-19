@@ -83,17 +83,17 @@ OSAL_IRQ_HANDLER(Vector58) {
     NRF_GPIOTE->EVENTS_IN[4] = 0;
     EXTD1.config->channels[4].cb(&EXTD1, 4);
   }
-  if (NRF_GPIOTE->EVENTS_IN[3])
+  if (NRF_GPIOTE->EVENTS_IN[5])
   {
     NRF_GPIOTE->EVENTS_IN[5] = 0;
     EXTD1.config->channels[5].cb(&EXTD1, 5);
   }
-  if (NRF_GPIOTE->EVENTS_IN[3])
+  if (NRF_GPIOTE->EVENTS_IN[6])
   {
     NRF_GPIOTE->EVENTS_IN[6] = 0;
     EXTD1.config->channels[6].cb(&EXTD1, 6);
   }
-  if (NRF_GPIOTE->EVENTS_IN[3])
+  if (NRF_GPIOTE->EVENTS_IN[7])
   {
     NRF_GPIOTE->EVENTS_IN[7] = 0;
     EXTD1.config->channels[7].cb(&EXTD1, 7);
