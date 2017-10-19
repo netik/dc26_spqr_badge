@@ -44,7 +44,8 @@ SPIConfig spi1_config = {
 	IOPORT1_SPI_MISO,	/* misopad */
 	IOPORT1_SDCARD_CS,	/* sspad */
 	FALSE,			/* lsbfirst */
-	1			/* mode */
+	1,			/* mode */
+	0xFF			/* dummy data for spiIgnore() */
 };
 
 void gpt_callback(GPTDriver *gptp)
@@ -246,8 +247,6 @@ int main(void)
     palSetPad (IOPORT1, IOPORT1_TOUCH_CS);
 
     spiStart (&SPID1, &spi1_config);
-
-    disk_initialize (DRV_MMC);
 
     gfxInit ();
 
