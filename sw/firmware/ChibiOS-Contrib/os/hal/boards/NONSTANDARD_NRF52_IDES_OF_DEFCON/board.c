@@ -38,7 +38,7 @@ const PALConfig pal_default_config =
         PAL_MODE_OUTPUT_PULLUP,       /* P0.9 : screen RD      */
         PAL_MODE_OUTPUT_PULLUP,       /* P0.10: screen WR      */
         PAL_MODE_OUTPUT_PULLUP,       /* P0.11: screen C/D     */
-        PAL_MODE_OUTPUT_PULLUP,       /* P0.12: screen CS      */
+        PAL_MODE_UNCONNECTED,         /* P0.12:                */
         PAL_MODE_INPUT_PULLUP,        /* P0.13: BTN1           */
         PAL_MODE_INPUT_PULLUP,        /* P0.14: BTN2           */
         PAL_MODE_INPUT_PULLUP,        /* P0.15: BTN3           */

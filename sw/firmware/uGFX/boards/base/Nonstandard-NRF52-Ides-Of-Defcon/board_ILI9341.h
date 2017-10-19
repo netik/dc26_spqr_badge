@@ -12,7 +12,7 @@
 #define printf(fmt, ...)                                        \
     chprintf((BaseSequentialStream*)&SD1, fmt, ##__VA_ARGS__)
 
-#define ILI9341_CS		0x00001000	/* Chip select */
+#define ILI9341_CS		0x00001000	/* Chip select -- always on */
 #define ILI9341_CD		0x00000800	/* Command/data select */
 #define ILI9341_WR		0x00000400	/* Write signal */
 #define ILI9341_RD		0x00000200	/* Read signal */
@@ -33,7 +33,7 @@ static void init_board(GDisplay *g) {
 	palSetPad (IOPORT1, 0x09);
 	palSetPad (IOPORT1, 0x0A);
 	palSetPad (IOPORT1, 0x0B);
-	palSetPad (IOPORT1, 0x0C);
+	palClearPad (IOPORT1, 0x0C);
 
 	palSetPad (IOPORT1, 0x18);
 	palSetPad (IOPORT1, 0x19);
@@ -61,25 +61,14 @@ static GFXINLINE void set_backlight(GDisplay *g, uint8_t percent) {
 	(void) percent;
 }
 
-__attribute__ ((noinline))
 static void acquire_bus(GDisplay *g) {
-	volatile uint32_t * pClr = (uint32_t *)NRF52_CLR;
-
 	(void) g;
-
-	*pClr = ILI9341_CS;
-
 	return;
 }
 
 __attribute__ ((noinline))
 static void release_bus(GDisplay *g) {
-	volatile uint32_t * pSet = (uint32_t *)NRF52_SET;
-
 	(void) g;
-
-	*pSet = ILI9341_CS;
-
 	return;
 }
 
@@ -164,11 +153,6 @@ static void write_data16(GDisplay *g, uint16_t data) {
 	__asm__("nop");
 	*pSet = ILI9341_WR;
 	__enable_irq();
-
-	__asm__("nop");
-	__asm__("nop");
-	__asm__("nop");
-	__asm__("nop");
 
 	__disable_irq();
 	*pClr = ILI9341_DATA;
