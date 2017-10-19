@@ -36,6 +36,34 @@
 /*===========================================================================*/
 
 /**
+ * @brief   Select SPIM with EasyDMA vs. legacy SPI
+ */
+#if !defined(NRF5_SPI_USE_DMA) || defined(__DOXYGEN__)
+#define NRF5_SPI_USE_DMA                  FALSE
+#endif
+
+/**
+ * @brief   Enable NRF52832 rev 1 anomaly 58 workaround
+ */
+#if !defined(NRF5_SPIM_USE_ANOM58_WAR) || defined(__DOXYGEN__)
+#define NRF5_SPIM_USE_ANOM58_WAR          FALSE
+#endif
+
+/**
+ * @brief   Set NRF52832 rev 1 anomaly 58 workaround PPI channel
+ */
+#if !defined(NRF5_ANOM58_PPI) || defined(__DOXYGEN__)
+#define NRF5_ANOM58_PPI                  10
+#endif
+
+/**
+ * @brief   Set NRF52832 rev 1 anomaly 58 workaround GPIOTE channel
+ */
+#if !defined(NRF5_ANOM58_GPIOTE) || defined(__DOXYGEN__)
+#define NRF5_ANOM58_GPIOTE               7
+#endif
+
+/**
  * @brief   SPI0 interrupt priority level setting.
  */
 #if !defined(NRF5_SPI_SPI0_IRQ_PRIORITY) || defined(__DOXYGEN__)
@@ -142,6 +170,10 @@ typedef struct {
    * @brief SPI mode
    */
   uint8_t               mode;
+  /**
+   * @brief dummy data for SPI ignore
+   */
+  uint8_t               dummy;
 } SPIConfig;
 
 /**
@@ -179,7 +211,11 @@ struct SPIDriver {
   /**
    * @brief Pointer to the SPI port.
    */
+#if NRF5_SPI_USE_DMA == TRUE
+  NRF_SPIM_Type          *port;
+#else
   NRF_SPI_Type          *port;
+#endif
   /**
    * @brief Number of bytes yet to be received.
    */

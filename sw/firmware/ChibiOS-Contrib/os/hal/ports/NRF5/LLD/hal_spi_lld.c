@@ -26,6 +26,7 @@
 
 #if HAL_USE_SPI || defined(__DOXYGEN__)
 
+#if NRF5_SPI_USE_DMA == FALSE || defined(__DOXYGEN__)
 /*===========================================================================*/
 /* Driver exported variables.                                                */
 /*===========================================================================*/
@@ -385,6 +386,8 @@ uint16_t spi_lld_polled_exchange(SPIDriver *spip, uint16_t frame) {
 #endif
   return spip->port->RXD;
 }
+
+#endif /* NRF5_USE_SPI_DMA */
 
 #endif /* HAL_USE_SPI */
 
