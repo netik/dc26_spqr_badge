@@ -58,42 +58,42 @@ OSAL_IRQ_HANDLER(Vector58) {
 
   OSAL_IRQ_PROLOGUE();
 
-  if (NRF_GPIOTE->EVENTS_IN[0])
+  if (NRF_GPIOTE->INTENSET & 0x01 && NRF_GPIOTE->EVENTS_IN[0])
   {
     NRF_GPIOTE->EVENTS_IN[0] = 0;
     EXTD1.config->channels[0].cb(&EXTD1, 0);
   }
-  if (NRF_GPIOTE->EVENTS_IN[1])
+  if (NRF_GPIOTE->INTENSET & 0x02 && NRF_GPIOTE->EVENTS_IN[1])
   {
     NRF_GPIOTE->EVENTS_IN[1] = 0;
     EXTD1.config->channels[1].cb(&EXTD1, 1);
   }
-  if (NRF_GPIOTE->EVENTS_IN[2])
+  if (NRF_GPIOTE->INTENSET & 0x04 && NRF_GPIOTE->EVENTS_IN[2])
   {
     NRF_GPIOTE->EVENTS_IN[2] = 0;
     EXTD1.config->channels[2].cb(&EXTD1, 2);
   }
-  if (NRF_GPIOTE->EVENTS_IN[3])
+  if (NRF_GPIOTE->INTENSET & 0x08 && NRF_GPIOTE->EVENTS_IN[3])
   {
     NRF_GPIOTE->EVENTS_IN[3] = 0;
     EXTD1.config->channels[3].cb(&EXTD1, 3);
   }
-  if (NRF_GPIOTE->EVENTS_IN[3])
+  if (NRF_GPIOTE->INTENSET & 0x10 && NRF_GPIOTE->EVENTS_IN[3])
   {
     NRF_GPIOTE->EVENTS_IN[4] = 0;
     EXTD1.config->channels[4].cb(&EXTD1, 4);
   }
-  if (NRF_GPIOTE->EVENTS_IN[5])
+  if (NRF_GPIOTE->INTENSET & 0x20 && NRF_GPIOTE->EVENTS_IN[5])
   {
     NRF_GPIOTE->EVENTS_IN[5] = 0;
     EXTD1.config->channels[5].cb(&EXTD1, 5);
   }
-  if (NRF_GPIOTE->EVENTS_IN[6])
+  if (NRF_GPIOTE->INTENSET & 0x40 && NRF_GPIOTE->EVENTS_IN[6])
   {
     NRF_GPIOTE->EVENTS_IN[6] = 0;
     EXTD1.config->channels[6].cb(&EXTD1, 6);
   }
-  if (NRF_GPIOTE->EVENTS_IN[7])
+  if (NRF_GPIOTE->INTENSET & 0x80 && NRF_GPIOTE->EVENTS_IN[7])
   {
     NRF_GPIOTE->EVENTS_IN[7] = 0;
     EXTD1.config->channels[7].cb(&EXTD1, 7);
