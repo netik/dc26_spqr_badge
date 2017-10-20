@@ -81,7 +81,7 @@ static const GPTConfig gpt2_config = {
 /*
  * Command Random
  */
-#define RANDOM_BUFFER_SIZE 1024
+#define RANDOM_BUFFER_SIZE 16
 static uint8_t random_buffer[RANDOM_BUFFER_SIZE];
 
 static void cmd_random(BaseSequentialStream *chp, int argc, char *argv[]) {

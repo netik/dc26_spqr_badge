@@ -275,7 +275,7 @@ BYTE send_cmd (		/* Returns R1 resp (bit7==1:Send failed) */
 )
 {
 	BYTE n, res;
-
+	BYTE cmdbuf[6];
 
 	if (cmd & 0x80) {	/* ACMD<n> is the command sequense of CMD55-CMD<n> */
 		cmd &= 0x7F;
@@ -289,16 +289,17 @@ BYTE send_cmd (		/* Returns R1 resp (bit7==1:Send failed) */
 		if (!select()) return 0xFF;
 	}
 
-	/* Send command packet */
-	xchg_spi(0x40 | cmd);				/* Start + Command index */
-	xchg_spi((BYTE)(arg >> 24));		/* Argument[31..24] */
-	xchg_spi((BYTE)(arg >> 16));		/* Argument[23..16] */
-	xchg_spi((BYTE)(arg >> 8));			/* Argument[15..8] */
-	xchg_spi((BYTE)arg);				/* Argument[7..0] */
-	n = 0x01;							/* Dummy CRC + Stop */
-	if (cmd == CMD0) n = 0x95;			/* Valid CRC for CMD0(0) + Stop */
-	if (cmd == CMD8) n = 0x87;			/* Valid CRC for CMD8(0x1AA) Stop */
-	xchg_spi(n);
+	cmdbuf[0] = (0x40 | cmd);		/* Start + Command index */
+	cmdbuf[1] = (BYTE)(arg >> 24);		/* Argument[31..24] */
+	cmdbuf[2] = (BYTE)(arg >> 16);		/* Argument[23..16] */
+	cmdbuf[3] = (BYTE)(arg >> 8);		/* Argument[15..8] */
+	cmdbuf[4] = (BYTE)arg;			/* Argument[7..0] */
+	n = 0x01;				/* Dummy CRC + Stop */
+	if (cmd == CMD0) n = 0x95;		/* Valid CRC for CMD0(0) + Stop */
+	if (cmd == CMD8) n = 0x87;		/* Valid CRC for CMD8(0x1AA) Stop */
+	cmdbuf[5] = n;
+
+	spiSend (&SPID1, 6, cmdbuf);
 
 	/* Receive command response */
 	if (cmd == CMD12) xchg_spi(0xFF);		/* Skip a stuff byte when stop reading */

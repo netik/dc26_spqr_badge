@@ -43,10 +43,10 @@ const PALConfig pal_default_config =
         PAL_MODE_INPUT_PULLUP,        /* P0.14: BTN2           */
         PAL_MODE_INPUT_PULLUP,        /* P0.15: BTN3           */
         PAL_MODE_INPUT_PULLUP,        /* P0.16: BTN4           */
-        PAL_MODE_UNCONNECTED,         /* P0.17:                */
-        PAL_MODE_UNCONNECTED,         /* P0.18:                */
-        PAL_MODE_UNCONNECTED,         /* P0.19:                */
-        PAL_MODE_UNCONNECTED,         /* P0.20:                */
+        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.17: LED1           */
+        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.18: LED2           */
+        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.18: LED3           */
+        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.20: LED4           */
         PAL_MODE_UNCONNECTED,         /* P0.21: RESET          */
         PAL_MODE_UNCONNECTED,         /* P0.22: SPI_MOSI       */
         PAL_MODE_UNCONNECTED,         /* P0.23: SPI_MISO       */
