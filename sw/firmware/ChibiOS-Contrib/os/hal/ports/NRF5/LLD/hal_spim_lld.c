@@ -471,6 +471,9 @@ uint16_t spi_lld_polled_exchange(SPIDriver *spip, uint16_t frame)
 		;
 	spip->port->EVENTS_END = 0;
 	(void)spip->port->EVENTS_END;
+#ifdef NRF5_SPIM_USE_ANOM58_WAR
+	NRF_PPI->CHENCLR =  1 << NRF5_ANOM58_PPI;
+#endif
 	spip->port->INTENSET = SPIM_INTENSET_END_Msk;
 	(void)spip->port->INTENSET;
 	return (frame);
