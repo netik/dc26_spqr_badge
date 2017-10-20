@@ -84,25 +84,19 @@ static void write_index(GDisplay *g, uint16_t index) {
          * and assert the write command pin.
          */
 
-	__disable_irq();
 	*pClr = ILI9341_CD|ILI9341_DATA;
 	*pSet = ILI9341_PIXEL_LO(index);
 
+	__disable_irq();
 	*pClr = ILI9341_WR;
 	__asm__("nop");
 	__asm__("nop");
-	__asm__("nop");
-	__asm__("nop");
-	__asm__("nop");
-	__asm__("nop");
-	__asm__("nop");
 	*pSet = ILI9341_WR;
-	__asm__("nop");
+	__enable_irq();
 
 	/* Deassert command/data and write pins. */
 
 	*pSet = ILI9341_CD;
-	__enable_irq();
 
 	return;
 }
@@ -114,16 +108,11 @@ static void write_data(GDisplay *g, uint16_t data) {
 
 	(void) g;
 
-	__disable_irq();
 	*pClr = ILI9341_DATA;
 	*pSet = ILI9341_PIXEL_LO(data);
 
+	__disable_irq();
 	*pClr = ILI9341_WR;
-	__asm__("nop");
-	__asm__("nop");
-	__asm__("nop");
-	__asm__("nop");
-	__asm__("nop");
 	__asm__("nop");
 	__asm__("nop");
 	*pSet = ILI9341_WR;
@@ -139,31 +128,21 @@ static void write_data16(GDisplay *g, uint16_t data) {
 
 	(void) g;
 
-	__disable_irq();
 	*pClr = ILI9341_DATA;
 	*pSet = ILI9341_PIXEL_HI(data);
 
+	__disable_irq();
 	*pClr = ILI9341_WR;
-	__asm__("nop");
-	__asm__("nop");
-	__asm__("nop");
-	__asm__("nop");
-	__asm__("nop");
 	__asm__("nop");
 	__asm__("nop");
 	*pSet = ILI9341_WR;
 	__enable_irq();
 
-	__disable_irq();
 	*pClr = ILI9341_DATA;
 	*pSet = ILI9341_PIXEL_LO(data);
 
+	__disable_irq();
 	*pClr = ILI9341_WR;
-	__asm__("nop");
-	__asm__("nop");
-	__asm__("nop");
-	__asm__("nop");
-	__asm__("nop");
 	__asm__("nop");
 	__asm__("nop");
 	*pSet = ILI9341_WR;

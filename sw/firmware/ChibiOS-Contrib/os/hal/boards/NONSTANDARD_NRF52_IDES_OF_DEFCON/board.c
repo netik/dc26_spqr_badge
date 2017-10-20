@@ -28,13 +28,13 @@ const PALConfig pal_default_config =
   .pads = {
         PAL_MODE_UNCONNECTED,         /* P0.0 : XTAL (32MHz)   */
         PAL_MODE_UNCONNECTED,         /* P0.1 : XTAL (32MHz)   */
-        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.2 : SD card CS     */
-        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.3 : Touch CS       */
-        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.4 : SPI_SCK        */
+        PAL_MODE_OUTPUT_PULLUP,       /* P0.2 : SD card CS     */
+        PAL_MODE_OUTPUT_PULLUP,       /* P0.3 : Touch CS       */
+        PAL_MODE_UNCONNECTED,         /* P0.4 : SPI_SCK        */
         PAL_MODE_OUTPUT_PUSHPULL,     /* P0.5 : UART_RTS       */
         PAL_MODE_OUTPUT_PUSHPULL,     /* P0.6 : UART_TX        */
-        PAL_MODE_INPUT_PULLUP,        /* P0.7 : UART_CTS       */
-        PAL_MODE_INPUT_PULLUP,        /* P0.8 : UART_RX        */
+        PAL_MODE_UNCONNECTED,         /* P0.7 :                */
+        PAL_MODE_UNCONNECTED,         /* P0.8 :                */
         PAL_MODE_OUTPUT_PULLUP,       /* P0.9 : screen RD      */
         PAL_MODE_OUTPUT_PULLUP,       /* P0.10: screen WR      */
         PAL_MODE_OUTPUT_PULLUP,       /* P0.11: screen C/D     */
@@ -43,21 +43,21 @@ const PALConfig pal_default_config =
         PAL_MODE_INPUT_PULLUP,        /* P0.14: BTN2           */
         PAL_MODE_INPUT_PULLUP,        /* P0.15: BTN3           */
         PAL_MODE_INPUT_PULLUP,        /* P0.16: BTN4           */
-        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.17: LED1           */
-        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.18: LED2           */
-        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.19: LED3           */
-        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.20: LED4           */
+        PAL_MODE_UNCONNECTED,         /* P0.17:                */
+        PAL_MODE_UNCONNECTED,         /* P0.18:                */
+        PAL_MODE_UNCONNECTED,         /* P0.19:                */
+        PAL_MODE_UNCONNECTED,         /* P0.20:                */
         PAL_MODE_UNCONNECTED,         /* P0.21: RESET          */
-        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.22: SPI_MOSI       */
-        PAL_MODE_INPUT_PULLUP,        /* P0.23: SPI_MISO       */
-        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.24: screen D0      */
-        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.25: screen D1      */
-        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.26: screen D2      */
-        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.27: screen D3      */
-        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.28: screen D4      */
-        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.29: screen D5      */
-        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.30: screen D6      */
-        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.31: screen D7      */
+        PAL_MODE_UNCONNECTED,         /* P0.22: SPI_MOSI       */
+        PAL_MODE_UNCONNECTED,         /* P0.23: SPI_MISO       */
+        PAL_MODE_OUTPUT_PULLUP,       /* P0.24: screen D0      */
+        PAL_MODE_OUTPUT_PULLUP,       /* P0.25: screen D1      */
+        PAL_MODE_OUTPUT_PULLUP,       /* P0.26: screen D2      */
+        PAL_MODE_OUTPUT_PULLUP,       /* P0.27: screen D3      */
+        PAL_MODE_OUTPUT_PULLUP,       /* P0.28: screen D4      */
+        PAL_MODE_OUTPUT_PULLUP,       /* P0.29: screen D5      */
+        PAL_MODE_OUTPUT_PULLUP,       /* P0.30: screen D6      */
+        PAL_MODE_OUTPUT_PULLUP,       /* P0.31: screen D7      */
   },
 };
 #endif
