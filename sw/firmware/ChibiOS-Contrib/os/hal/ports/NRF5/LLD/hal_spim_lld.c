@@ -46,15 +46,15 @@ static void port_fifo_preload(SPIDriver *spip)
 
 	port->TXD.PTR = (uint32_t)spip->txptr;
 
-	if (spip->txcnt > 0xFF)
-		port->TXD.MAXCNT = 0xFF;
+	if (spip->txcnt > NRF5_SPIM_DMA_CHUNK)
+		port->TXD.MAXCNT = NRF5_SPIM_DMA_CHUNK;
 	else
 		port->TXD.MAXCNT = spip->txcnt;
 
 	port->RXD.PTR = (uint32_t)spip->rxptr;
 
-	if (spip->rxcnt > 0xFF)
-		port->RXD.MAXCNT = 0xFF;
+	if (spip->rxcnt > NRF5_SPIM_DMA_CHUNK)
+		port->RXD.MAXCNT = NRF5_SPIM_DMA_CHUNK;
 	else
 		port->RXD.MAXCNT = spip->rxcnt;
 
@@ -98,9 +98,9 @@ static void serve_interrupt(SPIDriver *spip)
 		 */
 
 		if (spip->txcnt != 0 || spip->rxcnt != 0) {
-			if (spip->txcnt < 0xFF)
+			if (spip->txcnt < NRF5_SPIM_DMA_CHUNK)
 				port->TXD.MAXCNT = spip->txcnt;
-			if (spip->rxcnt < 0xFF)
+			if (spip->rxcnt < NRF5_SPIM_DMA_CHUNK)
 				port->RXD.MAXCNT = spip->rxcnt;
 			spip->port->TASKS_START = 1;
 		} else

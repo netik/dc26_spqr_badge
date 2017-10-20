@@ -64,6 +64,13 @@
 #endif
 
 /**
+ * @brief   Set NRF52832 DMA chunk size
+ */
+#if !defined(NRF5_SPIM_DMA_CHUNK) || defined(__DOXYGEN__)
+#define NRF5_SPIM_DMA_CHUNK              128
+#endif
+
+/**
  * @brief   SPI0 interrupt priority level setting.
  */
 #if !defined(NRF5_SPI_SPI0_IRQ_PRIORITY) || defined(__DOXYGEN__)
