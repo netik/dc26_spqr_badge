@@ -87,12 +87,25 @@
 #define IOPORT1_RESET          21U
 
 /* Our definitions */
-#define IOPORT1_SPI_SCK        04U
+#define IOPORT1_SPI_SCK         4U
 #define IOPORT1_SPI_MOSI       22U
 #define IOPORT1_SPI_MISO       23U
 
-#define IOPORT1_SDCARD_CS      03U
-#define IOPORT1_TOUCH_CS       02U
+#define IOPORT1_SDCARD_CS       3U
+#define IOPORT1_TOUCH_CS        2U
+
+#define IOPORT1_SCREEN_RD       9U
+#define IOPORT1_SCREEN_WR      10U
+#define IOPORT1_SCREEN_CD      11U
+
+#define IOPORT1_SCREEN_D0      24U
+#define IOPORT1_SCREEN_D1      26U
+#define IOPORT1_SCREEN_D2      26U
+#define IOPORT1_SCREEN_D3      27U
+#define IOPORT1_SCREEN_D4      28U
+#define IOPORT1_SCREEN_D5      29U
+#define IOPORT1_SCREEN_D6      30U
+#define IOPORT1_SCREEN_D7      31U
 
 /* Analog inpupt */
 #define IOPORT1_AIN0            2U
