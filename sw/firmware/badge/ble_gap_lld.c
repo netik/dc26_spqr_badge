@@ -160,15 +160,15 @@ bleGapDispatch (ble_evt_t * evt)
 			    &sec_keyset);
 			printf ("gap security param request...(%d)\r\n", r);
 			break;
-
 		case BLE_GAP_EVT_ADV_REPORT:
 			printf ("GAP scan report...\r\n");
 			addr =&evt->evt.gap_evt.params.adv_report.peer_addr;
-			printf ("peer: %x:%x:%x:%x:%x:%x\r\n",
+			printf ("peer: %x:%x:%x:%x:%x:%x rssi: %d\r\n",
 			    addr->addr[5], addr->addr[4], addr->addr[3],
-			    addr->addr[2], addr->addr[1], addr->addr[0]);
-			break;
+			    addr->addr[2], addr->addr[1], addr->addr[0],
+			    evt->evt.gap_evt.params.adv_report.rssi);
 
+			break;
 		case BLE_GAP_EVT_TIMEOUT:
 			timeout = &evt->evt.gap_evt.params.timeout;
 			printf ("GAP timeout event, src: %d\r\n", timeout->src);

@@ -53,7 +53,7 @@ bleEventDispatch (ble_evt_t * evt)
 	return;
 }
 
-static THD_WORKING_AREA(waSdThread, 256);
+static THD_WORKING_AREA(waSdThread, 512);
 static THD_FUNCTION(sdThread, arg)
 {
 	uint8_t * p_dest;
