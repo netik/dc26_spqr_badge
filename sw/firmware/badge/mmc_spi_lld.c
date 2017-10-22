@@ -329,18 +329,19 @@ DSTATUS mmc_disk_initialize (void)
 	BYTE n, cmd, ty, ocr[4];
 
 	power_off();						/* Turn off the socket power to reset the card */
-	gptStartContinuous (&GPTD3, 100);
+	gptStartContinuous (&GPTD3, NRF5_GPT_FREQ_62500HZ / 100);
 	for (Timer1 = 10; Timer1; ) ;		/* Wait for 100ms */
 	gptStopTimer (&GPTD3);
 	if (Stat & STA_NODISK) return Stat;	/* No card in the socket? */
 
 	spiAcquireBus (&SPID1);
-	gptStartContinuous (&GPTD3, 100);
+	gptStartContinuous (&GPTD3, NRF5_GPT_FREQ_62500HZ / 100);
 	power_on();							/* Turn on the socket power */
 	FCLK_SLOW();
 	for (n = 10; n; n--) xchg_spi(0xFF);	/* 80 dummy clocks */
 
 	ty = 0;
+	send_cmd(CMD0, 0);
 	if (send_cmd(CMD0, 0) == 1) {			/* Put the card SPI mode */
 		Timer1 = 100;						/* Initialization timeout of 1000 msec */
 		if (send_cmd(CMD8, 0x1AA) == 1) {	/* Is the card SDv2? */
@@ -421,7 +422,7 @@ DRESULT mmc_disk_read (
 	cmd = count > 1 ? CMD18 : CMD17;			/*  READ_MULTIPLE_BLOCK : READ_SINGLE_BLOCK */
 #endif
 	spiAcquireBus (&SPID1);
-	gptStartContinuous (&GPTD3, 100);
+	gptStartContinuous (&GPTD3, NRF5_GPT_FREQ_62500HZ / 100);
 	if (send_cmd(cmd, sector) == 0) {
 		do {
 			if (!rcvr_datablock(buff, 512)) break;
@@ -459,7 +460,7 @@ DRESULT mmc_disk_write (
 	if (!(CardType & CT_BLOCK)) sector *= 512;	/* Convert to byte address if needed */
 
 	spiAcquireBus (&SPID1);
-	gptStartContinuous (&GPTD3, 100);
+	gptStartContinuous (&GPTD3, NRF5_GPT_FREQ_62500HZ / 100);
 	if (count == 1) {	/* Single block write */
 		if ((send_cmd(CMD24, sector) == 0)	/* WRITE_BLOCK */
 			&& xmit_datablock(buff, 0xFE))
@@ -507,7 +508,7 @@ DRESULT mmc_disk_ioctl (
 	if (Stat & STA_NOINIT) return RES_NOTRDY;
 
 	spiAcquireBus (&SPID1);
-	gptStartContinuous (&GPTD3, 100);
+	gptStartContinuous (&GPTD3, NRF5_GPT_FREQ_62500HZ / 100);
 	res = RES_ERROR;
 	switch (cmd) {
 	case CTRL_SYNC :		/* Make sure that no pending write process. Do not remove this or written sector might not left updated. */
