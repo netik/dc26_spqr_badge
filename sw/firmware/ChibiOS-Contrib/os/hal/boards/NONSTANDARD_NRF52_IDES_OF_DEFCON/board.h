@@ -94,9 +94,8 @@
 #define IOPORT1_SDCARD_CS       3U
 #define IOPORT1_TOUCH_CS        2U
 
-#define IOPORT1_SCREEN_RD       9U
-#define IOPORT1_SCREEN_WR      10U
-#define IOPORT1_SCREEN_CD      11U
+#define IOPORT1_SCREEN_WR      11U
+#define IOPORT1_SCREEN_CD      12U
 
 #define IOPORT1_SCREEN_D0      24U
 #define IOPORT1_SCREEN_D1      26U

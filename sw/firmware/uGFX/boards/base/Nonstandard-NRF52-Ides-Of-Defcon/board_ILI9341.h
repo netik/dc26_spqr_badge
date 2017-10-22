@@ -8,9 +8,8 @@
 #ifndef _GDISP_LLD_BOARD_H
 #define _GDISP_LLD_BOARD_H
 
-#define ILI9341_CD		0x00000800	/* Command/data select */
-#define ILI9341_WR		0x00000400	/* Write signal */
-#define ILI9341_RD		0x00000200	/* Read signal */
+#define ILI9341_WR		0x00000800	/* Write signal */
+#define ILI9341_CD		0x00001000	/* Command/data select */
 
 #define ILI9341_DATA		0xFF000000
 #define ILI9341_PIXEL_LO(x)	(((x) << 24) & ILI9341_DATA)
@@ -20,7 +19,6 @@ __attribute__ ((noinline))
 static void init_board(GDisplay *g) {
 	(void) g;
 
-	palSetPad (IOPORT1, IOPORT1_SCREEN_RD);
 	palSetPad (IOPORT1, IOPORT1_SCREEN_WR);
 	palSetPad (IOPORT1, IOPORT1_SCREEN_CD);
 
@@ -72,12 +70,8 @@ static void write_index(GDisplay *g, uint16_t index) {
 	IOPORT1->OUTCLR = ILI9341_CD|ILI9341_DATA;
 	IOPORT1->OUTSET = ILI9341_PIXEL_LO(index);
 
-	__disable_irq();
 	IOPORT1->OUTCLR = ILI9341_WR;
-	__asm__("nop");
-	__asm__("nop");
 	IOPORT1->OUTSET = ILI9341_WR;
-	__enable_irq();
 
 	/* Deassert command/data and write pins. */
 
@@ -93,12 +87,8 @@ static void write_data(GDisplay *g, uint16_t data) {
 	IOPORT1->OUTCLR = ILI9341_DATA;
 	IOPORT1->OUTSET = ILI9341_PIXEL_LO(data);
 
-	__disable_irq();
 	IOPORT1->OUTCLR = ILI9341_WR;
-	__asm__("nop");
-	__asm__("nop");
 	IOPORT1->OUTSET = ILI9341_WR;
-	__enable_irq();
 
 	return;
 }
@@ -110,22 +100,14 @@ static void write_data16(GDisplay *g, uint16_t data) {
 	IOPORT1->OUTCLR = ILI9341_DATA;
 	IOPORT1->OUTSET = ILI9341_PIXEL_HI(data);
 
-	__disable_irq();
 	IOPORT1->OUTCLR = ILI9341_WR;
-	__asm__("nop");
-	__asm__("nop");
 	IOPORT1->OUTSET = ILI9341_WR;
-	__enable_irq();
 
 	IOPORT1->OUTCLR = ILI9341_DATA;
 	IOPORT1->OUTSET = ILI9341_PIXEL_LO(data);
 
-	__disable_irq();
 	IOPORT1->OUTCLR = ILI9341_WR;
-	__asm__("nop");
-	__asm__("nop");
 	IOPORT1->OUTSET = ILI9341_WR;
-	__enable_irq();
 
 	return;
 }
