@@ -9,14 +9,7 @@
 #include "ffconf.h"
 #include "diskio.h"
 
-#define VID_THD_NEXT_BUF	0xFFFFFFFF
-#define VID_THD_EXIT		0xFFFFFFFE
-
-#define VID_PIXELS_PER_LINE	160
-#define VID_LINES_PER_FRAME	120
-
-#define VID_CHUNK_LINES 24
-#define VID_CHUNK (VID_PIXELS_PER_LINE * VID_CHUNK_LINES)
+#include "video_lld.h"
 
 static thread_t * pThread;
 
@@ -106,6 +99,8 @@ videoPlay (char * fname)
 		if (vid_br == 0)
 			break;
 
+		gptStartContinuous (&GPTD2, NRF5_GPT_FREQ_16MHZ);
+
 		for (j = 0; j < VID_CHUNK_LINES; j++) {
 			for (i = 0; i < 160; i++) {
 				GDISP->p.color = p[i + (160 * j)];
@@ -121,6 +116,9 @@ videoPlay (char * fname)
 
         	while (vid_br == VID_THD_NEXT_BUF)
                 	chThdSleep (1);
+
+		while (gptGetCounterX (&GPTD2) < VID_CHUNK_INTERVAL)
+			chThdSleep (1);
 
 		/* Switch to next waiting chunk */
 
@@ -149,9 +147,11 @@ videoPlay (char * fname)
 	osalSysUnlock ();
 
 	chThdWait (pThread);
-	/*chThdRelease (pThread);*/
-
 	pThread = NULL;
+
+	/* Stop the timer */
+
+	gptStopTimer (&GPTD2);
 
 	/* Release memory */
 

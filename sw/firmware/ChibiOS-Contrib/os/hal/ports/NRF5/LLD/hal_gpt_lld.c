@@ -238,7 +238,6 @@ void gpt_lld_start(GPTDriver *gptp) {
       tim->BITMODE = TIMER_BITMODE_BITMODE_16Bit << TIMER_BITMODE_BITMODE_Pos;
       break;
 
-#if NRF5_GPT_USE_TIMER0
     case 24:
       tim->BITMODE = TIMER_BITMODE_BITMODE_24Bit << TIMER_BITMODE_BITMODE_Pos;
       break;
@@ -246,7 +245,6 @@ void gpt_lld_start(GPTDriver *gptp) {
     case 32:
       tim->BITMODE = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;
       break;
-#endif
 
     default:
       osalDbgAssert(FALSE, "invalid timer resolution");

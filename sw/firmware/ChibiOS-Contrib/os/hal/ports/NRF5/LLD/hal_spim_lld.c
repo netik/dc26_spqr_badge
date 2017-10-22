@@ -224,12 +224,13 @@ void spi_lld_start(SPIDriver *spip)
 	spip->port->PSEL.MOSI = spip->config->mosipad;
 	spip->port->PSEL.MISO = spip->config->misopad;
 	spip->port->FREQUENCY = spip->config->freq;
-	spip->port->ENABLE =
-	    (SPIM_ENABLE_ENABLE_Enabled << SPIM_ENABLE_ENABLE_Pos);
 
 	spip->port->ORC = 0xFF;
 	spip->port->RXD.LIST = 1;
 	spip->port->TXD.LIST = 1;
+
+	spip->port->ENABLE =
+	    (SPIM_ENABLE_ENABLE_Enabled << SPIM_ENABLE_ENABLE_Pos);
 
   	spip->port->EVENTS_STARTED = 0;
   	(void)spip->port->EVENTS_STARTED;

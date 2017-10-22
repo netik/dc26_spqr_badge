@@ -44,17 +44,19 @@ SPIConfig spi1_config = {
 	IOPORT1_SPI_MISO,	/* misopad */
 	IOPORT1_SDCARD_CS,	/* sspad */
 	FALSE,			/* lsbfirst */
-	1,			/* mode */
+	2,			/* mode */
 	0xFF			/* dummy data for spiIgnore() */
 };
 
-void gpt_callback(GPTDriver *gptp)
+void
+gpt_callback(GPTDriver *gptp)
 {
 	(void)gptp;
-	palTogglePad(IOPORT1, LED2);
+	return;
 }
 
-void mmc_callback(GPTDriver *gptp)
+void
+mmc_callback(GPTDriver *gptp)
 {
 	(void)gptp;
 	disk_timerproc ();
@@ -62,20 +64,20 @@ void mmc_callback(GPTDriver *gptp)
 
 /*
  * GPT configuration
- * Frequency: 31250Hz (32us period)
- * Resolution: 16 bits
+ * Frequency: 16MHz
+ * Resolution: 32 bits
  */
 
 static const GPTConfig gpt1_config = {
-    .frequency  = NRF5_GPT_FREQ_62500HZ,
+    .frequency  = NRF5_GPT_FREQ_16MHZ,
     .callback   = gpt_callback,
-    .resolution = 16,
+    .resolution = 32,
 };
 
 static const GPTConfig gpt2_config = {
     .frequency  = NRF5_GPT_FREQ_62500HZ,
     .callback   = mmc_callback,
-    .resolution = 16,
+    .resolution = 32,
 };
 
 /*
@@ -223,8 +225,6 @@ int main(void)
     gptStart (&GPTD2, &gpt1_config);
     gptStart (&GPTD3, &gpt2_config);
 
-    gptStartContinuous (&GPTD2, NRF5_GPT_FREQ_31250HZ);
-
     /* Launch test blinker thread. */
     
     chThdCreateStatic(waThread1, sizeof(waThread1), NORMALPRIO+1,
@@ -249,6 +249,8 @@ int main(void)
     spiStart (&SPID1, &spi1_config);
 
     gfxInit ();
+
+    /*disk_initialize (DRV_MMC);*/
 
     if (gfileMount ('F', "0:") == FALSE)
         printf ("No SD card found.\r\n");

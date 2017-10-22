@@ -1,6 +1,21 @@
 #ifndef _VIDEO_LLD_H_
 #define _VIDEO_LLD_H_
 
+
+#define VID_THD_NEXT_BUF	0xFFFFFFFF
+#define VID_THD_EXIT		0xFFFFFFFE
+
+#define VID_FRAMES_PER_SEC	16
+
+#define VID_PIXELS_PER_LINE	160
+#define VID_LINES_PER_FRAME	120
+
+#define VID_CHUNK_LINES		20
+#define VID_CHUNK		(VID_PIXELS_PER_LINE * VID_CHUNK_LINES)
+
+#define VID_CHUNK_INTERVAL	\
+	((VID_PIXELS_PER_LINE * VID_FRAMES_PER_SEC) / VID_CHUNK_LINES)
+
 extern int videoPlay (char *);
 
 #endif /* _VIDEO_LLD_H_ */
