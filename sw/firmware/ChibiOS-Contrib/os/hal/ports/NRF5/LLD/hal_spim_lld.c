@@ -45,13 +45,12 @@ static void port_fifo_preload(SPIDriver *spip)
 	NRF_SPIM_Type *port = spip->port;
 
 	port->TXD.PTR = (uint32_t)spip->txptr;
+	port->RXD.PTR = (uint32_t)spip->rxptr;
 
 	if (spip->txcnt > NRF5_SPIM_DMA_CHUNK)
 		port->TXD.MAXCNT = NRF5_SPIM_DMA_CHUNK;
 	else
 		port->TXD.MAXCNT = spip->txcnt;
-
-	port->RXD.PTR = (uint32_t)spip->rxptr;
 
 	if (spip->rxcnt > NRF5_SPIM_DMA_CHUNK)
 		port->RXD.MAXCNT = NRF5_SPIM_DMA_CHUNK;
@@ -84,7 +83,7 @@ static void serve_interrupt(SPIDriver *spip)
 
 #ifdef NRF5_SPIM_USE_ANOM58_WAR
 		/* Turn off PPI event. */
-		NRF_PPI->CHENCLR =  1 << NRF5_ANOM58_PPI;
+		NRF_PPI->CHENCLR = 1 << NRF5_ANOM58_PPI;
 #endif
 
 		/*
