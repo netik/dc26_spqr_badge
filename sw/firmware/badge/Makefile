@@ -137,6 +137,7 @@ CSRC = $(STARTUPSRC) \
 
 CSRC += main.c \
 	cmd-radio.c \
+	async_io_lld.c \
 	ble_gap_lld.c \
 	ble_l2cap_lld.c \
 	ble_lld.c \

@@ -30,23 +30,16 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _VIDEO_LLD_H_
-#define _VIDEO_LLD_H_
+#ifndef _ASYNC_IO_LLD_H
+#define _ASYNC_IO_LLD_H
 
-#define VID_FRAMES_PER_SEC	16
+#define ASYNC_THD_READ		0xFFFFFFFF
+#define ASYNC_THD_EXIT		0xFFFFFFFE
+#define ASYNC_THD_READY		0xFFFFFFFD
 
-#define VID_PIXELS_PER_LINE	160
-#define VID_LINES_PER_FRAME	120
+void asyncIoStart (void);
 
-#define VID_CHUNK_LINES		20
-#define VID_CHUNK		(VID_PIXELS_PER_LINE * VID_CHUNK_LINES)
+void asyncIoRead (FIL *, void *, UINT, UINT * br);
+void asyncIoWait (void);
 
-#define VID_TIMER_RESOLUTION	NRF5_GPT_FREQ_16MHZ
-
-#define VID_TIMER_INTERVAL				\
-	((NRF5_GPT_FREQ_16MHZ * VID_CHUNK_LINES) /	\
-	(VID_LINES_PER_FRAME * VID_FRAMES_PER_SEC))
-
-extern int videoPlay (char *);
-
-#endif /* _VIDEO_LLD_H_ */
+#endif /* _ASYNC_IO_LLD_H */

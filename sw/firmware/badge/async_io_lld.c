@@ -33,111 +33,101 @@
 #include "ch.h"
 #include "hal.h"
 
-#include "gfx.h"
-#include "src/gdisp/gdisp_driver.h"
-
 #include "ff.h"
 #include "ffconf.h"
 #include "diskio.h"
 
-#include "video_lld.h"
 #include "async_io_lld.h"
 
-#include "chprintf.h"
-#define printf(fmt, ...)                                        \
-    chprintf((BaseSequentialStream*)&SD1, fmt, ##__VA_ARGS__)
+static thread_t * pThread;
 
-int
-videoPlay (char * fname)
+static void * async_buf;
+static FIL * async_f;
+static UINT async_btr;
+static volatile UINT async_br = ASYNC_THD_READY;
+
+static UINT * saved_br;
+
+static thread_reference_t fsReference;
+
+static THD_WORKING_AREA(waAsyncIoThread, 256);
+static THD_FUNCTION(asyncIoThread, arg)
 {
-	int i;
-	int j;
-	FIL f;
-	pixel_t * buf;
-	pixel_t * p1;
-	pixel_t * p2;
 	UINT br;
 
-	buf = chHeapAlloc (NULL, VID_CHUNK * 2);
+	(void) arg;
 
-	if (buf == NULL)
- 		return (-1);
-
-	if (f_open(&f, fname, FA_READ) != FR_OK) {
-		chHeapFree (buf);
-		return (-1);
-	}
-
-	GDISP->p.x = 0;
-	GDISP->p.y = 0;
-	GDISP->p.cx = gdispGetWidth ();
-	GDISP->p.cy = gdispGetHeight ();
-
-	gdisp_lld_write_start (GDISP);
-
-	p1 = buf;
-	p2 = buf + VID_CHUNK;
-
-	/* Pre-load initial chunk */
-
-	f_read(&f, p1, VID_CHUNK * 2, &br);
+	chRegSetThreadName ("AsyncIo");
 
 	while (1) {
-
-		if (br == 0)
+		osalSysLock ();
+		async_br = br;
+		osalThreadSuspendS (&fsReference);
+		osalSysUnlock ();
+		if (async_br == ASYNC_THD_EXIT)
 			break;
-
-		gptStartContinuous (&GPTD2, VID_TIMER_RESOLUTION);
-
-		/* Start next async read */
-
-		asyncIoRead (&f, p2, VID_CHUNK * 2, &br);
-
-		/* Draw the current batch of lines to the screen */
-
-		for (j = 0; j < VID_CHUNK_LINES; j++) {
-			for (i = 0; i < 160; i++) {
-				GDISP->p.color = p1[i + (160 * j)];
-				gdisp_lld_write_color(GDISP);
-				gdisp_lld_write_color(GDISP);
-			}
-			for (i = 0; i < 160; i++) {
-				GDISP->p.color = p1[i + (160 * j)];
-				gdisp_lld_write_color(GDISP);
-				gdisp_lld_write_color(GDISP);
-			}
-		}
-
-		/* Wait for async read to complete */
-
-		asyncIoWait ();
-
-		/* Switch to next waiting chunk */
-
-		if (p1 == buf) {
-			p1 += VID_CHUNK;
-			p2 = buf;
-		} else {
-			p1 = buf;
-			p2 += VID_CHUNK;
-		}
-
-		/* Wait for sync timer to expire. */
-
-		while (gptGetCounterX (&GPTD2) < VID_TIMER_INTERVAL)
-			chThdSleep (1);
+		f_read(async_f, async_buf, async_btr, &br);
 	}
 
-        gdisp_lld_write_stop (GDISP);
-	f_close (&f);
+	chThdExit (MSG_OK);
 
-	/* Stop the timer */
+        return;
+}
 
-	gptStopTimer (&GPTD2);
+void
+asyncIoRead (FIL * f, void * buf, UINT btr, UINT * br)
+{
+	if (async_br != ASYNC_THD_READY)
+		return;
 
-	/* Release memory */
+	async_f = f;
+	async_buf = buf;
+	async_btr = btr;
 
-	chHeapFree (buf);
+	saved_br = br;
 
-	return (0);
+	osalSysLock ();
+	async_br = ASYNC_THD_READ;
+	osalThreadResumeS (&fsReference, MSG_OK);
+	osalSysUnlock ();
+
+	return;
+}
+
+void
+asyncIoWait (void)
+{
+	while (async_br == ASYNC_THD_READ)
+		chThdSleep (1);
+
+	*saved_br = async_br;
+	async_br = ASYNC_THD_READY;
+
+	return;
+}
+
+void
+asyncIoStart (void)
+{
+	pThread = chThdCreateStatic (waAsyncIoThread, sizeof(waAsyncIoThread),
+	    NORMALPRIO + 5, asyncIoThread, NULL);
+
+	async_br = ASYNC_THD_READY;
+
+	return;
+}
+
+void
+asyncIoStop (void)
+{
+	osalSysLock ();
+	async_br = ASYNC_THD_EXIT;
+	osalThreadResumeS (&fsReference, MSG_OK);
+	osalSysUnlock ();
+
+	chThdWait (pThread);
+
+	pThread = NULL;
+
+	return;
 }

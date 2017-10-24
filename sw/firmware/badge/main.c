@@ -11,11 +11,13 @@
 #include "gfx.h"
 
 #include "ble_lld.h"
-#include "joypad_lld.h"
 
 #include "ff.h"
 #include "ffconf.h"
 #include "diskio.h"
+
+#include "async_io_lld.h"
+#include "joypad_lld.h"
 
 #define LED_EXT 14
 
@@ -239,6 +241,7 @@ int main(void)
     printf("Priority levels %d\r\n", CORTEX_PRIORITY_LEVELS);
 
     joyStart ();
+    asyncIoStart ();
 
     palSetPad (IOPORT1, IOPORT1_SPI_MOSI);
     palSetPad (IOPORT1, IOPORT1_SPI_MISO);
