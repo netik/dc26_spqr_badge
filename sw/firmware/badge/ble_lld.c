@@ -1,3 +1,48 @@
+/*-
+ * Copyright (c) 2017
+ *      Bill Paul <wpaul@windriver.com>.  All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed by Bill Paul.
+ * 4. Neither the name of the author nor the names of any co-contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY Bill Paul AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL Bill Paul OR THE VOICES IN HIS HEAD
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * This module implements the top-level support for the BLE radio in the
+ * NRF52832 chip using the s132 SoftDevice stack. While it's possible to
+ * access the radio directly, this only allows you to send and receive
+ * raw packets. The SoftDevice includes Nordic's BLE stack. It's provided
+ * as a binary blob which is linked with the rest of the badge code.
+ *
+ * Support for the different BLE functions is broken up into modules.
+ * This module contains the top level SoftDevice initialization code and
+ * dispatch loop. Separate modules are provided to handle GAP and L2CAP
+ * features.
+ */
+
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
@@ -21,11 +66,29 @@ static ble_evt_t ble_evt;
 #define printf(fmt, ...)                                        \
     chprintf((BaseSequentialStream*)&SD1, fmt, ##__VA_ARGS__)
 
+/*
+ * This symbol is created by the linker script. Its address is
+ * the start of application RAM.
+ */
+
+extern uint32_t __ram0_start__;
+
 void
 nordic_fault_handler (uint32_t id, uint32_t pc, uint32_t info)
 {
 	return;
 }
+
+/******************************************************************************
+*
+* bleEventDispatch - main BLE event dispatcher
+*
+* This function is a helper routine for the BLE dispatch thread. Each event
+* ID falls into a range: this functon will check the range and invoke the
+* appropriate handler. Currently we mainly handle GAP and L2CAP events.
+*
+* RETURNS: N/A
+*/
 
 static void
 bleEventDispatch (ble_evt_t * evt)
@@ -52,6 +115,18 @@ bleEventDispatch (ble_evt_t * evt)
 
 	return;
 }
+
+/******************************************************************************
+*
+* bleSdThread - SoftDevice event dispatch thread
+*
+* This function implements the SoftDevice event thread loop. It's woken
+* up whenever the SoftDevice event interrupt triggers. There may be several
+* events pending when the interrupt triggers, so this woutine must drain
+* all events from the queue before sleeping again.
+*
+* RETURNS: N/A
+*/
 
 static THD_WORKING_AREA(waSdThread, 512);
 static THD_FUNCTION(sdThread, arg)
@@ -82,9 +157,15 @@ static THD_FUNCTION(sdThread, arg)
 	/* NOTREACHED */
 }
 
-/*
- * ISR for the SoftDevice event interrupt
- */
+/******************************************************************************
+*
+* Vector98 - SoftDevice interrupt handler
+*
+* This ISR is invoked whenever the SoftDevice triggers an event interrupt.
+* It will wake up the event handler thread to process the event queue.
+*
+* RETURNS: N/A
+*/
 
 OSAL_IRQ_HANDLER(Vector98)
 {
@@ -96,12 +177,25 @@ OSAL_IRQ_HANDLER(Vector98)
 	return;
 }
 
-/*
- * This symbol is created by the linker script. Its address is
- * the start of application RAM.
- */
-
-extern uint32_t __ram0_start__;
+/******************************************************************************
+*
+* bleStart() -- BLE radio driver startup routine
+*
+* This function initializes the BLE radio on the NRF52832 using the s132
+* SoftDevice stack. The SoftDevice is stored in flash along with the badge
+* OS image. Commands are sent to it using service call instructions. The
+* SoftDevice also uses a portion of the NRF52 RAM. Exactly how much depends
+* on some of the configuration done here.
+*
+* The SoftDevice requires an event handler, which is implemented using a
+* separate thread that is started here. Once the thread is running, the
+* SoftDevice can be started. Some GAP and L2CAP configuration parameters
+* must be set before fully enabling BLE support.
+*
+* Once this is done, the GAP and L2CAP sub-modules are initialized as well.
+*
+* RETURNS: N/A
+*/
 
 void
 bleStart (void)
@@ -114,7 +208,7 @@ bleStart (void)
 
 	/* Create SoftDevice event thread */
 
-	chThdCreateStatic(waSdThread, sizeof(waSdThread),
+	chThdCreateStatic (waSdThread, sizeof(waSdThread),
 	    NORMALPRIO + 1, sdThread, NULL);
 
 	/* Set up SoftDevice ISR */

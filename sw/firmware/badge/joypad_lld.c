@@ -1,3 +1,46 @@
+/*- 
+ * Copyright (c) 2017
+ *      Bill Paul <wpaul@windriver.com>.  All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed by Bill Paul.
+ * 4. Neither the name of the author nor the names of any co-contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY Bill Paul AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL Bill Paul OR THE VOICES IN HIS HEAD
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * This module implements joypad support for the NRF522832 board. The
+ * buttons are implemented using GPIOs, which are set for input mode
+ * with internal pullups enabled. The GPIOTE module is used for sensing
+ * state change events. The pins are configured to trigger interrupts
+ * for both rising and falling edges so that we can sense both
+ * press and release.
+ *
+ * Note that the NRF52-DK board only has 4 buttons. (The 5th is reset.)
+ */
+ 
 #include "ch.h"
 #include "hal.h"
 #include "osal.h"
@@ -8,18 +51,6 @@
 
 #define printf(fmt, ...)                                        \
     chprintf((BaseSequentialStream*)&SD1, fmt, ##__VA_ARGS__)
-
-#define BUTTON_ENTER_PORT	IOPORT1
-#define BUTTON_UP_PORT		IOPORT1
-#define BUTTON_DOWN_PORT	IOPORT1
-#define BUTTON_LEFT_PORT	IOPORT1
-#define BUTTON_RIGHT_PORT	IOPORT1
-
-#define BUTTON_ENTER_PIN	0
-#define BUTTON_UP_PIN		BTN1
-#define BUTTON_DOWN_PIN		BTN2
-#define BUTTON_LEFT_PIN		BTN3
-#define BUTTON_RIGHT_PIN	BTN4
 
 static void joyInterrupt (EXTDriver *, expchannel_t);
 
@@ -55,15 +86,37 @@ static const EXTConfig ext_config = {
 	}
 };
 
+/******************************************************************************
+*
+* joyInterrupt - interrupt service routine for button events
+*
+* This function is the callback invoked for all GPIOTE events. It will
+* wake the button event processing thread whenever a press or release
+* occurs.
+*
+* RETURNS: N/A
+*/
+
 static void
 joyInterrupt (EXTDriver *extp, expchannel_t chan)
 {
 	osalSysLockFromISR ();
-	if (joyThreadReference != NULL)
-		osalThreadResumeI (&joyThreadReference, MSG_OK);
+	osalThreadResumeI (&joyThreadReference, MSG_OK);
 	osalSysUnlockFromISR ();
 	return;
 }
+
+/******************************************************************************
+*
+* joyHandle - process joypad button events
+*
+* This function is invoked by the event handler thread to process all
+* joypad events. The argument <s> indicates the shift offset of the button
+* that triggered the event. The current state of the button is checked
+* so that events can be dispatched to listening applications.
+*
+* RETURNS: N/A
+*/
 
 static uint8_t
 joyHandle (uint8_t s)
@@ -109,6 +162,17 @@ joyHandle (uint8_t s)
 	return (0);
 }
 
+/******************************************************************************
+*
+* joyThread - joypad event thread
+*
+* This is the joypad event handler main thread loop. It sleeps until woken
+* up by a button event interrupt, then invokes event handler routine until
+* the trggering button event is serviced.
+*
+* RETURNS: N/A
+*/
+
 static THD_FUNCTION(joyThread, arg)
 {
 	(void)arg;
@@ -138,6 +202,17 @@ static THD_FUNCTION(joyThread, arg)
 
 	/* NOTREACHED */
 }
+
+/******************************************************************************
+*
+* joyStart - joypad driver start routine
+*
+* This function initializes the joypad driver. The event handler thread is
+* started and the initial state of the pads is set, then the ChibiOS EXT
+* driver is started to handle GPIO interrupt events.
+*
+* RETURNS: N/A
+*/
 
 void
 joyStart (void)
