@@ -80,7 +80,7 @@ videoPlay (char * fname)
 
 	/* Pre-load initial chunk */
 
-	f_read(&f, p1, VID_CHUNK * 2, &br);
+	f_read(&f, p1, VID_CHUNK, &br);
 
 	while (1) {
 
@@ -91,7 +91,7 @@ videoPlay (char * fname)
 
 		/* Start next async read */
 
-		asyncIoRead (&f, p2, VID_CHUNK * 2, &br);
+		asyncIoRead (&f, p2, VID_CHUNK, &br);
 
 		/* Draw the current batch of lines to the screen */
 
@@ -108,10 +108,6 @@ videoPlay (char * fname)
 			}
 		}
 
-		/* Wait for async read to complete */
-
-		asyncIoWait ();
-
 		/* Switch to next waiting chunk */
 
 		if (p1 == buf) {
@@ -122,10 +118,14 @@ videoPlay (char * fname)
 			p2 += VID_CHUNK;
 		}
 
+		/* Wait for async read to complete */
+
+		asyncIoWait ();
+
 		/* Wait for sync timer to expire. */
 
 		while (gptGetCounterX (&GPTD2) < VID_TIMER_INTERVAL)
-			chThdSleep (1);
+			;
 	}
 
         gdisp_lld_write_stop (GDISP);

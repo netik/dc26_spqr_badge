@@ -98,7 +98,7 @@ void
 asyncIoWait (void)
 {
 	while (async_br == ASYNC_THD_READ)
-		chThdSleep (1);
+		;
 
 	*saved_br = async_br;
 	async_br = ASYNC_THD_READY;
