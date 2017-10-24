@@ -58,7 +58,7 @@ videoPlay (char * fname)
 	pixel_t * p2;
 	UINT br;
 
-	buf = chHeapAlloc (NULL, VID_CHUNK * 2);
+	buf = chHeapAlloc (NULL, VID_CHUNK_BYTES * 2);
 
 	if (buf == NULL)
  		return (-1);
@@ -76,11 +76,11 @@ videoPlay (char * fname)
 	gdisp_lld_write_start (GDISP);
 
 	p1 = buf;
-	p2 = buf + VID_CHUNK;
+	p2 = buf + VID_CHUNK_PIXELS;
 
 	/* Pre-load initial chunk */
 
-	f_read(&f, p1, VID_CHUNK, &br);
+	f_read(&f, p1, VID_CHUNK_BYTES, &br);
 
 	while (1) {
 
@@ -91,7 +91,7 @@ videoPlay (char * fname)
 
 		/* Start next async read */
 
-		asyncIoRead (&f, p2, VID_CHUNK, &br);
+		asyncIoRead (&f, p2, VID_CHUNK_BYTES, &br);
 
 		/* Draw the current batch of lines to the screen */
 
@@ -111,11 +111,11 @@ videoPlay (char * fname)
 		/* Switch to next waiting chunk */
 
 		if (p1 == buf) {
-			p1 += VID_CHUNK;
+			p1 += VID_CHUNK_PIXELS;
 			p2 = buf;
 		} else {
 			p1 = buf;
-			p2 += VID_CHUNK;
+			p2 += VID_CHUNK_PIXELS;
 		}
 
 		/* Wait for async read to complete */
