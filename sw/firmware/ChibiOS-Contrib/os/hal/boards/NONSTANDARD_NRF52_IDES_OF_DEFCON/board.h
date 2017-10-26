@@ -82,11 +82,13 @@
 #define IOPORT1_UART_RX         8U
 #define IOPORT1_NFC1            9U
 #define IOPORT1_NFC2           10U
-#define IOPORT1_I2C_SCL        27U
-#define IOPORT1_I2C_SDA        26U
 #define IOPORT1_RESET          21U
 
 /* Our definitions */
+
+#define IOPORT1_I2C_SCK         7U
+#define IOPORT1_I2C_SDA         8U
+
 #define IOPORT1_SPI_SCK         4U
 #define IOPORT1_SPI_MOSI       22U
 #define IOPORT1_SPI_MISO       23U

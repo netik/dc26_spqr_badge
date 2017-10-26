@@ -113,11 +113,6 @@ uint16_t xptGet (uint8_t cmd)
 }
 
 #ifdef notdef
-#include "chprintf.h"
-
-#define printf(fmt, ...)                                        \
-    chprintf((BaseSequentialStream*)&SD1, fmt, ##__VA_ARGS__)
-
 void xptTest(void)
 {
 	uint16_t	v;

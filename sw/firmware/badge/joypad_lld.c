@@ -47,10 +47,7 @@
 
 #include "joypad_lld.h"
 
-#include "chprintf.h"
-
-#define printf(fmt, ...)                                        \
-    chprintf((BaseSequentialStream*)&SD1, fmt, ##__VA_ARGS__)
+#include "badge.h"
 
 static void joyInterrupt (EXTDriver *, expchannel_t);
 

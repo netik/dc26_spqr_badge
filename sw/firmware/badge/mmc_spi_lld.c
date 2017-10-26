@@ -32,11 +32,6 @@
 #include "diskio.h"
 #include "mmc.h"
 
-#include "chprintf.h"
-
-#define printf(fmt, ...)                                        \
-    chprintf((BaseSequentialStream*)&SD1, fmt, ##__VA_ARGS__)
-
 #define MMC_FORCE_MULTIBLOCK_READ
 
 /* Peripheral controls (Platform dependent) */

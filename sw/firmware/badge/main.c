@@ -19,6 +19,8 @@
 #include "async_io_lld.h"
 #include "joypad_lld.h"
 
+#include "badge.h"
+
 #define LED_EXT 14
 
 extern void cmd_radio (BaseSequentialStream *chp, int argc, char *argv[]);
@@ -48,6 +50,12 @@ SPIConfig spi1_config = {
 	FALSE,			/* lsbfirst */
 	2,			/* mode */
 	0xFF			/* dummy data for spiIgnore() */
+};
+
+I2CConfig i2c2_config = {
+	100000,			/* clock */
+	IOPORT1_I2C_SCK,	/* scl_pad */
+	IOPORT1_I2C_SDA		/* sda_pad */
 };
 
 void
@@ -172,13 +180,6 @@ static SerialConfig serial_config = {
 };
 
 
-
-#define printf(fmt, ...)					\
-    chprintf((BaseSequentialStream*)&SD1, fmt, ##__VA_ARGS__)
-
-
-
-
 static THD_WORKING_AREA(waThread1, 64);
 static THD_FUNCTION(Thread1, arg) {
 
@@ -250,6 +251,8 @@ int main(void)
     palSetPad (IOPORT1, IOPORT1_TOUCH_CS);
 
     spiStart (&SPID1, &spi1_config);
+
+    i2cStart (&I2CD2, &i2c2_config);
 
     gfxInit ();
 

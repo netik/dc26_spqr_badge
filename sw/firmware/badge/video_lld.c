@@ -43,10 +43,6 @@
 #include "video_lld.h"
 #include "async_io_lld.h"
 
-#include "chprintf.h"
-#define printf(fmt, ...)                                        \
-    chprintf((BaseSequentialStream*)&SD1, fmt, ##__VA_ARGS__)
-
 int
 videoPlay (char * fname)
 {

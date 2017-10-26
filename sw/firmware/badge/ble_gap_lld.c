@@ -37,7 +37,6 @@
 #include "ch.h"
 #include "hal.h"
 #include "osal.h"
-#include "chprintf.h"
 
 #include "nrf_sdm.h"
 #include "ble.h"
@@ -48,9 +47,7 @@
 #include "ble_l2cap_lld.h"
 #include "ble_gap_lld.h"
 
-#define printf(fmt, ...)                                        \
-    chprintf((BaseSequentialStream*)&SD1, fmt, ##__VA_ARGS__)
-
+#include "badge.h"
 
 static ble_gap_lesc_p256_pk_t peer_pk;
 static ble_gap_lesc_p256_pk_t my_pk;

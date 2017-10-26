@@ -37,7 +37,6 @@
 #include "ch.h"
 #include "hal.h"
 #include "osal.h"
-#include "chprintf.h"
 
 #include "nrf_sdm.h"
 #include "ble.h"
@@ -47,8 +46,7 @@
 #include "ble_gap_lld.h"
 #include "ble_l2cap_lld.h"
 
-#define printf(fmt, ...)                                        \
-    chprintf((BaseSequentialStream*)&SD1, fmt, ##__VA_ARGS__)
+#include "badge.h"
 
 uint8_t ble_rx_buf[BLE_IDES_L2CAP_LEN];
 uint16_t ble_local_cid;

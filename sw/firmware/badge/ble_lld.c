@@ -50,7 +50,6 @@
 #include "ch.h"
 #include "hal.h"
 #include "osal.h"
-#include "chprintf.h"
 
 #include "nrf_sdm.h"
 #include "ble.h"
@@ -60,11 +59,10 @@
 #include "ble_gap_lld.h"
 #include "ble_l2cap_lld.h"
 
+#include "badge.h"
+
 static thread_reference_t sdThreadReference;
 static ble_evt_t ble_evt;
-
-#define printf(fmt, ...)                                        \
-    chprintf((BaseSequentialStream*)&SD1, fmt, ##__VA_ARGS__)
 
 /*
  * This symbol is created by the linker script. Its address is
