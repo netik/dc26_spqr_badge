@@ -30,15 +30,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "ch.h"
-#include "hal.h"
-#include "shell.h"
-#include "chprintf.h"
-
 #include <strings.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "ch.h"
+#include "hal.h"
+#include "shell.h"
 
 #include "ble.h"
 #include "ble_gap.h"
@@ -46,6 +45,8 @@
 
 #include "ble_gap_lld.h"
 #include "ble_l2cap_lld.h"
+
+#include "badge.h"
 
 static void
 radio_disconnect (BaseSequentialStream *chp, int argc, char *argv[])
@@ -63,7 +64,7 @@ radio_connect (BaseSequentialStream *chp, int argc, char *argv[])
 	memset (&peer, 0, sizeof(peer));
 
 	if (argc != 2) {
-		chprintf (chp, "No peer specified\r\n");
+		printf ("No peer specified\r\n");
 		return;
 	}
 
@@ -102,7 +103,7 @@ static void
 radio_send (BaseSequentialStream *chp, int argc, char *argv[])
 {
 	if (argc != 2) {
-		chprintf (chp, "No message specified\r\n");
+		printf ("No message specified\r\n");
 		return;
 	}
 
@@ -137,3 +138,5 @@ cmd_radio (BaseSequentialStream *chp, int argc, char *argv[])
 
 	return;
 }
+
+orchard_command ("radio", cmd_radio);

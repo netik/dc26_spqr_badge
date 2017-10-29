@@ -30,52 +30,65 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _JOYPAD_LLD_H_
-#define _JOYPAD_LLD_H_
+#include <strings.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 
-#define BUTTON_ENTER_PORT	IOPORT1
-#define BUTTON_UP_PORT		IOPORT1
-#define BUTTON_DOWN_PORT	IOPORT1
-#define BUTTON_LEFT_PORT	IOPORT1
-#define BUTTON_RIGHT_PORT	IOPORT1
+#include "ch.h"
+#include "hal.h"
+#include "shell.h"
 
-#define BUTTON_UP_PIN		BTN1
-#define BUTTON_DOWN_PIN		BTN2
-#define BUTTON_LEFT_PIN		BTN3
-#define BUTTON_RIGHT_PIN	BTN4
-#define BUTTON_ENTER_PIN	BTN5
+#include "badge.h"
 
-/* Joypad event codes */
+/*
+ * Command Watchdog
+ */
 
-typedef enum _OrchardAppEventKeyCode {
-	keyUp = 0x80,
-	keyDown = 0x81,
-	keyLeft = 0x82,
-	keyRight = 0x83,
-	keySelect = 0x84,
-} OrchardAppEventKeyCode;
+extern bool watchdog_started;
 
-/* Joypad events */
+static void
+watchdog_callback(void)
+{
+	return;
+}
 
-typedef struct _joyInfo {
-	ioportid_t port;
-	uint8_t pin;
-	uint8_t bit;
-	OrchardAppEventKeyCode code;
-} joyInfo;
+WDGConfig WDG_config = {
+    .pause_on_sleep = 0,
+    .pause_on_halt  = 0,
+    .timeout_ms     = 5000,
+    .callback       = watchdog_callback,
+};
 
+static void
+cmd_watchdog(BaseSequentialStream *chp, int argc, char *argv[])
+{
+    unsigned int timeout = atoi(argv[1]);
+	if ((argc != 2) || (strcmp(argv[0], "start"))) {
+		usage:
+		printf ("Usage: watchdog start <timeout>\r\n"
+		    "  <timeout> = 0..%d seconds\r\n",
+		    WDG_MAX_TIMEOUT_MS/1000);
+		return;
+	}
 
-#define JOY_ENTER	0x01
-#define JOY_UP		0x02
-#define JOY_DOWN	0x04
-#define JOY_LEFT	0x08
-#define JOY_RIGHT	0x10
+	if (timeout > (WDG_MAX_TIMEOUT_MS/1000))
+		goto usage;
 
-#define JOY_ENTER_SHIFT	0
-#define JOY_UP_SHIFT	1
-#define JOY_DOWN_SHIFT	2
-#define JOY_LEFT_SHIFT	3
-#define JOY_RIGHT_SHIFT	4
+	if (watchdog_started) {
+		printf ("Watchdog already started."
+ 		    " Can't be modified once activated.\r\n");
+		return;
+	}
+    
+	printf ("Watchdog started\r\n"
+		"You need to push BTN1 every %d second(s)\r\n", timeout);
 
-extern void joyStart (void);
-#endif /* _JOYPAD_LLD_H_ */
+	WDG_config.timeout_ms = timeout * 1000;
+	wdgStart(&WDGD1, &WDG_config);
+	watchdog_started = true;
+
+	return;
+}
+
+orchard_command ("watchdog", cmd_watchdog);

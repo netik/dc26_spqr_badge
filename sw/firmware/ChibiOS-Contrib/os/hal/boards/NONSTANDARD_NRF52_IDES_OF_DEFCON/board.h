@@ -33,6 +33,7 @@
 #define BTN2           14U
 #define BTN3           15U
 #define BTN4           16U
+#define BTN5           9U
 #define LED1           17U
 #define LED2           18U
 #define LED3           19U

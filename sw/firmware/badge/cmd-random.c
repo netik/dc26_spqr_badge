@@ -30,52 +30,76 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _JOYPAD_LLD_H_
-#define _JOYPAD_LLD_H_
+#include <strings.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 
-#define BUTTON_ENTER_PORT	IOPORT1
-#define BUTTON_UP_PORT		IOPORT1
-#define BUTTON_DOWN_PORT	IOPORT1
-#define BUTTON_LEFT_PORT	IOPORT1
-#define BUTTON_RIGHT_PORT	IOPORT1
+#include "ch.h"
+#include "hal.h"
+#include "shell.h"
 
-#define BUTTON_UP_PIN		BTN1
-#define BUTTON_DOWN_PIN		BTN2
-#define BUTTON_LEFT_PIN		BTN3
-#define BUTTON_RIGHT_PIN	BTN4
-#define BUTTON_ENTER_PIN	BTN5
+#include "nrf_soc.h"
 
-/* Joypad event codes */
+#include "badge.h"
 
-typedef enum _OrchardAppEventKeyCode {
-	keyUp = 0x80,
-	keyDown = 0x81,
-	keyLeft = 0x82,
-	keyRight = 0x83,
-	keySelect = 0x84,
-} OrchardAppEventKeyCode;
+#define NRF5_RAND_SOFTDEVICE
 
-/* Joypad events */
+/*
+ * Command Random
+ */
 
-typedef struct _joyInfo {
-	ioportid_t port;
-	uint8_t pin;
-	uint8_t bit;
-	OrchardAppEventKeyCode code;
-} joyInfo;
+#define RANDOM_BUFFER_SIZE 16
+static uint8_t random_buffer[RANDOM_BUFFER_SIZE];
+  
+static void
+cmd_random (BaseSequentialStream *chp, int argc, char *argv[])
+{
+	uint8_t size = 16;
+	uint16_t i    = 0;
+	uint8_t  nl   = 0;
+#ifdef NRF5_RAND_SOFTDEVICE
+	uint8_t	sd_size;
+#endif
 
+	if (argc > 0)
+		size = atoi(argv[0]);
 
-#define JOY_ENTER	0x01
-#define JOY_UP		0x02
-#define JOY_DOWN	0x04
-#define JOY_LEFT	0x08
-#define JOY_RIGHT	0x10
+#ifdef NRF5_RAND_SOFTDEVICE
+	sd_rand_application_bytes_available_get (&sd_size);
 
-#define JOY_ENTER_SHIFT	0
-#define JOY_UP_SHIFT	1
-#define JOY_DOWN_SHIFT	2
-#define JOY_LEFT_SHIFT	3
-#define JOY_RIGHT_SHIFT	4
+	if (sd_size > RANDOM_BUFFER_SIZE)
+		sd_size = RANDOM_BUFFER_SIZE;
 
-extern void joyStart (void);
-#endif /* _JOYPAD_LLD_H_ */
+	if (size > sd_size) {
+		printf ("random: maximum size is %d.\r\n", sd_size);
+		return;
+	}
+
+	printf ("Fetching %d random byte(s):\r\n", size);
+    
+	sd_rand_application_vector_get (random_buffer, size);
+#else
+	if (size > RANDOM_BUFFER_SIZE) {
+		printf ("random: maximum size is %d.\r\n", RANDOM_BUFFER_SIZE);
+		return;
+	}
+
+	printf ("Fetching %d random byte(s):\r\n", size);
+    
+	rngStart (&RNGD1, NULL);
+	rngWrite (&RNGD1, random_buffer, size, TIME_INFINITE);
+ 	rngStop (&RNGD1);
+#endif
+
+	for (i = 0 ; i < size ; i++) {
+		printf ("%02x ", random_buffer[i]);
+		if ((nl = (((i+1) % 20)) == 0))
+			printf ("\r\n");
+	}
+	if (!nl)
+		printf ("\r\n");
+	return;
+}
+
+orchard_command ("random", cmd_random);

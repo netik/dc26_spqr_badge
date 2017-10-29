@@ -35,7 +35,7 @@ const PALConfig pal_default_config =
         PAL_MODE_OUTPUT_PUSHPULL,     /* P0.6 : UART_TX        */
         PAL_MODE_UNCONNECTED,         /* P0.7 : I2C SCK        */
         PAL_MODE_UNCONNECTED,         /* P0.8 : I2C SDA        */
-        PAL_MODE_UNCONNECTED,         /* P0.9 :                */
+        PAL_MODE_INPUT_PULLUP,        /* P0.9 : BTN5           */
         PAL_MODE_UNCONNECTED,         /* P0.10:                */
         PAL_MODE_OUTPUT_PULLUP,       /* P0.11: screen WR      */
         PAL_MODE_OUTPUT_PULLUP,       /* P0.12: screen CD      */

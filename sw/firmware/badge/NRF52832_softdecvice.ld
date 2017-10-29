@@ -137,6 +137,7 @@ SECTIONS
     {
         *(.text)
         *(.text.*)
+        KEEP(*(SORT(.chibi_list*)));
         *(.glue_7t)
         *(.glue_7)
         *(.gcc*)

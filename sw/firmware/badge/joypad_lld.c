@@ -76,7 +76,8 @@ static const EXTConfig ext_config = {
 		  BTN3 << EXT_MODE_GPIO_OFFSET, joyInterrupt },
 		{ EXT_CH_MODE_BOTH_EDGES | EXT_CH_MODE_AUTOSTART |
 		  BTN4 << EXT_MODE_GPIO_OFFSET, joyInterrupt },
-		{ 0 , NULL },
+		{ EXT_CH_MODE_BOTH_EDGES | EXT_CH_MODE_AUTOSTART |
+		  BTN5 << EXT_MODE_GPIO_OFFSET, joyInterrupt },
 		{ 0 , NULL },
 		{ 0 , NULL },
 		{ 0 , NULL }
@@ -180,10 +181,10 @@ static THD_FUNCTION(joyThread, arg)
 		osalSysLock ();
 		osalThreadSuspendS (&joyThreadReference);
 		osalSysUnlock ();
-#ifdef notyet
+
 		if (joyHandle (JOY_ENTER_SHIFT))
 			continue;
-#endif
+
 		if (joyHandle (JOY_UP_SHIFT))
 			continue;
 
@@ -219,9 +220,7 @@ joyStart (void)
 	chThdCreateStatic (waJoyThread, sizeof(waJoyThread),
 	    NORMALPRIO + 1, joyThread, NULL);
 
-#ifdef notyet
 	palSetPad (BUTTON_ENTER_PORT, BUTTON_ENTER_PIN);
-#endif
 	palSetPad (BUTTON_UP_PORT, BUTTON_UP_PIN);
 	palSetPad (BUTTON_DOWN_PORT, BUTTON_DOWN_PIN);
 	palSetPad (BUTTON_LEFT_PORT, BUTTON_LEFT_PIN);
