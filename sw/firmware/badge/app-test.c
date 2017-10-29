@@ -62,6 +62,8 @@ test_event (OrchardAppContext *context,
 	if (event->type == ugfxEvent) {
 		me = (GEventMouse *)event->ugfx.pEvent;
 		if (me->buttons & GMETA_MOUSE_DOWN) {
+			geventRegisterCallback (&gl, NULL, NULL);
+			geventDetachSource (&gl, NULL);
 			orchardAppExit ();
 			return;
 		}
@@ -85,8 +87,6 @@ test_exit (OrchardAppContext *context)
 	    "Test application terminates", font, White, justifyCenter);
 
 	gdispCloseFont (font);
-	geventRegisterCallback (&gl, NULL, NULL);
-	geventDetachSource (&gl, NULL);
 
 	return;
 }

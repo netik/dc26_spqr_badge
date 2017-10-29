@@ -53,6 +53,9 @@ videoPlay (char * fname)
 	pixel_t * p1;
 	pixel_t * p2;
 	UINT br;
+	GListener gl;
+	GSourceHandle gs;
+	GEventMouse * me = NULL;
 
 	buf = chHeapAlloc (NULL, VID_CHUNK_BYTES * 2);
 
@@ -68,6 +71,10 @@ videoPlay (char * fname)
 	GDISP->p.y = 0;
 	GDISP->p.cx = gdispGetWidth ();
 	GDISP->p.cy = gdispGetHeight ();
+
+	gs = ginputGetMouse (0);
+	geventListenerInit (&gl);
+	geventAttachSource (&gl, gs, GLISTEN_MOUSEMETA);
 
 	gdisp_lld_write_start (GDISP);
 
@@ -118,11 +125,17 @@ videoPlay (char * fname)
 
 		asyncIoWait ();
 
+		me = (GEventMouse *)geventEventWait (&gl, 0);
+		if (me != NULL && me->buttons & GMETA_MOUSE_DOWN)
+			break;
+
 		/* Wait for sync timer to expire. */
 
 		while (gptGetCounterX (&GPTD2) < VID_TIMER_INTERVAL)
 			;
 	}
+
+	geventDetachSource (&gl, NULL);
 
         gdisp_lld_write_stop (GDISP);
 	f_close (&f);
@@ -134,6 +147,9 @@ videoPlay (char * fname)
 	/* Release memory */
 
 	chHeapFree (buf);
+
+	if (me != NULL && me->buttons & GMETA_MOUSE_DOWN)
+		return (-1);
 
 	return (0);
 }
