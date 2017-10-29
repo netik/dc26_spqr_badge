@@ -47,6 +47,11 @@
 
 /* Joypad event codes */
 
+typedef enum _OrchardAppEventKeyFlag {
+	keyPress = 0,
+	keyRelease = 1,
+} OrchardAppEventKeyFlag;
+
 typedef enum _OrchardAppEventKeyCode {
 	keyUp = 0x80,
 	keyDown = 0x81,

@@ -139,6 +139,11 @@ CSRC += main.c \
 	cmd-radio.c \
 	cmd-random.c \
 	cmd-watchdog.c \
+	orchard-app.c \
+	orchard-ui.c \
+	ui-keyboard.c \
+	ui-list.c \
+	app-test.c \
 	async_io_lld.c \
 	ble_gap_lld.c \
 	ble_l2cap_lld.c \

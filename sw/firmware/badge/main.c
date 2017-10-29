@@ -19,7 +19,12 @@
 #include "async_io_lld.h"
 #include "joypad_lld.h"
 
+#include "orchard-ui.h"
+#include "orchard-app.h"
+
 #include "badge.h"
+
+struct evt_table orchard_events;
 
 /* linker set for command objects */
 
@@ -81,11 +86,7 @@ static const GPTConfig gpt2_config = {
 };
 
 static THD_WORKING_AREA(shell_wa, 1024);
-
-static const ShellConfig shell_cfg1 = {
-  (BaseSequentialStream *)&SD1,
-  orchard_commands
-};
+static thread_t *shell_tp = NULL;
 
 static SerialConfig serial_config = {
     .speed   = 115200,
@@ -97,6 +98,42 @@ static SerialConfig serial_config = {
 #endif
 };
 
+static void shellRestart(void)
+{
+	static ShellConfig shellConfig;
+	static const ShellCommand *shellCommands;
+
+	shellCommands = orchard_commands();
+
+	shellConfig.sc_channel =  (BaseSequentialStream *)&SD1;
+	shellConfig.sc_commands = shellCommands;
+
+	/* Recovers memory of the previous shell. */
+	if (shell_tp && chThdTerminatedX(shell_tp))
+		chThdRelease(shell_tp);
+
+    	shell_tp = chThdCreateStatic (shell_wa, sizeof(shell_wa), NORMALPRIO + 5,
+	    shellThread, (void *)&shellConfig);
+
+	return;
+}
+
+static void
+orchard_app_restart(eventid_t id)
+{
+	(void)id;
+
+	orchardAppRestart();
+}
+
+static void
+shell_termination_handler(eventid_t id)
+{
+	static int i = 1;
+
+	printf ("\r\nRespawning shell (shell #%d, event %d)\r\n", ++i, id);
+	shellRestart ();
+}
 
 static THD_WORKING_AREA(waThread1, 64);
 static THD_FUNCTION(Thread1, arg) {
@@ -123,8 +160,6 @@ SVC_Handler (void)
  */
 int main(void)
 {
-    font_t font;
-
 #ifdef CRT0_VTOR_INIT
     __disable_irq();
     SCB->VTOR = 0;
@@ -181,6 +216,7 @@ int main(void)
     else
         printf ("SD card detected.\r\n");
 
+#ifdef notdef
     gdispClear (Blue);
 
     font = gdispOpenFont ("DejaVuSans24");
@@ -198,6 +234,7 @@ int main(void)
         "Hello world......", font, White, justifyCenter);
 
     gdispCloseFont (font);
+#endif
 
     bleStart ();
 
@@ -205,17 +242,18 @@ int main(void)
 
     /* Launch shell thread */
 
-    chThdCreateStatic(shell_wa, sizeof(shell_wa), NORMALPRIO+1,
-		      shellThread, (void *)&shell_cfg1);
+    evtTableInit (orchard_events, 5);
+    evtTableHook (orchard_events, shell_terminated, shell_termination_handler);
+
+    shellRestart ();
+    uiStart ();
+    orchardAppInit ();
+    orchardAppRestart ();
+
+    evtTableHook (orchard_events, orchard_app_terminated, orchard_app_restart);
 
     while (true) {
-	if (watchdog_started &&
-	    (palReadPad(IOPORT1, BTN1) == 0)) {
-	    palTogglePad(IOPORT1, LED1);
-	    wdgReset(&WDGD1);
-	    printf("Watchdog reseted\r\n");
-	}
-	chThdSleepMilliseconds(250);
+        chEvtDispatch(evtHandlers(orchard_events), chEvtWaitOne(ALL_EVENTS));
     }
 
 }
