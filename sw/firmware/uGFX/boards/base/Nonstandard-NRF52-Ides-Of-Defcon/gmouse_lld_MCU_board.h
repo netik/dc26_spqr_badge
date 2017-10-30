@@ -32,12 +32,12 @@ static const float calibrationData[] = {
 
 #ifdef EASTRISING
 static const float calibrationData[] = {
-	0.07054,		// ax
-	0.00002,		// bx
-	-25.11961,		// cx
-	0.00008,		// ay
-	0.09286,		// by
-	-28.38819		// cy
+	0.06396,		// ax
+	-0.00003,		// bx
+	-9.35300,		// cx
+	0.00024,		// ay
+	0.09009,		// by
+	-13.67999		// cy
 };
 #endif
  

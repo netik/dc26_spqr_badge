@@ -47,7 +47,12 @@
 
 #include "joypad_lld.h"
 
+#include "orchard-app.h"
+#include "orchard-events.h"
+
 #include "badge.h"
+
+extern orchard_app_instance instance;
 
 static void joyInterrupt (EXTDriver *, expchannel_t);
 
@@ -57,6 +62,8 @@ static THD_WORKING_AREA(waJoyThread, 128);
 /* Default state is all buttons pressed. */
 
 static uint8_t joyState = 0xFF;
+
+static OrchardAppKeyEvent joyEvent;
 
 static const joyInfo joyTbl[6] = {
 	{ BUTTON_ENTER_PORT, BUTTON_ENTER_PIN, JOY_ENTER, keySelect },
@@ -119,9 +126,7 @@ joyInterrupt (EXTDriver *extp, expchannel_t chan)
 static uint8_t
 joyHandle (uint8_t s)
 {
-#ifdef notyet
 	OrchardAppEvent evt;
-#endif
 	uint8_t pad;
 
 	pad = palReadPad (joyTbl[s].port, joyTbl[s].pin);
@@ -136,7 +141,7 @@ joyHandle (uint8_t s)
 			printf ("button %x released\r\n", joyTbl[s].code);
 		else
 			printf ("button %x pressed\r\n", joyTbl[s].code);
-#ifdef notyet  
+
 		joyEvent.code = joyTbl[s].code;
 		if (pad)
 			joyEvent.flags = keyRelease;
@@ -146,14 +151,13 @@ joyHandle (uint8_t s)
 		if (instance.context != NULL) {
 			evt.type = keyEvent;
  			evt.key = joyEvent;
-			if (joyEvent.code != keyTilt &&
-			    joyEvent.flags == keyPress) {
-				dacPlay("click.raw");
-				dacWait ();
+			if (joyEvent.flags == keyPress) {
+				/*dacPlay("click.raw");
+				dacWait ();*/
 			}
 			instance.app->event (instance.context, &evt);
 		}
-#endif
+
 		return (1);
 	}
 
