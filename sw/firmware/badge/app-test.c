@@ -91,5 +91,5 @@ test_exit (OrchardAppContext *context)
 	return;
 }
 
-orchard_app("testapp", "notyet", /* no icon yet */
-    0, test_init, test_start, test_event, test_exit, 0);
+orchard_app("testapp", "setup.rgb",
+    0, test_init, test_start, test_event, test_exit, 1);

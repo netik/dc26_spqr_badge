@@ -36,6 +36,7 @@
 #include <string.h>
 
 #include "fontlist.h"
+#include "ides_gfx.h"
 
 /*
  * We need two widgets: a console and the keyboard.
@@ -164,7 +165,7 @@ static void keyboard_start (OrchardAppContext *context)
 	/* Draw the keyboard widget */
 	wi.g.y = gdispGetHeight() >> 1;
 	p->ghKeyboard = gwinKeyboardCreate (0, &wi);
-	/*gwinSetStyle (p->ghKeyboard, &DarkPurpleFilledStyle);*/
+	gwinSetStyle (p->ghKeyboard, &DarkPurpleFilledStyle);
 	gwinShow (p->ghKeyboard);
 
 	/* Wait for events */

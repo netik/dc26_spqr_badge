@@ -143,6 +143,7 @@ CSRC += main.c \
 	orchard-ui.c \
 	ui-keyboard.c \
 	ui-list.c \
+	app-launcher.c \
 	app-test.c \
 	app-video.c \
 	async_io_lld.c \
@@ -154,6 +155,10 @@ CSRC += main.c \
 	xpt2046_lld.c \
 	video_lld.c \
 	badge_vectors.c \
+	ides_gfx.c \
+	scanf.c \
+	strtoq.c \
+	strtouq.c \
         $(GFXSRC) \
 	$(FATFSSRC)
 
