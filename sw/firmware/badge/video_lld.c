@@ -90,6 +90,11 @@ videoPlay (char * fname)
 		if (br == 0)
 			break;
 
+		/*
+		 * Note: this resets the timer to 0 and starts it
+		 * counting.
+		 */
+
 		gptStartContinuous (&GPTD2, VID_TIMER_RESOLUTION);
 
 		/* Start next async read */
