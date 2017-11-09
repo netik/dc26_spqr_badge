@@ -295,9 +295,9 @@ void spi_lld_start(SPIDriver *spip)
 	    spip->port->PSEL.SCK << GPIOTE_CONFIG_PSEL_Pos |
 	    GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos;
 
-	NRF_PPI->CH[10].EEP =
+	NRF_PPI->CH[NRF5_ANOM58_PPI].EEP =
 	    (uint32_t)&NRF_GPIOTE->EVENTS_IN[NRF5_ANOM58_GPIOTE];
-	NRF_PPI->CH[10].TEP =
+	NRF_PPI->CH[NRF5_ANOM58_PPI].TEP =
 	    (uint32_t)&spip->port->TASKS_STOP;
 #endif
 
