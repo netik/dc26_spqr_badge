@@ -209,32 +209,10 @@ int main(void)
 
     gfxInit ();
 
-    /*disk_initialize (DRV_MMC);*/
-
     if (gfileMount ('F', "0:") == FALSE)
         printf ("No SD card found.\r\n");
     else
         printf ("SD card detected.\r\n");
-
-#ifdef notdef
-    gdispClear (Blue);
-
-    font = gdispOpenFont ("DejaVuSans24");
-
-    gdispDrawStringBox (0, 0, gdispGetWidth(),
-        gdispGetFontMetric(font, fontHeight),
-        "Hello world......", font, White, justifyCenter);
-
-    gdispCloseFont (font);
-
-    font = gdispOpenFont ("fixed_10x20");
-
-    gdispDrawStringBox (0, 40, gdispGetWidth(),
-        gdispGetFontMetric(font, fontHeight),
-        "Hello world......", font, White, justifyCenter);
-
-    gdispCloseFont (font);
-#endif
 
     bleStart ();
 
