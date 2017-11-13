@@ -51,7 +51,7 @@
 uint8_t ble_rx_buf[BLE_IDES_L2CAP_LEN];
 uint16_t ble_local_cid;
 
-static void bleL2CapReply (void);
+static void bleL2CapSetupReply (void);
 
 void
 bleL2CapDispatch (ble_evt_t * evt)
@@ -75,7 +75,7 @@ bleL2CapDispatch (ble_evt_t * evt)
 				request->tx_params.tx_mps,
 				request->tx_params.credits);
 			printf ("PSM: %x\r\n", request->le_psm);
-			bleL2CapReply ();
+			bleL2CapSetupReply ();
 			break;
 
 		case BLE_L2CAP_EVT_CH_SETUP_REFUSED:
@@ -171,7 +171,7 @@ bleL2CapDisconnect (void)
 }
 
 static void
-bleL2CapReply (void)
+bleL2CapSetupReply (void)
 {
 	ble_l2cap_ch_setup_params_t params;
 	int r;
