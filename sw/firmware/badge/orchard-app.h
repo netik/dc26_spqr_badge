@@ -46,7 +46,7 @@ extern void orchardAppTimer(const OrchardAppContext *context,
 extern void orchardAppUgfxCallback (void * arg, GEvent * pe);
 extern void orchardAppRadioCallback (void * pkt);
 
-#define UI_IDLE_TIME MS2ST(10000) // after 8 seconds, abort to main
+#define UI_IDLE_TIME 10 // after 10 seconds, abort to main
 
 typedef struct _OrchardAppContext {
   struct orchard_app_instance *instance;

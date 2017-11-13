@@ -35,6 +35,10 @@
 
 #define BLE_IDES_APP_TAG	0x01
 
+extern uint8_t ble_station_addr[];
+
 extern void bleStart (void);
+extern void bleEnable (void);
+extern void bleDisable (void);
 
 #endif /* _BLE_LLD_H_ */

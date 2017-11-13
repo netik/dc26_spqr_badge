@@ -61,6 +61,8 @@
 
 #include "badge.h"
 
+uint8_t ble_station_addr[6];
+
 static thread_reference_t sdThreadReference;
 static ble_evt_t ble_evt;
 
@@ -198,11 +200,7 @@ OSAL_IRQ_HANDLER(Vector98)
 void
 bleStart (void)
 {
-	int r;
- 	uint32_t ram_start = (uint32_t)&__ram0_start__;
-	nrf_clock_lf_cfg_t clock_source;
 	ble_gap_addr_t addr;
-	ble_cfg_t cfg;
 
 	/* Create SoftDevice event thread */
 
@@ -213,11 +211,42 @@ bleStart (void)
 
 	nvicEnableVector (SD_EVT_IRQn, 5);
 
+	/* Start and configure SoftDevice */
+
+	bleEnable ();
+
+	memset (&addr, 0, sizeof(addr));
+	sd_ble_gap_addr_get (&addr);
+
+	ble_station_addr[0] = addr.addr[5];
+	ble_station_addr[1] = addr.addr[4];
+	ble_station_addr[2] = addr.addr[3];
+	ble_station_addr[3] = addr.addr[2];
+	ble_station_addr[4] = addr.addr[1];
+	ble_station_addr[5] = addr.addr[0];
+
+	printf ("Station address: %x:%x:%x:%x:%x:%x\r\n",
+	    ble_station_addr[0], ble_station_addr[1],
+	    ble_station_addr[2], ble_station_addr[3],
+	    ble_station_addr[4], ble_station_addr[5]);
+
+	return;
+}
+
+void
+bleEnable (void)
+{
+	int r;
+ 	uint32_t ram_start = (uint32_t)&__ram0_start__;
+	nrf_clock_lf_cfg_t clock_source;
+	ble_cfg_t cfg;
+
 	/* Initialize the SoftDevice */
 
 	memset (&clock_source, 0, sizeof(clock_source));
 	clock_source.source = NRF_CLOCK_LF_SRC_XTAL;
 	clock_source.accuracy = NRF_CLOCK_LF_ACCURACY_20_PPM;
+
 	r = sd_softdevice_enable (&clock_source, nordic_fault_handler);
 
 	if (r == NRF_SUCCESS)
@@ -271,17 +300,25 @@ bleStart (void)
 		return;
 	}
 
-	memset (&addr, 0, sizeof(addr));
-	sd_ble_gap_addr_get (&addr);
-
-	printf ("Station address: %x:%x:%x:%x:%x:%x\r\n",
-	    addr.addr[5], addr.addr[4], addr.addr[3],
-	    addr.addr[2], addr.addr[1], addr.addr[0]);
-
 	/* Initiallize GAP and L2CAP submodules */
 
 	bleGapStart ();
 	bleL2CapStart ();
+
+	return;
+}
+
+void
+bleDisable (void)
+{
+	int r;
+
+	r = sd_softdevice_disable ();
+
+	if (r == NRF_SUCCESS)
+		printf ("Bluetooth LE disabled\r\n");
+	else
+		printf ("Disaabling BLE failed (%x)\r\n", r);
 
 	return;
 }

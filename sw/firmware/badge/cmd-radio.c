@@ -40,6 +40,7 @@
 #include "shell.h"
 
 #include "ble.h"
+#include "ble_lld.h"
 #include "ble_gap.h"
 #include "ble_l2cap.h"
 
@@ -133,6 +134,10 @@ cmd_radio (BaseSequentialStream *chp, int argc, char *argv[])
 		radio_l2capdisconnect (chp, argc, argv);
 	else if (strcmp (argv[0], "send") == 0)
 		radio_send (chp, argc, argv);
+	else if (strcmp (argv[0], "disable") == 0)
+		bleDisable ();
+	else if (strcmp (argv[0], "enable") == 0)
+		bleEnable ();
 	else
 		chprintf(chp, "Unrecognized radio command\r\n");
 
