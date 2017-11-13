@@ -122,6 +122,8 @@ cmd_radio (BaseSequentialStream *chp, int argc, char *argv[])
 		chprintf(chp, "disconnect           Disconnect from peer\r\n");
 		chprintf(chp, "l2capconnect         Create L2CAP channel\r\n");
 		chprintf(chp, "send [msg]           Transmit to peer\r\n");
+		chprintf(chp, "enable               Enable BLE radio\r\n");
+		chprintf(chp, "disable              Disable BLE radio\r\n");
 	}
 
 	if (strcmp (argv[0], "connect") == 0)
