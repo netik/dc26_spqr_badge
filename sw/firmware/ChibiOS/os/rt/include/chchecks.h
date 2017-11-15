@@ -20,6 +20,9 @@
 /**
  * @file    chchecks.h
  * @brief   Configuration checks macros and structures.
+ *
+ * @addtogroup checks
+ * @{
  */
 
 #ifndef CHCHECKS_H
@@ -104,3 +107,5 @@
 /*===========================================================================*/
 
 #endif /* CHCHECKS_H */
+
+/** @} */

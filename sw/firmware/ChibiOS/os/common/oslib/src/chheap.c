@@ -106,7 +106,7 @@ static memory_heap_t default_heap;
  */
 void _heap_init(void) {
 
-  default_heap.provider = chCoreAllocAligned;
+  default_heap.provider = chCoreAllocAlignedWithOffset;
   H_NEXT(&default_heap.header) = NULL;
   H_PAGES(&default_heap.header) = 0;
 #if (CH_CFG_USE_MUTEXES == TRUE) || defined(__DOXYGEN__)
@@ -118,8 +118,9 @@ void _heap_init(void) {
 
 /**
  * @brief   Initializes a memory heap from a static memory area.
- * @pre     Both the heap buffer base and the heap size must be aligned to
- *          the @p heap_header_t type size.
+ * @note    The heap buffer base and size are adjusted if the passed buffer
+ *          is not aligned to @p CH_HEAP_ALIGNMENT. This mean that the
+ *          effective heap size can be less than @p size.
  *
  * @param[out] heapp    pointer to the memory heap descriptor to be initialized
  * @param[in] buf       heap buffer base
@@ -128,12 +129,15 @@ void _heap_init(void) {
  * @init
  */
 void chHeapObjectInit(memory_heap_t *heapp, void *buf, size_t size) {
-  heap_header_t *hp = buf;
+  heap_header_t *hp = (heap_header_t *)MEM_ALIGN_NEXT(buf, CH_HEAP_ALIGNMENT);
 
-  chDbgCheck((heapp != NULL) && (size > 0U) &&
-             MEM_IS_ALIGNED(buf, CH_HEAP_ALIGNMENT) &&
-             MEM_IS_ALIGNED(size, CH_HEAP_ALIGNMENT));
+  chDbgCheck((heapp != NULL) && (size > 0U));
 
+  /* Adjusting the size in case the initial block was not correctly
+     aligned.*/
+  size -= (size_t)((uint8_t *)hp - (uint8_t *)buf);
+
+  /* Initializing the heap header.*/
   heapp->provider = NULL;
   H_NEXT(&heapp->header) = hp;
   H_PAGES(&heapp->header) = 0;
@@ -164,7 +168,7 @@ void chHeapObjectInit(memory_heap_t *heapp, void *buf, size_t size) {
  * @api
  */
 void *chHeapAllocAligned(memory_heap_t *heapp, size_t size, unsigned align) {
-  heap_header_t *qp, *hp;
+  heap_header_t *qp, *hp, *ahp;
   size_t pages;
 
   chDbgCheck((size > 0U) && MEM_IS_VALID_ALIGNMENT(align));
@@ -188,7 +192,6 @@ void *chHeapAllocAligned(memory_heap_t *heapp, size_t size, unsigned align) {
   /* Start of the free blocks list.*/
   qp = &heapp->header;
   while (H_NEXT(qp) != NULL) {
-    heap_header_t *ahp;
 
     /* Next free block.*/
     hp = H_NEXT(qp);
@@ -261,13 +264,16 @@ void *chHeapAllocAligned(memory_heap_t *heapp, size_t size, unsigned align) {
   /* More memory is required, tries to get it from the associated provider
      else fails.*/
   if (heapp->provider != NULL) {
-    hp = heapp->provider((pages + 1U) * CH_HEAP_ALIGNMENT, align);
-    if (hp != NULL) {
+    ahp = heapp->provider((pages + 1U) * CH_HEAP_ALIGNMENT,
+                          align,
+                          sizeof (heap_header_t));
+    if (ahp != NULL) {
+      hp = ahp - 1U;
       H_HEAP(hp) = heapp;
       H_SIZE(hp) = size;
 
       /*lint -save -e9087 [11.3] Safe cast.*/
-      return (void *)H_BLOCK(hp);
+      return (void *)ahp;
       /*lint -restore*/
     }
   }

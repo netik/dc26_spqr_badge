@@ -478,7 +478,6 @@ void spi_lld_stop(SPIDriver *spip) {
   }
 }
 
-#if (SPI_SELECT_MODE == SPI_SELECT_MODE_LLD) || defined(__DOXYGEN__)
 /**
  * @brief   Asserts the slave select signal and prepares for transfers.
  *
@@ -488,7 +487,7 @@ void spi_lld_stop(SPIDriver *spip) {
  */
 void spi_lld_select(SPIDriver *spip) {
 
-  /* No implementation on STM32.*/
+  palClearPad(spip->config->ssport, spip->config->sspad);
 }
 
 /**
@@ -501,9 +500,8 @@ void spi_lld_select(SPIDriver *spip) {
  */
 void spi_lld_unselect(SPIDriver *spip) {
 
-  /* No implementation on STM32.*/
+  palSetPad(spip->config->ssport, spip->config->sspad);
 }
-#endif
 
 /**
  * @brief   Ignores data on the SPI bus.

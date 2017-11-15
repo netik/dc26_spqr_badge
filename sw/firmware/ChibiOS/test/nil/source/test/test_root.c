@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio
+    ChibiOS - Copyright (C) 2006..2017 Giovanni Di Sirio
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@
  * - @subpage test_sequence_004
  * - @subpage test_sequence_005
  * - @subpage test_sequence_006
+ * - @subpage test_sequence_007
  * .
  */
 
@@ -50,18 +51,19 @@
  */
 const testcase_t * const *test_suite[] = {
   test_sequence_001,
-#if (CH_CFG_USE_SEMAPHORES) || defined(__DOXYGEN__)
   test_sequence_002,
-#endif
+#if (CH_CFG_USE_SEMAPHORES) || defined(__DOXYGEN__)
   test_sequence_003,
-#if (CH_CFG_USE_MAILBOXES) || defined(__DOXYGEN__)
-  test_sequence_004,
 #endif
-#if (CH_CFG_USE_MEMPOOLS) || defined(__DOXYGEN__)
+  test_sequence_004,
+#if (CH_CFG_USE_MAILBOXES) || defined(__DOXYGEN__)
   test_sequence_005,
 #endif
-#if (CH_CFG_USE_HEAP) || defined(__DOXYGEN__)
+#if (CH_CFG_USE_MEMPOOLS) || defined(__DOXYGEN__)
   test_sequence_006,
+#endif
+#if (CH_CFG_USE_HEAP) || defined(__DOXYGEN__)
+  test_sequence_007,
 #endif
   NULL
 };
@@ -69,6 +71,24 @@ const testcase_t * const *test_suite[] = {
 /*===========================================================================*/
 /* Shared code.                                                              */
 /*===========================================================================*/
+
+void test_print_port_info(void) {
+
+#ifdef PORT_COMPILER_NAME
+  test_print("*** Compiler:     ");
+  test_println(PORT_COMPILER_NAME);
+#endif
+  test_print("*** Architecture: ");
+  test_println(PORT_ARCHITECTURE_NAME);
+#ifdef PORT_CORE_VARIANT_NAME
+  test_print("*** Core Variant: ");
+  test_println(PORT_CORE_VARIANT_NAME);
+#endif
+#ifdef PORT_INFO
+  test_print("*** Port Info:    ");
+  test_println(PORT_INFO);
+#endif
+}
 
 semaphore_t gsem1, gsem2;
 thread_reference_t gtr1;

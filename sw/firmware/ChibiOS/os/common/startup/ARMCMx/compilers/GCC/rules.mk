@@ -66,15 +66,6 @@ endif
 ifeq ($(BUILDDIR),.)
   BUILDDIR = build
 endif
-
-# Dependencies directory
-ifeq ($(DEPDIR),)
-  DEPDIR = .dep
-endif
-ifeq ($(DEPDIR),.)
-  DEPDIR = .dep
-endif
-
 OUTFILES := $(BUILDDIR)/$(PROJECT).elf \
             $(BUILDDIR)/$(PROJECT).hex \
             $(BUILDDIR)/$(PROJECT).bin \
@@ -125,8 +116,8 @@ LIBS      := $(DLIBS) $(ULIBS)
 # Various settings
 MCFLAGS   := -mcpu=$(MCU)
 ODFLAGS	  = -x --syms
-ASFLAGS   = $(MCFLAGS) -Wa,-amhls=$(LSTDIR)/$(notdir $(<:.s=.lst)) $(ADEFS)
-ASXFLAGS  = $(MCFLAGS) -Wa,-amhls=$(LSTDIR)/$(notdir $(<:.S=.lst)) $(ADEFS)
+ASFLAGS   = $(MCFLAGS) $(OPT) -Wa,-amhls=$(LSTDIR)/$(notdir $(<:.s=.lst)) $(ADEFS)
+ASXFLAGS  = $(MCFLAGS) $(OPT) -Wa,-amhls=$(LSTDIR)/$(notdir $(<:.S=.lst)) $(ADEFS)
 CFLAGS    = $(MCFLAGS) $(OPT) $(COPT) $(CWARN) -Wa,-alms=$(LSTDIR)/$(notdir $(<:.c=.lst)) $(DEFS)
 CPPFLAGS  = $(MCFLAGS) $(OPT) $(CPPOPT) $(CPPWARN) -Wa,-alms=$(LSTDIR)/$(notdir $(<:.cpp=.lst)) $(DEFS)
 LDFLAGS   = $(MCFLAGS) $(OPT) -nostartfiles $(LLIBDIR) -Wl,-Map=$(BUILDDIR)/$(PROJECT).map,--cref,--no-warn-mismatch,--library-path=$(RULESPATH)/ld,--script=$(LDSCRIPT)$(LDOPT)
@@ -162,10 +153,10 @@ else
 endif
 
 # Generate dependency information
-ASFLAGS  += -MD -MP -MF $(DEPDIR)/$(@F).d
-ASXFLAGS += -MD -MP -MF $(DEPDIR)/$(@F).d
-CFLAGS   += -MD -MP -MF $(DEPDIR)/$(@F).d
-CPPFLAGS += -MD -MP -MF $(DEPDIR)/$(@F).d
+ASFLAGS  += -MD -MP -MF .dep/$(@F).d
+ASXFLAGS += -MD -MP -MF .dep/$(@F).d
+CFLAGS   += -MD -MP -MF .dep/$(@F).d
+CPPFLAGS += -MD -MP -MF .dep/$(@F).d
 
 # Paths where to search for sources
 VPATH     = $(SRCPATHS)
@@ -196,7 +187,7 @@ $(OBJDIR):
 $(LSTDIR):
 	@mkdir -p $(LSTDIR)
 
-$(ACPPOBJS) : $(OBJDIR)/%.o : %.cpp $(MAKEFILE_LIST)
+$(ACPPOBJS) : $(OBJDIR)/%.o : %.cpp Makefile
 ifeq ($(USE_VERBOSE_COMPILE),yes)
 	@echo
 	$(CPPC) -c $(CPPFLAGS) $(AOPT) -I. $(IINCDIR) $< -o $@
@@ -205,7 +196,7 @@ else
 	@$(CPPC) -c $(CPPFLAGS) $(AOPT) -I. $(IINCDIR) $< -o $@
 endif
 
-$(TCPPOBJS) : $(OBJDIR)/%.o : %.cpp $(MAKEFILE_LIST)
+$(TCPPOBJS) : $(OBJDIR)/%.o : %.cpp Makefile
 ifeq ($(USE_VERBOSE_COMPILE),yes)
 	@echo
 	$(CPPC) -c $(CPPFLAGS) $(TOPT) -I. $(IINCDIR) $< -o $@
@@ -214,7 +205,7 @@ else
 	@$(CPPC) -c $(CPPFLAGS) $(TOPT) -I. $(IINCDIR) $< -o $@
 endif
 
-$(ACOBJS) : $(OBJDIR)/%.o : %.c $(MAKEFILE_LIST)
+$(ACOBJS) : $(OBJDIR)/%.o : %.c Makefile
 ifeq ($(USE_VERBOSE_COMPILE),yes)
 	@echo
 	$(CC) -c $(CFLAGS) $(AOPT) -I. $(IINCDIR) $< -o $@
@@ -223,7 +214,7 @@ else
 	@$(CC) -c $(CFLAGS) $(AOPT) -I. $(IINCDIR) $< -o $@
 endif
 
-$(TCOBJS) : $(OBJDIR)/%.o : %.c $(MAKEFILE_LIST)
+$(TCOBJS) : $(OBJDIR)/%.o : %.c Makefile
 ifeq ($(USE_VERBOSE_COMPILE),yes)
 	@echo
 	$(CC) -c $(CFLAGS) $(TOPT) -I. $(IINCDIR) $< -o $@
@@ -232,7 +223,7 @@ else
 	@$(CC) -c $(CFLAGS) $(TOPT) -I. $(IINCDIR) $< -o $@
 endif
 
-$(ASMOBJS) : $(OBJDIR)/%.o : %.s $(MAKEFILE_LIST)
+$(ASMOBJS) : $(OBJDIR)/%.o : %.s Makefile
 ifeq ($(USE_VERBOSE_COMPILE),yes)
 	@echo
 	$(AS) -c $(ASFLAGS) -I. $(IINCDIR) $< -o $@
@@ -241,7 +232,7 @@ else
 	@$(AS) -c $(ASFLAGS) -I. $(IINCDIR) $< -o $@
 endif
 
-$(ASMXOBJS) : $(OBJDIR)/%.o : %.S $(MAKEFILE_LIST)
+$(ASMXOBJS) : $(OBJDIR)/%.o : %.S Makefile
 ifeq ($(USE_VERBOSE_COMPILE),yes)
 	@echo
 	$(CC) -c $(ASXFLAGS) $(TOPT) -I. $(IINCDIR) $< -o $@
@@ -315,7 +306,7 @@ $(BUILDDIR)/lib$(PROJECT).a: $(OBJS)
 
 clean: CLEAN_RULE_HOOK
 	@echo Cleaning
-	-rm -fR $(DEPDIR) $(BUILDDIR)
+	-rm -fR .dep $(BUILDDIR)
 	@echo
 	@echo Done
 
@@ -324,6 +315,6 @@ CLEAN_RULE_HOOK:
 #
 # Include the dependency files, should be the last of the makefile
 #
--include $(shell mkdir $(DEPDIR) 2>/dev/null) $(wildcard $(DEPDIR)/*)
+-include $(shell mkdir .dep 2>/dev/null) $(wildcard .dep/*)
 
 # *** EOF ***

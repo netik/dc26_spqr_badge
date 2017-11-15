@@ -39,9 +39,6 @@
 # To rebuild project do "make clean" then "make all".
 #----------------------------------------------------------------------------
 
-# Configuration of Smart Build. (can be yes, no)
-USE_SMART_BUILD = yes
-
 # MCU name
 MCU = at90usb1286
 
@@ -61,27 +58,25 @@ OBJDIR = .
 
 # Imported source files
 CHIBIOS = ../../..
-# HAL-OSAL files (optional).
 include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS)/os/hal/boards/PJRC_TEENSY_2PLUSPLUS/board.mk
-include $(CHIBIOS)/os/hal/ports/AVR/MEGA/ATMEGAxx/platform.mk
+include $(CHIBIOS)/os/hal/ports/AVR/platform.mk
 include $(CHIBIOS)/os/hal/osal/rt/osal.mk
-# RTOS files (optional).
 include $(CHIBIOS)/os/rt/rt.mk
 include $(CHIBIOS)/os/common/ports/AVR/compilers/GCC/mk/port.mk
 include $(CHIBIOS)/os/hal/lib/streams/streams.mk
 include $(CHIBIOS)/os/various/shell/shell.mk
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC = $(KERNSRC)      \
-      $(PORTSRC)      \
-      $(OSALSRC)      \
-      $(HALSRC)       \
-      $(PLATFORMSRC)  \
-      $(BOARDSRC)     \
-      $(STREAMSSRC)   \
-      $(SHELLSRC)     \
-      usbcfg.c        \
+SRC = $(KERNSRC) \
+      $(PORTSRC) \
+      $(OSALSRC) \
+      $(HALSRC) \
+      $(PLATFORMSRC) \
+      $(BOARDSRC) \
+      $(STREAMSSRC) \
+      $(SHELLSRC) \
+      usbcfg.c \
       main.c
 
 # List C++ source files here. (C dependencies are automatically generated.)
@@ -112,8 +107,8 @@ DEBUG = dwarf-2
 #     Use forward slashes for directory separators.
 #     For a directory that has spaces, enclose it in quotes.
 EXTRAINCDIRS = $(CHIBIOS)/os/license $(PORTINC) $(KERNINC) $(TESTINC) \
-               $(HALINC) $(OSALINC) $(PLATFORMINC)                    \
-               $(BOARDINC) $(CHIBIOS)/os/various/shell                \
+               $(HALINC) $(OSALINC) $(PLATFORMINC) \
+               $(BOARDINC) $(CHIBIOS)/os/various/shell \
                $(STREAMSINC)
 
 # Compiler flag to set the C Standard level.

@@ -1,6 +1,5 @@
 # Required platform files.
 PLATFORMSRC := $(CHIBIOS)/os/hal/ports/common/ARMCMx/nvic.c \
-               $(CHIBIOS)/os/hal/ports/STM32/STM32F1xx/stm32_isr.c \
                $(CHIBIOS)/os/hal/ports/STM32/STM32F1xx/hal_lld.c
 
 # Required include directories.
@@ -9,19 +8,17 @@ PLATFORMINC := $(CHIBIOS)/os/hal/ports/common/ARMCMx \
 
 # Optional platform files.
 ifeq ($(USE_SMART_BUILD),yes)
+HALCONF := $(strip $(shell cat halconf.h | egrep -e "\#define"))
 
-# Configuration files directory
-ifeq ($(CONFDIR),)
-  CONFDIR = .
+ifneq ($(findstring HAL_USE_EXT TRUE,$(HALCONF)),)
+PLATFORMSRC += $(CHIBIOS)/os/hal/ports/STM32/STM32F1xx/hal_ext_lld_isr.c
 endif
-
-HALCONF := $(strip $(shell cat $(CONFDIR)/halconf.h | egrep -e "\#define"))
-
 ifneq ($(findstring HAL_USE_ADC TRUE,$(HALCONF)),)
 PLATFORMSRC += $(CHIBIOS)/os/hal/ports/STM32/STM32F1xx/hal_adc_lld.c
 endif
 else
-PLATFORMSRC += $(CHIBIOS)/os/hal/ports/STM32/STM32F1xx/hal_adc_lld.c
+PLATFORMSRC += $(CHIBIOS)/os/hal/ports/STM32/STM32F1xx/hal_ext_lld_isr.c \
+               $(CHIBIOS)/os/hal/ports/STM32/STM32F1xx/hal_adc_lld.c
 endif
 
 # Drivers compatible with the platform.

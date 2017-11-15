@@ -283,7 +283,6 @@ extern "C" {
   msg_t sdRequestDataI(SerialDriver *sdp);
   bool sdPutWouldBlock(SerialDriver *sdp);
   bool sdGetWouldBlock(SerialDriver *sdp);
-  msg_t sdControl(SerialDriver *sdp, unsigned int operation, void *arg);
 #ifdef __cplusplus
 }
 #endif

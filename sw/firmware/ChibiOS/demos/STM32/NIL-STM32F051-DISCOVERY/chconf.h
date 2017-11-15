@@ -20,7 +20,7 @@
  * @details A copy of this file must be placed in each project directory, it
  *          contains the application specific kernel settings.
  *
- * @addtogroup config
+ * @addtogroup NIL_CONFIG
  * @details Kernel related settings and hooks.
  * @{
  */
@@ -42,7 +42,7 @@
  * @note    This number is not inclusive of the idle thread which is
  *          Implicitly handled.
  */
-#define CH_CFG_NUM_THREADS                  3
+#define CH_CFG_NUM_THREADS                  4
 
 /** @} */
 

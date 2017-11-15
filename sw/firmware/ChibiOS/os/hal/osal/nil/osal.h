@@ -22,8 +22,8 @@
  * @{
  */
 
-#ifndef OSAL_H
-#define OSAL_H
+#ifndef _OSAL_H_
+#define _OSAL_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -947,6 +947,6 @@ static inline void osalMutexUnlock(mutex_t *mp) {
   chSemSignal((semaphore_t *)mp);
 }
 
-#endif /* OSAL_H */
+#endif /* _OSAL_H_ */
 
 /** @} */
