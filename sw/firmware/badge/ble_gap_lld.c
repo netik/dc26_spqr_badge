@@ -365,7 +365,7 @@ bleGapAdvBlockFind (uint8_t ** pkt, uint8_t * len, uint8_t id)
 		if (t == id)
 			break;
 		else
-			p += (l + 2);
+			p += (l + 1);
 	}
 
 	if (t == id) {
