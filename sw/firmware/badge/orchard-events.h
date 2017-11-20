@@ -4,6 +4,11 @@
 #include "gfx.h"
 #include "joypad_lld.h"
 
+#include "nrf_sdm.h"
+#include "ble.h"
+#include "ble_l2cap.h"
+#include "ble_l2cap_lld.h"
+
 /* Orchard event wrappers.
    These simplify the ChibiOS eventing system.  To use, initialize the event
    table, hook an event, and then dispatch events.
@@ -108,8 +113,24 @@ typedef struct _OrchardAppUgfxEvent {
   GEvent * pEvent;
 } OrchardAppUgfxEvent;
 
+typedef enum _OrchardAppRadioEventType {
+   connectEvent,		/* Connected to peer */
+   disconnectEvent,		/* Disconnected from peer */
+   connectTimeoutEvent,		/* Connection timed out */
+   l2capConnectEvent,		/* L2CAP connection successful */
+   l2capDisconnectEvent,	/* L2CAP connection closed */
+   l2capConnectRefusedEvent,	/* L2CAP connection failed */
+   l2capRxEvent,		/* L2CAP data received */
+   l2capTxEvent,		/* L2CAP data sent */
+   l2capTxDoneEvent,		/* L2CAP data acknowledged */
+   advertisementEvent		/* Received advertisement */
+} OrchardAppRadioEventType;
+
 typedef struct _OrchardAppRadioEvent {
-   void * pPkt;
+   OrchardAppRadioEventType type;
+   ble_evt_t evt;
+   uint8_t pktlen;
+   uint8_t pkt[BLE_IDES_L2CAP_LEN];
 } OrchardAppRadioEvent;
 
 /* ------- */

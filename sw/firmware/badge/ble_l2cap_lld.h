@@ -34,12 +34,17 @@
 #define _BLE_L2CAP_LLD_H_
 
 #define BLE_IDES_PSM		0x1234
+#define BLE_IDES_CHAT_PSM	0x0001
+#define BLE_IDES_BATTLE_PSM	0x0002
+
 #define BLE_IDES_L2CAP_LEN	128
+
+extern uint16_t ble_local_cid;
 
 extern void bleL2CapDispatch (ble_evt_t *);
 
-extern int bleL2CapConnect (void);
-extern int bleL2CapDisconnect (void);
+extern int bleL2CapConnect (uint16_t);
+extern int bleL2CapDisconnect (uint16_t);
 extern int bleL2CapSend (char *);
 
 extern void bleL2CapStart (void);

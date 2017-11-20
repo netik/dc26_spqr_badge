@@ -46,6 +46,9 @@
 #include "ble_lld.h"
 #include "ble_l2cap_lld.h"
 #include "ble_gap_lld.h"
+#include "ble_peer.h"
+
+#include "orchard-app.h"
 
 #include "badge.h"
 
@@ -56,6 +59,7 @@ static uint8_t * bleGapAdvBlockStart (uint8_t *);
 static uint32_t bleGapAdvBlockAdd (void * pElem, uint8_t len, uint8_t etype,
 	uint8_t * pkt, uint8_t * size);
 static uint32_t bleGapAdvBlockFinish (uint8_t *, uint8_t);
+static uint32_t bleGapAdvBlockFind (uint8_t **, uint8_t *, uint8_t);
 static int bleGapScanStart (void);
 static int bleGapAdvStart (void);
 
@@ -93,6 +97,15 @@ bleGapAdvStart (void)
 
 	pkt = bleGapAdvBlockStart (&size);
 
+	/* Set our appearance */
+
+	val = BLE_APPEARANCE_DC26;
+	r = bleGapAdvBlockAdd (&val, 2,
+	    BLE_GAP_AD_TYPE_APPEARANCE, pkt, &size);
+
+	if (r != NRF_SUCCESS)
+		return (r);
+
 	/* Set our full name */
 
 	sd_ble_gap_device_name_get (ble_name, &len);
@@ -103,11 +116,11 @@ bleGapAdvStart (void)
 	if (r != NRF_SUCCESS)
 		return (r);
 
-	/* Set our appearance */
+	/* Set manufacturer ID */
 
-	val = BLE_APPEARANCE_GENERIC_COMPUTER;
+	val = BLE_COMPANY_ID_IDES;
 	r = bleGapAdvBlockAdd (&val, 2,
-	    BLE_GAP_AD_TYPE_APPEARANCE, pkt, &size);
+	    BLE_GAP_AD_TYPE_MANUFACTURER_SPECIFIC_DATA, pkt, &size);
 
 	if (r != NRF_SUCCESS)
 		return (r);
@@ -144,36 +157,59 @@ bleGapDispatch (ble_evt_t * evt)
 	ble_gap_sec_keyset_t sec_keyset;
 	ble_gap_sec_params_t sec_params;
 	ble_gap_evt_timeout_t * timeout;
-	ble_gap_addr_t * addr;
+#ifdef BLE_GAP_VERBOSE
+	ble_gap_evt_conn_sec_update_t * sec;
+	ble_gap_conn_sec_mode_t * secmode;
 	int r;
+#endif
+	ble_gap_addr_t * addr;
+	uint8_t * name;
+	uint8_t len;
 
 	switch (evt->header.evt_id) {
 		case BLE_GAP_EVT_CONNECTED:
 			ble_conn_handle = evt->evt.gap_evt.conn_handle;
-			addr =&evt->evt.gap_evt.params.connected.peer_addr;
+			addr = &evt->evt.gap_evt.params.connected.peer_addr;
 			memcpy (&ble_peer_addr, addr, sizeof(ble_gap_addr_t));
 			ble_gap_role = evt->evt.gap_evt.params.connected.role;
-			printf ("gap connected (handle: %x) ", ble_conn_handle);
+#ifdef BLE_GAP_VERBOSE
+			printf ("gap connected (handle: %x) ",
+			    ble_conn_handle);
 			printf ("peer: %x:%x:%x:%x:%x:%x ",
 			    addr->addr[5], addr->addr[4], addr->addr[3],
 			    addr->addr[2], addr->addr[1], addr->addr[0]);
 			printf ("role; %d\r\n", ble_gap_role);
+#endif
 			if (ble_gap_role == BLE_GAP_ROLE_CENTRAL)
 				bleGapScanStart ();
+			orchardAppRadioCallback (connectEvent, evt, NULL, 0);
 			break;
 
 		case BLE_GAP_EVT_DISCONNECTED:
+#ifdef BLE_GAP_VERBOSE
 			printf ("gap disconnected...\r\n");
+#endif
 			bleGapStart ();
+			orchardAppRadioCallback (disconnectEvent, evt,
+			    NULL, 0);
 			break;
 
 		case BLE_GAP_EVT_AUTH_STATUS:
+#ifdef BLE_GAP_VERBOSE
 			printf ("gap auth status... (%d)\r\n",
 			    evt->evt.gap_evt.params.auth_status.auth_status);
+#endif
 			break;
 
 		case BLE_GAP_EVT_CONN_SEC_UPDATE:
+#ifdef BLE_GAP_VERBOSE
+			sec = &evt->evt.gap_evt.params.conn_sec_update;
+			secmode = &sec->conn_sec.sec_mode;
 			printf ("gap connections security update...\r\n");
+			printf ("security mode: %d level: %d keylen: %d\r\n",
+			    secmode->sm, secmode->lv,
+			    sec->conn_sec.encr_key_size);
+#endif
 			break;
 
 		case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
@@ -184,30 +220,54 @@ bleGapDispatch (ble_evt_t * evt)
 			sec_params.min_key_size = 7;
 			sec_params.max_key_size = 16;
 			sec_params.io_caps = BLE_GAP_IO_CAPS_NONE;
-			r = sd_ble_gap_sec_params_reply (ble_conn_handle,
+#ifdef BLE_GAP_VERBOSE
+			r =
+#endif
+			sd_ble_gap_sec_params_reply (ble_conn_handle,
 			    BLE_GAP_SEC_STATUS_SUCCESS, &sec_params,
 			    &sec_keyset);
+#ifdef BLE_GAP_VERBOSE
 			printf ("gap security param request...(%d)\r\n", r);
+#endif
 			break;
 		case BLE_GAP_EVT_ADV_REPORT:
+			addr = &evt->evt.gap_evt.params.adv_report.peer_addr;
+#ifdef BLE_GAP_VERBOSE
 			printf ("GAP scan report...\r\n");
-			addr =&evt->evt.gap_evt.params.adv_report.peer_addr;
 			printf ("peer: %x:%x:%x:%x:%x:%x rssi: %d\r\n",
 			    addr->addr[5], addr->addr[4], addr->addr[3],
 			    addr->addr[2], addr->addr[1], addr->addr[0],
 			    evt->evt.gap_evt.params.adv_report.rssi);
-
+#endif
+			len = evt->evt.gap_evt.params.adv_report.dlen;
+			name = evt->evt.gap_evt.params.adv_report.data;
+			if (bleGapAdvBlockFind (&name, &len,
+			    BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME) !=
+			    NRF_SUCCESS) {
+				name = NULL;
+				len = 0;
+			}
+			blePeerAdd (addr->addr, name, len,
+			    evt->evt.gap_evt.params.adv_report.rssi);
+			orchardAppRadioCallback (advertisementEvent, evt,
+			    NULL, 0);
 			break;
 		case BLE_GAP_EVT_TIMEOUT:
 			timeout = &evt->evt.gap_evt.params.timeout;
-			printf ("GAP timeout event, src: %d\r\n", timeout->src);
+#ifdef BLE_GAP_VERBOSE
+			printf ("GAP timeout event, src: %d\r\n",
+			    timeout->src);
+#endif
 			if (timeout->src == BLE_GAP_TIMEOUT_SRC_ADVERTISING &&
 			    ble_conn_handle == BLE_CONN_HANDLE_INVALID)
 				bleGapAdvStart ();
 			if (timeout->src == BLE_GAP_TIMEOUT_SRC_SCAN)
 				bleGapScanStart ();
-			if (timeout->src == BLE_GAP_TIMEOUT_SRC_CONN)
+			if (timeout->src == BLE_GAP_TIMEOUT_SRC_CONN) {
+				orchardAppRadioCallback (connectTimeoutEvent,
+			 	     evt, NULL, 0);
 				bleGapStart ();
+			}
 			break;
 
 		default:
@@ -281,11 +341,47 @@ bleGapAdvBlockFinish (uint8_t * pkt, uint8_t len)
 	return (r);
 }
 
+static uint32_t
+bleGapAdvBlockFind (uint8_t ** pkt, uint8_t * len, uint8_t id)
+{
+	uint8_t * p;
+	uint8_t l;
+	uint8_t t = 0;
+
+	if (*len == 0 || *len > BLE_GAP_ADV_MAX_SIZE)
+		return (NRF_ERROR_INVALID_PARAM);
+
+	p = *pkt;
+
+	while (p < (*pkt + *len)) {
+		l = p[0];
+		t = p[1];
+
+		/* Sanity check. */
+
+		if (l == 0 || l > BLE_GAP_ADV_MAX_SIZE)
+			return (NRF_ERROR_INVALID_PARAM);
+
+		if (t == id)
+			break;
+		else
+			p += (l + 2);
+	}
+
+	if (t == id) {
+		*pkt = p + 2;
+		*len = l;
+		return (NRF_SUCCESS);
+	}
+
+	return (NRF_ERROR_NOT_FOUND);
+}
+
 void
 bleGapStart (void)
 {
 	ble_gap_conn_sec_mode_t perm;
-	uint8_t * ble_name = (uint8_t *)"DC26 IDES";
+	uint8_t * ble_name = (uint8_t *)BLE_NAME_IDES;
 
 	ble_conn_handle = BLE_CONN_HANDLE_INVALID;
 
@@ -295,7 +391,7 @@ bleGapStart (void)
 	sd_ble_gap_device_name_set (&perm, ble_name,
 	    strlen ((char *)ble_name));
 
-	sd_ble_gap_appearance_set (BLE_APPEARANCE_GENERIC_COMPUTER);
+	sd_ble_gap_appearance_set (BLE_APPEARANCE_DC26);
 
 	bleGapAdvStart ();
 	bleGapScanStart ();

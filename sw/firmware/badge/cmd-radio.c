@@ -46,6 +46,7 @@
 
 #include "ble_gap_lld.h"
 #include "ble_l2cap_lld.h"
+#include "ble_peer.h"
 
 #include "badge.h"
 
@@ -89,14 +90,14 @@ radio_connect (BaseSequentialStream *chp, int argc, char *argv[])
 static void
 radio_l2capconnect (BaseSequentialStream *chp, int argc, char *argv[])
 {
-	bleL2CapConnect ();
+	bleL2CapConnect (BLE_IDES_PSM);
 	return;
 }
 
 static void
 radio_l2capdisconnect (BaseSequentialStream *chp, int argc, char *argv[])
 {
-	bleL2CapDisconnect ();
+	bleL2CapDisconnect (ble_local_cid);
 	return;
 }
 
@@ -124,6 +125,7 @@ cmd_radio (BaseSequentialStream *chp, int argc, char *argv[])
 		chprintf(chp, "send [msg]           Transmit to peer\r\n");
 		chprintf(chp, "enable               Enable BLE radio\r\n");
 		chprintf(chp, "disable              Disable BLE radio\r\n");
+		chprintf(chp, "peerlist             Display nearby peers\n");
 	}
 
 	if (strcmp (argv[0], "connect") == 0)
@@ -140,6 +142,8 @@ cmd_radio (BaseSequentialStream *chp, int argc, char *argv[])
 		bleDisable ();
 	else if (strcmp (argv[0], "enable") == 0)
 		bleEnable ();
+	else if (strcmp (argv[0], "peerlist") == 0)
+		blePeerShow ();
 	else
 		chprintf(chp, "Unrecognized radio command\r\n");
 

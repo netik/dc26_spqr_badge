@@ -30,19 +30,27 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _BLE_LLD_H_
-#define _BLE_LLD_H_
+#ifndef _BLE_PEER_H_
+#define _BLE_PEER_H_
 
-#define BLE_APPEARANCE_DC26	0xDC19
-#define BLE_COMPANY_ID_IDES	0x1D35
-#define BLE_NAME_IDES		"DC26 IDES"
+/* Note: same as BLE_GAP_ADV_MAX_SIZE */
 
-#define BLE_IDES_APP_TAG	0x01
+#define BLE_PEER_NAME_MAX		31
 
-extern uint8_t ble_station_addr[];
+#define BLE_PEER_LIST_SIZE		32
 
-extern void bleStart (void);
-extern void bleEnable (void);
-extern void bleDisable (void);
+#define BLE_PEER_LIST_TTL		16
 
-#endif /* _BLE_LLD_H_ */
+typedef struct _ble_peer_entry {
+	uint8_t		ble_peer_addr[6];
+	uint8_t		ble_peer_name[BLE_PEER_NAME_MAX];
+	int8_t		ble_rssi;
+	uint8_t		ble_ttl;
+	uint8_t		ble_used;
+} ble_peer_entry;
+
+extern void blePeerStart (void);
+extern void blePeerAdd (uint8_t *, uint8_t *, uint8_t, int8_t);
+extern void blePeerShow (void);
+
+#endif /* __BLE_PEER_H */

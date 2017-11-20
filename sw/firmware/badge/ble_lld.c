@@ -58,6 +58,7 @@
 #include "ble_lld.h"
 #include "ble_gap_lld.h"
 #include "ble_l2cap_lld.h"
+#include "ble_peer.h"
 
 #include "badge.h"
 
@@ -137,7 +138,7 @@ static THD_FUNCTION(sdThread, arg)
 
 	(void)arg;
     
-	chRegSetThreadName("SDEvent");
+	chRegSetThreadName ("SDEvent");
 
 	while (1) {
 		osalSysLock ();
@@ -210,6 +211,10 @@ bleStart (void)
 	/* Set up SoftDevice ISR */
 
 	nvicEnableVector (SD_EVT_IRQn, 5);
+
+	/* Initialize peer list handling */
+
+	blePeerStart ();
 
 	/* Start and configure SoftDevice */
 

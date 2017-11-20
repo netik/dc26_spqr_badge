@@ -46,6 +46,8 @@
 #include "ble_gap_lld.h"
 #include "ble_l2cap_lld.h"
 
+#include "orchard-app.h"
+
 #include "badge.h"
 
 uint8_t ble_rx_buf[BLE_IDES_L2CAP_LEN];
@@ -56,18 +58,20 @@ static void bleL2CapSetupReply (void);
 void
 bleL2CapDispatch (ble_evt_t * evt)
 {
+#ifdef BLE_L2CAP_VERBOSE
 	ble_l2cap_evt_ch_setup_refused_t * refused;
 	ble_l2cap_evt_ch_setup_request_t * request;
 	ble_l2cap_evt_ch_setup_t * setup;
+#endif
 	ble_l2cap_evt_ch_rx_t * rx;
 	ble_data_t rx_data;
 
 	switch (evt->header.evt_id) {
 		case BLE_L2CAP_EVT_CH_SETUP_REQUEST:
+#ifdef BLE_L2CAP_VERBOSE
+			request = &evt->evt.l2cap_evt.params.ch_setup_request;
 			printf ("L2CAP setup requested %x\r\n",
 			    evt->evt.l2cap_evt.local_cid);
-			ble_local_cid = evt->evt.l2cap_evt.local_cid;
-			request = &evt->evt.l2cap_evt.params.ch_setup_request;
 			printf ("MTU: %d peer MPS: %d "
 			     "TX MPS: %d credits: %d ",
 				request->tx_params.tx_mtu,
@@ -75,18 +79,24 @@ bleL2CapDispatch (ble_evt_t * evt)
 				request->tx_params.tx_mps,
 				request->tx_params.credits);
 			printf ("PSM: %x\r\n", request->le_psm);
+#endif
+			ble_local_cid = evt->evt.l2cap_evt.local_cid;
 			bleL2CapSetupReply ();
 			break;
 
 		case BLE_L2CAP_EVT_CH_SETUP_REFUSED:
+#ifdef BLE_L2CAP_VERBOSE
                         refused = &evt->evt.l2cap_evt.params.ch_setup_refused;
 			printf ("L2CAP setup refused: %x %x\r\n",
 			    refused->source, refused->status);
+#endif
+			orchardAppRadioCallback (l2capConnectRefusedEvent,
+			    evt, NULL, 0);
 			break;
 
 		case BLE_L2CAP_EVT_CH_SETUP:
+#ifdef BLE_L2CAP_VERBOSE
 			printf ("L2CAP setup completed\r\n");
-			ble_local_cid = evt->evt.l2cap_evt.local_cid;
 			setup = &evt->evt.l2cap_evt.params.ch_setup;
 			printf ("MTU: %d peer MPS: %d "
 			     "TX MPS: %d credits: %d\r\n",
@@ -94,19 +104,33 @@ bleL2CapDispatch (ble_evt_t * evt)
 				setup->tx_params.peer_mps,
 				setup->tx_params.tx_mps,
 				setup->tx_params.credits);
+#endif
+			ble_local_cid = evt->evt.l2cap_evt.local_cid;
+			orchardAppRadioCallback (l2capConnectRefusedEvent,
+			    evt, NULL, 0);
 			break;
 
 		case BLE_L2CAP_EVT_CH_RELEASED:
+#ifdef BLE_L2CAP_VERBOSE
 			printf ("L2CAP channel release\r\n");
+#endif
 			ble_local_cid = BLE_L2CAP_CID_INVALID;
+			orchardAppRadioCallback (l2capDisconnectEvent,
+			    evt, NULL, 0);
 			break;
 
 		case BLE_L2CAP_EVT_CH_SDU_BUF_RELEASED:
+#ifdef BLE_L2CAP_VERBOSE
 			printf ("L2CAP channel SDU buffer released\r\n");
+#endif
 			break;
 
 		case BLE_L2CAP_EVT_CH_CREDIT:
+#ifdef BLE_L2CAP_VERBOSE
 			printf ("L2CAP credit received\r\n");
+#endif
+			orchardAppRadioCallback (l2capTxDoneEvent, evt,
+			    NULL, 0);
 			break;
 
 		case BLE_L2CAP_EVT_CH_RX:
@@ -115,12 +139,18 @@ bleL2CapDispatch (ble_evt_t * evt)
 			printf ("DATA RECEIVED: [%s]\r\n", rx->sdu_buf);
 			rx_data.p_data = ble_rx_buf;
 			rx_data.len = BLE_IDES_L2CAP_LEN;
+			orchardAppRadioCallback (l2capRxEvent, evt,
+			    rx_data.p_data, rx_data.len);
 			sd_ble_l2cap_ch_rx (ble_conn_handle,
 			    evt->evt.l2cap_evt.local_cid, &rx_data);
 			break;
 
 		case BLE_L2CAP_EVT_CH_TX:
+#ifdef BLE_L2CAP_VERBOSE
 			printf ("L2CAP SDU transmitted\r\n");
+#endif
+			orchardAppRadioCallback (l2capTxEvent, evt,
+			    NULL, 0);
 			break;
 
 		default:
@@ -133,7 +163,7 @@ bleL2CapDispatch (ble_evt_t * evt)
 }
 
 int
-bleL2CapConnect (void)
+bleL2CapConnect (uint16_t psm)
 {
 	ble_l2cap_ch_setup_params_t params;
 	uint16_t cid;
@@ -144,7 +174,7 @@ bleL2CapConnect (void)
 	params.rx_params.sdu_buf.p_data = ble_rx_buf;
 	params.rx_params.sdu_buf.len = BLE_IDES_L2CAP_LEN;
 
-	params.le_psm = BLE_IDES_PSM;
+	params.le_psm = psm;
 	params.status = 0;
 
 	cid = BLE_L2CAP_CID_INVALID;
@@ -158,11 +188,11 @@ bleL2CapConnect (void)
 }
 
 int
-bleL2CapDisconnect (void)
+bleL2CapDisconnect (uint16_t cid)
 {
 	int r;
 
-	r = sd_ble_l2cap_ch_release (ble_conn_handle, ble_local_cid);
+	r = sd_ble_l2cap_ch_release (ble_conn_handle, cid);
 
 	if (r != NRF_SUCCESS)
 		printf ("L2CAP disconnect failed (%x)\r\n", r);

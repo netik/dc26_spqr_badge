@@ -30,7 +30,8 @@ event_source_t orchard_app_radio;
 event_source_t orchard_app_key;
 
 static uint8_t ui_override = 0;
-uint8_t orchard_pkt_busy;
+static uint8_t orchard_pkt_busy;
+static OrchardAppRadioEvent radio_evt;
 
 void orchardAppUgfxCallback (void * arg, GEvent * pe)
 {
@@ -61,7 +62,8 @@ static void ugfx_event(eventid_t id) {
   return;
 }
 
-void orchardAppRadioCallback (void * pkt) {
+void orchardAppRadioCallback (OrchardAppRadioEventType type,
+  ble_evt_t * evt, void * pkt, uint8_t len) {
 
   if (instance.context == NULL)
     return;
@@ -73,7 +75,13 @@ void orchardAppRadioCallback (void * pkt) {
    * this seems sufficient.
    */
   if (orchard_pkt_busy == 0) {
-    /*memcpy (&orchard_pkt, pkt, sizeof(KW01_PKT));*/
+
+    radio_evt.type = type;
+    if (pkt != NULL)
+      memcpy (&radio_evt.pkt, pkt, len);
+    if (evt != NULL)
+      memcpy (&radio_evt.evt, evt, sizeof(ble_evt_t));
+
     orchard_pkt_busy++;
   } else
     return;
@@ -90,8 +98,7 @@ static void radio_event(eventid_t id) {
 
   if (instance.context != NULL) {
     evt.type = radioEvent;
-    evt.radio.pPkt = NULL;
-
+    memcpy (&evt.radio, &radio_evt, sizeof(radio_evt));
     instance.app->event (instance.context, &evt);
     orchard_pkt_busy--;
   }

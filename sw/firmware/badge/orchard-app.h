@@ -44,7 +44,8 @@ extern void orchardAppTimer(const OrchardAppContext *context,
                      uint32_t usecs,
                      bool repeating);
 extern void orchardAppUgfxCallback (void * arg, GEvent * pe);
-extern void orchardAppRadioCallback (void * pkt);
+extern void orchardAppRadioCallback (OrchardAppRadioEventType type,
+    ble_evt_t * evt, void * pkt, uint8_t pktlen);
 
 #define UI_IDLE_TIME 10 // after 10 seconds, abort to main
 
