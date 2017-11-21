@@ -251,7 +251,9 @@ chat_event (OrchardAppContext *context,
 		}
 
 		if (radio->type == connectTimeoutEvent ||
-		    radio->type == l2capConnectRefusedEvent) {
+		    radio->type == l2capConnectRefusedEvent ||
+		    radio->type == disconnectEvent ||
+		    radio->type == l2capDisconnectEvent) {
 			orchardAppExit ();
 			return;
 		}
@@ -326,7 +328,10 @@ chat_event (OrchardAppContext *context,
 				orchardAppExit ();
 			} else {
 				p->txbuf[uiContext->selected] = 0x0;
-				bleL2CapSend (p->txbuf);
+				if (bleL2CapSend (p->txbuf) != NRF_SUCCESS) {
+					orchardAppExit ();
+					return;
+				}
 				memset (p->txbuf, 0, sizeof(p->txbuf));
 				p->uiCtx.total = BLE_IDES_L2CAP_LEN - 1;
 				/* Tell the keyboard UI to redraw */
@@ -346,5 +351,5 @@ static void chat_exit (OrchardAppContext *context)
 	return;
 }
 
-orchard_app("Radio Chat", "chat.rgb", APP_FLAG_AUTOINIT,
+orchard_app("Radio Chat", "chat.rgb", 0,
 	chat_init, chat_start, chat_event, chat_exit, 9999);
