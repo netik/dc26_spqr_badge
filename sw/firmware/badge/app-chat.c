@@ -319,7 +319,6 @@ chat_event (OrchardAppContext *context,
 
 			/* Connect to the user */
 
-			printf ("CONNECTING...\r\n");
 			bleGapConnect (&p->netid);
 		} else {
 			/* 0xFF means exit chat */
