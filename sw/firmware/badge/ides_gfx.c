@@ -142,3 +142,34 @@ putImageFile (char *name, int16_t x, int16_t y)
 	return (0);
 }
 
+void
+screen_alert_draw (uint8_t clear, char *msg)
+{
+	uint16_t middle;
+	font_t fontFF;
+
+	middle = (gdispGetHeight() >> 1);
+	fontFF = gdispOpenFont (FONT_FIXED);
+
+
+	if (clear) {
+		gdispClear(Black);
+	} else {
+		/* just black out the drawing area. */
+		gdispFillArea( 0, middle - 20, 320, 40, Black );
+	}
+
+	gdispDrawThickLine (0, middle - 20, 320, middle -20, Red, 2, FALSE);
+	gdispDrawThickLine (0, middle + 20, 320, middle +20, Red, 2, FALSE);
+   
+	gdispDrawStringBox (0,
+	    middle - (gdispGetFontMetric(fontFF, fontHeight) >> 1),
+	    gdispGetWidth(), gdispGetFontMetric(fontFF, fontHeight),
+	    msg, fontFF, Red, justifyCenter);
+
+
+	gdispCloseFont (fontFF);
+
+	return;
+}
+

@@ -158,6 +158,9 @@ CSRC += main.c \
 	video_lld.c \
 	badge_vectors.c \
 	ides_gfx.c \
+	scanf.c \
+	strtoq.c \
+	strtouq.c \
         $(GFXSRC) \
 	$(FATFSSRC)
 

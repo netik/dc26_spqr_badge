@@ -411,7 +411,7 @@ bleGapConnect (ble_gap_addr_t * peer)
 	sparams.active = FALSE;
 	sparams.use_whitelist = FALSE;
 	sparams.adv_dir_report = FALSE;
-	sparams.timeout = BLE_IDES_SCAN_TIMEOUT; /* Timeout in seconds */
+	sparams.timeout = BLE_IDES_CONNECT_TIMEOUT; /* Timeout in seconds */
 	sparams.interval = MSEC_TO_UNITS(1000, UNIT_0_625_MS);
 	sparams.window = MSEC_TO_UNITS(50, UNIT_0_625_MS);
 

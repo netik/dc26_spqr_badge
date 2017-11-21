@@ -32,6 +32,7 @@ event_source_t orchard_app_key;
 static uint8_t ui_override = 0;
 static uint8_t orchard_pkt_busy;
 static OrchardAppRadioEvent radio_evt;
+static uint8_t radio_pkt[BLE_IDES_L2CAP_LEN];
 
 void orchardAppUgfxCallback (void * arg, GEvent * pe)
 {
@@ -77,6 +78,7 @@ void orchardAppRadioCallback (OrchardAppRadioEventType type,
   if (orchard_pkt_busy == 0) {
 
     radio_evt.type = type;
+    radio_evt.pkt = radio_pkt;
     if (pkt != NULL)
       memcpy (&radio_evt.pkt, pkt, len);
     if (evt != NULL)

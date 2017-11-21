@@ -130,7 +130,7 @@ typedef struct _OrchardAppRadioEvent {
    OrchardAppRadioEventType type;
    ble_evt_t evt;
    uint8_t pktlen;
-   uint8_t pkt[BLE_IDES_L2CAP_LEN];
+   uint8_t * pkt;
 } OrchardAppRadioEvent;
 
 /* ------- */

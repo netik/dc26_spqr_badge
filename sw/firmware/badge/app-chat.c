@@ -135,10 +135,19 @@ chat_event (OrchardAppContext *context,
 	ble_evt_t * evt;
 	const OrchardUi * ui;
 	ChatHandles * p;
-	OrchardAppEvent e;
+	OrchardAppEvent * e;
 	unsigned int addr[6];
 	char * c;
 	int i;
+
+	/*
+	 * We're cheating a bit here by ignoring the 'const'
+	 * qualifier for the event handle, but re-using the
+	 * current event saves us from having to consume extra
+	 * stack space for the UI event.
+	 */
+
+	e = (OrchardAppEvent *)event;
 
 	/*
 	 * In order to avoid any chance of a race condition between
@@ -217,25 +226,34 @@ chat_event (OrchardAppContext *context,
 			    p->listitems[p->peer], radio->pkt);
 			p->listitems[0] = p->rxbuf;
 			/* Tell the keyboard UI to redraw */
-			e.type = uiEvent;
-			ui->event (context, &e);
+			e->type = uiEvent;
+			ui->event (context, e);
+			return;
 		}
 
 		/* A new advertisement has arrived, update the user list */
 
-		if (radio->type == advertisementEvent &&
-		    ui == getUiByName ("list") &&
-		    insert_peer (context, evt) != -1) {
-			uiContext->selected = p->peers - 1;
-			e.type = uiEvent;
-			e.ui.flags = uiOK;
-			ui->event (context, &e);
+		if (radio->type == advertisementEvent) {
+			if (ui == getUiByName ("list") &&
+			    insert_peer (context, evt) != -1) {
+				uiContext->selected = p->peers - 1;
+				e->type = uiEvent;
+				e->ui.flags = uiOK;
+				ui->event (context, e);
+			}
+			return;
 		}
 
-		if (radio->type == connectEvent)
+		if (radio->type == connectEvent) {
+			screen_alert_draw (FALSE, "Connected to peer...");
+			chThdSleepMilliseconds (1000);
 			bleL2CapConnect (BLE_IDES_CHAT_PSM);
+			return;
+		}
 
 		if (radio->type == l2capConnectEvent) {
+			screen_alert_draw (FALSE, "Channel open!");
+			chThdSleepMilliseconds (1000);
 			p->cid = evt->evt.l2cap_evt.local_cid;
 			p->listitems[0] = "Type @ or press button to exit";
 			memset (p->txbuf, 0, sizeof(p->txbuf));
@@ -248,15 +266,29 @@ chat_event (OrchardAppContext *context,
 			context->instance->ui = getUiByName ("keyboard");
 			context->instance->uicontext = &p->uiCtx;
        			context->instance->ui->start (context);
-		}
-
-		if (radio->type == connectTimeoutEvent ||
-		    radio->type == l2capConnectRefusedEvent ||
-		    radio->type == disconnectEvent ||
-		    radio->type == l2capDisconnectEvent) {
-			orchardAppExit ();
 			return;
 		}
+
+		if (radio->type == l2capTxEvent ||
+		    radio->type == l2capTxDoneEvent)
+			return;
+
+		if (radio->type == connectTimeoutEvent) {
+			screen_alert_draw (FALSE, "Connection timed out!");
+		}
+
+		if (radio->type == l2capConnectRefusedEvent) {
+			screen_alert_draw (FALSE, "Connection refused!");
+		}
+
+		if (radio->type == disconnectEvent ||
+		    radio->type == l2capDisconnectEvent) {
+			screen_alert_draw (TRUE, "Connection closed!");
+		}
+
+		chThdSleepMilliseconds (1000);
+		orchardAppExit ();
+		return;
 	}
 
 	if (event->type == uiEvent &&
@@ -322,6 +354,8 @@ chat_event (OrchardAppContext *context,
 			/* Connect to the user */
 
 			bleGapConnect (&p->netid);
+
+			screen_alert_draw (FALSE, "Connecting...");
 		} else {
 			/* 0xFF means exit chat */
 			if (uiContext->total == 0xFF) {
@@ -335,9 +369,9 @@ chat_event (OrchardAppContext *context,
 				memset (p->txbuf, 0, sizeof(p->txbuf));
 				p->uiCtx.total = BLE_IDES_L2CAP_LEN - 1;
 				/* Tell the keyboard UI to redraw */
-				e.type = uiEvent;
-				e.ui.flags = uiCancel;
-				ui->event (context, &e);
+				e->type = uiEvent;
+				e->ui.flags = uiCancel;
+				ui->event (context, e);
 			}
 		}
 	}

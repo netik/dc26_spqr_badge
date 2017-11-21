@@ -13,5 +13,6 @@ extern const GWidgetStyle DarkPurpleFilledStyle;
 extern const GWidgetStyle IvoryStyle;
 
 extern int putImageFile (char *name, int16_t x, int16_t y);
+extern void screen_alert_draw (uint8_t clear, char *msg);
 
 #endif /* __IDEX_GFX_H__ */

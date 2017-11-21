@@ -39,6 +39,7 @@ extern ble_gap_addr_t ble_peer_addr;
 
 #define BLE_IDES_SCAN_TIMEOUT		30
 #define BLE_IDES_ADV_TIMEOUT		30
+#define BLE_IDES_CONNECT_TIMEOUT	5
 
 enum
 {
