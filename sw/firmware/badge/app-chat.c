@@ -246,7 +246,6 @@ chat_event (OrchardAppContext *context,
 
 		if (radio->type == connectEvent) {
 			screen_alert_draw (FALSE, "Connected to peer...");
-			chThdSleepMilliseconds (1000);
 			bleL2CapConnect (BLE_IDES_CHAT_PSM);
 			return;
 		}
