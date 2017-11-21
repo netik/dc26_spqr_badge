@@ -306,7 +306,12 @@ launcher_event (OrchardAppContext *context, const OrchardAppEvent *event)
 	unsigned int i;
 	GHandle w;
 	unsigned int currapp;
+
+	/* Ignore radio events */
  
+	if (event->type == radioEvent)
+		return;
+
 	/*
 	 * Timer events trigger once a second. If we get ten timer
 	 * events with no other events in between, then we time out
