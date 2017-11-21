@@ -80,7 +80,7 @@ void orchardAppRadioCallback (OrchardAppRadioEventType type,
     radio_evt.type = type;
     radio_evt.pkt = radio_pkt;
     if (pkt != NULL)
-      memcpy (&radio_evt.pkt, pkt, len);
+      memcpy (radio_evt.pkt, pkt, len);
     if (evt != NULL)
       memcpy (&radio_evt.evt, evt, sizeof(ble_evt_t));
 
