@@ -57,4 +57,6 @@ extern void bleGapStart (void);
 extern int bleGapConnect (ble_gap_addr_t *);
 extern int bleGapDisconnect (void);
 
+uint32_t bleGapAdvBlockFind (uint8_t **, uint8_t *, uint8_t);
+
 #endif /* __BLE_GAP_LLD_H */

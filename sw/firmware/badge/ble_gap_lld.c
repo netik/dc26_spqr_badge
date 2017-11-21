@@ -59,7 +59,6 @@ static uint8_t * bleGapAdvBlockStart (uint8_t *);
 static uint32_t bleGapAdvBlockAdd (void * pElem, uint8_t len, uint8_t etype,
 	uint8_t * pkt, uint8_t * size);
 static uint32_t bleGapAdvBlockFinish (uint8_t *, uint8_t);
-static uint32_t bleGapAdvBlockFind (uint8_t **, uint8_t *, uint8_t);
 static int bleGapScanStart (void);
 static int bleGapAdvStart (void);
 
@@ -341,7 +340,7 @@ bleGapAdvBlockFinish (uint8_t * pkt, uint8_t len)
 	return (r);
 }
 
-static uint32_t
+uint32_t
 bleGapAdvBlockFind (uint8_t ** pkt, uint8_t * len, uint8_t id)
 {
 	uint8_t * p;
@@ -370,7 +369,7 @@ bleGapAdvBlockFind (uint8_t ** pkt, uint8_t * len, uint8_t id)
 
 	if (t == id) {
 		*pkt = p + 2;
-		*len = l;
+		*len = l - 1;
 		return (NRF_SUCCESS);
 	}
 

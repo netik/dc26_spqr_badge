@@ -112,7 +112,7 @@ blePeerShow (void)
 		if (p->ble_used == 0)
 			continue;
 
-		printf ("[%x:%x:%x:%x:%x:%x] ",
+		printf ("[%02x:%02x:%02x:%02x:%02x:%02x] ",
 		    p->ble_peer_addr[5], p->ble_peer_addr[4],
 		    p->ble_peer_addr[3], p->ble_peer_addr[2],
 		    p->ble_peer_addr[1], p->ble_peer_addr[0]);

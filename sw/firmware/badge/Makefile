@@ -146,6 +146,7 @@ CSRC += main.c \
 	app-launcher.c \
 	app-test.c \
 	app-video.c \
+	app-chat.c \
 	async_io_lld.c \
 	ble_gap_lld.c \
 	ble_l2cap_lld.c \

@@ -106,7 +106,7 @@ bleL2CapDispatch (ble_evt_t * evt)
 				setup->tx_params.credits);
 #endif
 			ble_local_cid = evt->evt.l2cap_evt.local_cid;
-			orchardAppRadioCallback (l2capConnectRefusedEvent,
+			orchardAppRadioCallback (l2capConnectEvent,
 			    evt, NULL, 0);
 			break;
 
