@@ -6,7 +6,7 @@
 # handler in the SoftDevice module. This address was obtained by
 # doing a hex dump of the first few bytes of the object file.
 
-arm-none-eabi-objcopy -I ihex -O binary s132_nrf52_5.0.0_softdevice.hex softdevice.bin
+arm-none-eabi-objcopy -I ihex -O binary s132_nrf52_5.1.0_softdevice.hex softdevice.bin
 arm-none-eabi-objcopy -I binary -O elf32-littlearm -B arm softdevice.bin softdevice.o
 rm -f softdevice.bin
 arm-none-eabi-objcopy -I elf32-littlearm --rename-section .data=.softdevice softdevice.o

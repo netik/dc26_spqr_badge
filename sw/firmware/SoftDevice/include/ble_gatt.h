@@ -45,8 +45,13 @@
 #ifndef BLE_GATT_H__
 #define BLE_GATT_H__
 
-#include "ble_types.h"
+#include <stdint.h>
+#include "nrf_svc.h"
+#include "nrf_error.h"
+#include "ble_hci.h"
 #include "ble_ranges.h"
+#include "ble_types.h"
+#include "ble_err.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -179,7 +184,7 @@ extern "C" {
 /**
  * @brief BLE GATT connection configuration parameters, set with @ref sd_ble_cfg_set.
  *
- * @retval NRF_ERROR_INVALID_PARAM att_mtu is smaller than @ref BLE_GATT_ATT_MTU_DEFAULT.
+ * @retval ::NRF_ERROR_INVALID_PARAM att_mtu is smaller than @ref BLE_GATT_ATT_MTU_DEFAULT.
  */
 typedef struct
 {

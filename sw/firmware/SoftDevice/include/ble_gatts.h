@@ -45,12 +45,15 @@
 #ifndef BLE_GATTS_H__
 #define BLE_GATTS_H__
 
-#include "ble_types.h"
-#include "ble_ranges.h"
-#include "ble_l2cap.h"
-#include "ble_gap.h"
-#include "ble_gatt.h"
+#include <stdint.h>
 #include "nrf_svc.h"
+#include "nrf_error.h"
+#include "ble_hci.h"
+#include "ble_ranges.h"
+#include "ble_types.h"
+#include "ble_err.h"
+#include "ble_gatt.h"
+#include "ble_gap.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -621,7 +624,9 @@ SVCALL(SD_BLE_GATTS_VALUE_GET, uint32_t, sd_ble_gatts_value_get(uint16_t conn_ha
  * @retval ::NRF_ERROR_NOT_FOUND Attribute not found.
  * @retval ::NRF_ERROR_FORBIDDEN The connection's current security level is lower than the one required by the write permissions of the CCCD associated with this characteristic.
  * @retval ::NRF_ERROR_DATA_SIZE Invalid data size(s) supplied.
- * @retval ::NRF_ERROR_BUSY For @ref BLE_GATT_HVX_INDICATION Procedure already in progress. Wait for a @ref BLE_GATTS_EVT_HVC event and retry.
+ * @retval ::NRF_ERROR_BUSY For @ref BLE_GATT_HVX_INDICATION, GATT Server procedure already in progress or blocked because of a previous GATT procedure timeout.
+                            Wait for a @ref BLE_GATTS_EVT_HVC event and retry.
+                            For @ref BLE_GATT_HVX_NOTIFICATION it can only mean GATT procedure timeout.
  * @retval ::BLE_ERROR_GATTS_SYS_ATTR_MISSING System attributes missing, use @ref sd_ble_gatts_sys_attr_set to set them to a known value.
  * @retval ::NRF_ERROR_RESOURCES Too many notifications queued.
  *                               Wait for a @ref BLE_GATTS_EVT_HVN_TX_COMPLETE event and retry.
@@ -658,7 +663,7 @@ SVCALL(SD_BLE_GATTS_HVX, uint32_t, sd_ble_gatts_hvx(uint16_t conn_handle, ble_ga
  *                                   - An ATT_MTU exchange is ongoing
  * @retval ::NRF_ERROR_INVALID_PARAM Invalid parameter(s) supplied.
  * @retval ::BLE_ERROR_INVALID_ATTR_HANDLE Invalid attribute handle(s) supplied, handles must be in the range populated by the application.
- * @retval ::NRF_ERROR_BUSY Procedure already in progress.
+ * @retval ::NRF_ERROR_BUSY GATT Server procedure already in progress or blocked because of a previous GATT procedure timeout.
  * @retval ::BLE_ERROR_GATTS_SYS_ATTR_MISSING System attributes missing, use @ref sd_ble_gatts_sys_attr_set to set them to a known value.
  */
 SVCALL(SD_BLE_GATTS_SERVICE_CHANGED, uint32_t, sd_ble_gatts_service_changed(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle));
@@ -813,7 +818,7 @@ SVCALL(SD_BLE_GATTS_ATTR_GET, uint32_t, sd_ble_gatts_attr_get(uint16_t handle, b
  * @param[in] server_rx_mtu  Server RX MTU size.
  *                           - The minimum value is @ref BLE_GATT_ATT_MTU_DEFAULT.
  *                           - The maximum value is @ref ble_gatt_conn_cfg_t::att_mtu in the connection configuration
-                               used for this connection.
+ *                             used for this connection.
  *                           - The value must be equal to Client RX MTU size given in @ref sd_ble_gattc_exchange_mtu_request
  *                             if an ATT_MTU exchange has already been performed in the other direction.
  *
@@ -821,6 +826,7 @@ SVCALL(SD_BLE_GATTS_ATTR_GET, uint32_t, sd_ble_gatts_attr_get(uint16_t handle, b
  * @retval ::BLE_ERROR_INVALID_CONN_HANDLE Invalid Connection Handle.
  * @retval ::NRF_ERROR_INVALID_STATE Invalid Connection State or no ATT_MTU exchange request pending.
  * @retval ::NRF_ERROR_INVALID_PARAM Invalid Server RX MTU size supplied.
+ * @retval ::NRF_ERROR_BUSY GATT Blocked because of a previous GATT procedure timeout.
  */
 SVCALL(SD_BLE_GATTS_EXCHANGE_MTU_REPLY, uint32_t, sd_ble_gatts_exchange_mtu_reply(uint16_t conn_handle, uint16_t server_rx_mtu));
 /** @} */

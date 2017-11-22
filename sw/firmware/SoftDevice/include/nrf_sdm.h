@@ -47,10 +47,12 @@
 #ifndef NRF_SDM_H__
 #define NRF_SDM_H__
 
-#include "nrf_svc.h"
+#include <stdint.h>
 #include "nrf.h"
-#include "nrf_soc.h"
+#include "nrf_svc.h"
+#include "nrf_error.h"
 #include "nrf_error_sdm.h"
+#include "nrf_soc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -68,7 +70,7 @@ extern "C" {
 #define SD_MAJOR_VERSION  (5)
 
 /** @brief The minor version for the SoftDevice binary distributed with this header file. */
-#define SD_MINOR_VERSION  (0)
+#define SD_MINOR_VERSION  (1)
 
 /** @brief The bugfix version for the SoftDevice binary distributed with this header file. */
 #define SD_BUGFIX_VERSION (0)
@@ -132,8 +134,8 @@ the start of the SoftDevice (without MBR)*/
  *         the MBR (the usual case). */
 #define SD_SIZE_GET(baseaddr) (*((uint32_t *) ((baseaddr) + SD_SIZE_OFFSET)))
 
-/** @brief Defines a macro for retrieving the actual FWID value from a given base address. Use @ref
- *         MBR_SIZE as the argument when the SoftDevice is installed just above the MBR (the usual
+/** @brief Defines a macro for retrieving the actual FWID value from a given base address. Use
+ *         @ref MBR_SIZE as the argument when the SoftDevice is installed just above the MBR (the usual
  *         case). */
 #define SD_FWID_GET(baseaddr) (*((uint16_t *) ((baseaddr) + SD_FWID_OFFSET)))
 
@@ -227,27 +229,27 @@ enum NRF_SD_SVCS
 typedef struct
 {
   uint8_t source;         /**< LF oscillator clock source, see @ref NRF_CLOCK_LF_SRC. */
-  uint8_t rc_ctiv;        /**< Only for NRF_CLOCK_LF_SRC_RC: Calibration timer interval in 1/4 second
-                               units (nRF51: 1-64, nRF52: 1-32).
+  uint8_t rc_ctiv;        /**< Only for ::NRF_CLOCK_LF_SRC_RC: Calibration timer interval in 1/4 second
+                               units (nRF52: 1-32).
                                @note To avoid excessive clock drift, 0.5 degrees Celsius is the
                                      maximum temperature change allowed in one calibration timer
                                      interval. The interval should be selected to ensure this.
 
-                                  @note Must be 0 if source is not NRF_CLOCK_LF_SRC_RC.  */
-  uint8_t rc_temp_ctiv;   /**<  Only for NRF_CLOCK_LF_SRC_RC: How often (in number of calibration
+                                  @note Must be 0 if source is not ::NRF_CLOCK_LF_SRC_RC.  */
+  uint8_t rc_temp_ctiv;   /**<  Only for ::NRF_CLOCK_LF_SRC_RC: How often (in number of calibration
                                 intervals) the RC oscillator shall be calibrated if the temperature
                                 hasn't changed.
                                      0: Always calibrate even if the temperature hasn't changed.
-                                     1: Only calibrate if the temperature has changed (nRF51 only).
+                                     1: Only calibrate if the temperature has changed (legacy - nRF51 only).
                                      2-33: Check the temperature and only calibrate if it has changed,
                                            however calibration will take place every rc_temp_ctiv
                                            intervals in any case.
 
-                                @note Must be 0 if source is not NRF_CLOCK_LF_SRC_RC.
+                                @note Must be 0 if source is not ::NRF_CLOCK_LF_SRC_RC.
 
                                 @note For nRF52, the application must ensure calibration at least once
                                       every 8 seconds to ensure +/-500 ppm clock stability. The
-                                      recommended configuration for NRF_CLOCK_LF_SRC_RC on nRF52 is
+                                      recommended configuration for ::NRF_CLOCK_LF_SRC_RC on nRF52 is
                                       rc_ctiv=16 and rc_temp_ctiv=2. This will ensure calibration at
                                       least once every 8 seconds and for temperature changes of 0.5
                                       degrees Celsius every 4 seconds. See the Product Specification
@@ -269,7 +271,7 @@ typedef struct
  * @param[in] pc The program counter of the instruction that triggered the fault.
  * @param[in] info Optional additional information regarding the fault. Refer to each Fault identifier for details.
  *
- * @note When id is set to NRF_FAULT_ID_APP_MEMACC, pc will contain the address of the instruction being executed at the time when
+ * @note When id is set to @ref NRF_FAULT_ID_APP_MEMACC, pc will contain the address of the instruction being executed at the time when
  * the fault is detected by the CPU. The CPU program counter may have advanced up to 2 instructions (no branching) after the one that triggered the fault.
  */
 typedef void (*nrf_fault_handler_t)(uint32_t id, uint32_t pc, uint32_t info);

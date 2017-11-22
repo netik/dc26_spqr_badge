@@ -48,10 +48,9 @@
 #define NRF_SOC_H__
 
 #include <stdint.h>
-#include <stdbool.h>
-#include "nrf_svc.h"
 #include "nrf.h"
-
+#include "nrf_svc.h"
+#include "nrf_error.h"
 #include "nrf_error_soc.h"
 
 #ifdef __cplusplus
@@ -81,11 +80,11 @@ extern "C" {
 #define SOC_ECB_CLEARTEXT_LENGTH          (16)                       /**< ECB cleartext length. */
 #define SOC_ECB_CIPHERTEXT_LENGTH         (SOC_ECB_CLEARTEXT_LENGTH) /**< ECB ciphertext length. */
 
-#define SD_EVT_IRQn                       (SWI2_EGU2_IRQn)        /**< SoftDevice Event IRQ number. Used for both protocol events and SoC events. */
-#define SD_EVT_IRQHandler                 (SWI2_EGU2_IRQHandler)  /**< SoftDevice Event IRQ handler. Used for both protocol events and SoC events.
+#define SD_EVT_IRQn                       (SWI2_IRQn)        /**< SoftDevice Event IRQ number. Used for both protocol events and SoC events. */
+#define SD_EVT_IRQHandler                 (SWI2_IRQHandler)  /**< SoftDevice Event IRQ handler. Used for both protocol events and SoC events.
                                                                        The default interrupt priority for this handler is set to 4 */
-#define RADIO_NOTIFICATION_IRQn           (SWI1_EGU1_IRQn)        /**< The radio notification IRQ number. */
-#define RADIO_NOTIFICATION_IRQHandler     (SWI1_EGU1_IRQHandler)  /**< The radio notification IRQ handler.
+#define RADIO_NOTIFICATION_IRQn           (SWI1_IRQn)        /**< The radio notification IRQ number. */
+#define RADIO_NOTIFICATION_IRQHandler     (SWI1_IRQHandler)  /**< The radio notification IRQ handler.
                                                                        The default interrupt priority for this handler is set to 4 */
 #define NRF_RADIO_LENGTH_MIN_US           (100)               /**< The shortest allowed radio timeslot, in microseconds. */
 #define NRF_RADIO_LENGTH_MAX_US           (100000)            /**< The longest allowed radio timeslot, in microseconds. */
@@ -232,8 +231,8 @@ enum NRF_RADIO_SIGNAL_CALLBACK_ACTION
   NRF_RADIO_SIGNAL_CALLBACK_ACTION_EXTEND,          /**< Request an extension of the current
                                                          timeslot. Maximum execution time for this action:
                                                          @ref NRF_RADIO_MAX_EXTENSION_PROCESSING_TIME_US.
-                                                         This action must be started at least @ref
-                                                         NRF_RADIO_MIN_EXTENSION_MARGIN_US before
+                                                         This action must be started at least
+                                                         @ref NRF_RADIO_MIN_EXTENSION_MARGIN_US before
                                                          the end of the timeslot. */
   NRF_RADIO_SIGNAL_CALLBACK_ACTION_END,             /**< End the current radio timeslot. */
   NRF_RADIO_SIGNAL_CALLBACK_ACTION_REQUEST_AND_END  /**< Request a new radio timeslot and end the current timeslot. */
@@ -842,6 +841,9 @@ SVCALL(SD_FLASH_PAGE_ERASE, uint32_t, sd_flash_page_erase(uint32_t page_number))
  * Commands to set the flash protection configuration registers.
    This sets the CONFIGx registers of the BPROT peripheral.
  *
+ * @note Not all parameters are valid for all products. Some bits in each parameter may not be
+ *       valid for your product. Please refer your Product Specification for more details.
+ *
  * @note To read the values read them directly. They are only write-protected.
  *
  * @param[in]  block_cfg0 Value to be written to the configuration register.
@@ -849,7 +851,8 @@ SVCALL(SD_FLASH_PAGE_ERASE, uint32_t, sd_flash_page_erase(uint32_t page_number))
  * @param[in]  block_cfg2 Value to be written to the configuration register.
  * @param[in]  block_cfg3 Value to be written to the configuration register.
  *
- * @retval ::NRF_ERROR_FORBIDDEN Tried to protect the SoftDevice.
+ * @retval ::NRF_ERROR_NOT_SUPPORTED Non-zero value supplied to one or more of the unsupported parameters.
+ * @retval ::NRF_ERROR_FORBIDDEN Tried to protect the flash region used by the SoftDevice.
  * @retval ::NRF_SUCCESS Values successfully written to configuration registers.
  */
 SVCALL(SD_FLASH_PROTECT, uint32_t, sd_flash_protect(uint32_t block_cfg0, uint32_t block_cfg1, uint32_t block_cfg2, uint32_t block_cfg3));

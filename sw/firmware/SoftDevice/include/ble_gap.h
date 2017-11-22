@@ -45,10 +45,13 @@
 #ifndef BLE_GAP_H__
 #define BLE_GAP_H__
 
-
-#include "ble_types.h"
-#include "ble_ranges.h"
+#include <stdint.h>
 #include "nrf_svc.h"
+#include "nrf_error.h"
+#include "ble_hci.h"
+#include "ble_ranges.h"
+#include "ble_types.h"
+#include "ble_err.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,43 +64,43 @@ extern "C" {
  */
 enum BLE_GAP_SVCS
 {
-  SD_BLE_GAP_ADDR_SET = BLE_GAP_SVC_BASE,       /**< Set own Bluetooth Address. */
-  SD_BLE_GAP_ADDR_GET,                          /**< Get own Bluetooth Address. */
-  SD_BLE_GAP_WHITELIST_SET,                     /**< Set active whitelist. */
-  SD_BLE_GAP_DEVICE_IDENTITIES_SET,             /**< Set device identity list. */
-  SD_BLE_GAP_PRIVACY_SET,                       /**< Set Privacy settings*/
-  SD_BLE_GAP_PRIVACY_GET,                       /**< Get Privacy settings*/
-  SD_BLE_GAP_ADV_DATA_SET,                      /**< Set Advertising Data. */
-  SD_BLE_GAP_ADV_START,                         /**< Start Advertising. */
-  SD_BLE_GAP_ADV_STOP,                          /**< Stop Advertising. */
-  SD_BLE_GAP_CONN_PARAM_UPDATE,                 /**< Connection Parameter Update. */
-  SD_BLE_GAP_DISCONNECT,                        /**< Disconnect. */
-  SD_BLE_GAP_TX_POWER_SET,                      /**< Set TX Power. */
-  SD_BLE_GAP_APPEARANCE_SET,                    /**< Set Appearance. */
-  SD_BLE_GAP_APPEARANCE_GET,                    /**< Get Appearance. */
-  SD_BLE_GAP_PPCP_SET,                          /**< Set PPCP. */
-  SD_BLE_GAP_PPCP_GET,                          /**< Get PPCP. */
-  SD_BLE_GAP_DEVICE_NAME_SET,                   /**< Set Device Name. */
-  SD_BLE_GAP_DEVICE_NAME_GET,                   /**< Get Device Name. */
-  SD_BLE_GAP_AUTHENTICATE,                      /**< Initiate Pairing/Bonding. */
-  SD_BLE_GAP_SEC_PARAMS_REPLY,                  /**< Reply with Security Parameters. */
-  SD_BLE_GAP_AUTH_KEY_REPLY,                    /**< Reply with an authentication key. */
-  SD_BLE_GAP_LESC_DHKEY_REPLY,                  /**< Reply with an LE Secure Connections DHKey. */
-  SD_BLE_GAP_KEYPRESS_NOTIFY,                   /**< Notify of a keypress during an authentication procedure. */
-  SD_BLE_GAP_LESC_OOB_DATA_GET,                 /**< Get the local LE Secure Connections OOB data. */
-  SD_BLE_GAP_LESC_OOB_DATA_SET,                 /**< Set the remote LE Secure Connections OOB data. */
-  SD_BLE_GAP_ENCRYPT,                           /**< Initiate encryption procedure. */
-  SD_BLE_GAP_SEC_INFO_REPLY,                    /**< Reply with Security Information. */
-  SD_BLE_GAP_CONN_SEC_GET,                      /**< Obtain connection security level. */
-  SD_BLE_GAP_RSSI_START,                        /**< Start reporting of changes in RSSI. */
-  SD_BLE_GAP_RSSI_STOP,                         /**< Stop reporting of changes in RSSI. */
-  SD_BLE_GAP_SCAN_START,                        /**< Start Scanning. */
-  SD_BLE_GAP_SCAN_STOP,                         /**< Stop Scanning. */
-  SD_BLE_GAP_CONNECT,                           /**< Connect. */
-  SD_BLE_GAP_CONNECT_CANCEL,                    /**< Cancel ongoing connection procedure. */
-  SD_BLE_GAP_RSSI_GET,                          /**< Get the last RSSI sample. */
-  SD_BLE_GAP_PHY_UPDATE,                        /**< Initiate or respond to a PHY Update Procedure. */
-  SD_BLE_GAP_DATA_LENGTH_UPDATE,                /**< Initiate or respond to a Data Length Update Procedure. */
+  SD_BLE_GAP_ADDR_SET              = BLE_GAP_SVC_BASE,       /**< Set own Bluetooth Address. */
+  SD_BLE_GAP_ADDR_GET              = BLE_GAP_SVC_BASE + 1,   /**< Get own Bluetooth Address. */
+  SD_BLE_GAP_WHITELIST_SET         = BLE_GAP_SVC_BASE + 2,   /**< Set active whitelist. */
+  SD_BLE_GAP_DEVICE_IDENTITIES_SET = BLE_GAP_SVC_BASE + 3,   /**< Set device identity list. */
+  SD_BLE_GAP_PRIVACY_SET           = BLE_GAP_SVC_BASE + 4,   /**< Set Privacy settings*/
+  SD_BLE_GAP_PRIVACY_GET           = BLE_GAP_SVC_BASE + 5,   /**< Get Privacy settings*/
+  SD_BLE_GAP_ADV_DATA_SET          = BLE_GAP_SVC_BASE + 6,   /**< Set Advertising Data. */
+  SD_BLE_GAP_ADV_START             = BLE_GAP_SVC_BASE + 7,   /**< Start Advertising. */
+  SD_BLE_GAP_ADV_STOP              = BLE_GAP_SVC_BASE + 8,   /**< Stop Advertising. */
+  SD_BLE_GAP_CONN_PARAM_UPDATE     = BLE_GAP_SVC_BASE + 9,   /**< Connection Parameter Update. */
+  SD_BLE_GAP_DISCONNECT            = BLE_GAP_SVC_BASE + 10,  /**< Disconnect. */
+  SD_BLE_GAP_TX_POWER_SET          = BLE_GAP_SVC_BASE + 11,  /**< Set TX Power. */
+  SD_BLE_GAP_APPEARANCE_SET        = BLE_GAP_SVC_BASE + 12,  /**< Set Appearance. */
+  SD_BLE_GAP_APPEARANCE_GET        = BLE_GAP_SVC_BASE + 13,  /**< Get Appearance. */
+  SD_BLE_GAP_PPCP_SET              = BLE_GAP_SVC_BASE + 14,  /**< Set PPCP. */
+  SD_BLE_GAP_PPCP_GET              = BLE_GAP_SVC_BASE + 15,  /**< Get PPCP. */
+  SD_BLE_GAP_DEVICE_NAME_SET       = BLE_GAP_SVC_BASE + 16,  /**< Set Device Name. */
+  SD_BLE_GAP_DEVICE_NAME_GET       = BLE_GAP_SVC_BASE + 17,  /**< Get Device Name. */
+  SD_BLE_GAP_AUTHENTICATE          = BLE_GAP_SVC_BASE + 18,  /**< Initiate Pairing/Bonding. */
+  SD_BLE_GAP_SEC_PARAMS_REPLY      = BLE_GAP_SVC_BASE + 19,  /**< Reply with Security Parameters. */
+  SD_BLE_GAP_AUTH_KEY_REPLY        = BLE_GAP_SVC_BASE + 20,  /**< Reply with an authentication key. */
+  SD_BLE_GAP_LESC_DHKEY_REPLY      = BLE_GAP_SVC_BASE + 21,  /**< Reply with an LE Secure Connections DHKey. */
+  SD_BLE_GAP_KEYPRESS_NOTIFY       = BLE_GAP_SVC_BASE + 22,  /**< Notify of a keypress during an authentication procedure. */
+  SD_BLE_GAP_LESC_OOB_DATA_GET     = BLE_GAP_SVC_BASE + 23,  /**< Get the local LE Secure Connections OOB data. */
+  SD_BLE_GAP_LESC_OOB_DATA_SET     = BLE_GAP_SVC_BASE + 24,  /**< Set the remote LE Secure Connections OOB data. */
+  SD_BLE_GAP_ENCRYPT               = BLE_GAP_SVC_BASE + 25,  /**< Initiate encryption procedure. */
+  SD_BLE_GAP_SEC_INFO_REPLY        = BLE_GAP_SVC_BASE + 26,  /**< Reply with Security Information. */
+  SD_BLE_GAP_CONN_SEC_GET          = BLE_GAP_SVC_BASE + 27,  /**< Obtain connection security level. */
+  SD_BLE_GAP_RSSI_START            = BLE_GAP_SVC_BASE + 28,  /**< Start reporting of changes in RSSI. */
+  SD_BLE_GAP_RSSI_STOP             = BLE_GAP_SVC_BASE + 29,  /**< Stop reporting of changes in RSSI. */
+  SD_BLE_GAP_SCAN_START            = BLE_GAP_SVC_BASE + 30,  /**< Start Scanning. */
+  SD_BLE_GAP_SCAN_STOP             = BLE_GAP_SVC_BASE + 31,  /**< Stop Scanning. */
+  SD_BLE_GAP_CONNECT               = BLE_GAP_SVC_BASE + 32,  /**< Connect. */
+  SD_BLE_GAP_CONNECT_CANCEL        = BLE_GAP_SVC_BASE + 33,  /**< Cancel ongoing connection procedure. */
+  SD_BLE_GAP_RSSI_GET              = BLE_GAP_SVC_BASE + 34,  /**< Get the last RSSI sample. */
+  SD_BLE_GAP_PHY_UPDATE            = BLE_GAP_SVC_BASE + 35,  /**< Initiate or respond to a PHY Update Procedure. */
+  SD_BLE_GAP_DATA_LENGTH_UPDATE    = BLE_GAP_SVC_BASE + 36,  /**< Initiate or respond to a Data Length Update Procedure. */
 };
 
 /**@brief GAP Event IDs.
@@ -105,27 +108,27 @@ enum BLE_GAP_SVCS
  */
 enum BLE_GAP_EVTS
 {
-  BLE_GAP_EVT_CONNECTED  = BLE_GAP_EVT_BASE,    /**< Connection established.                         \n See @ref ble_gap_evt_connected_t.            */
-  BLE_GAP_EVT_DISCONNECTED,                     /**< Disconnected from peer.                         \n See @ref ble_gap_evt_disconnected_t.         */
-  BLE_GAP_EVT_CONN_PARAM_UPDATE,                /**< Connection Parameters updated.                  \n See @ref ble_gap_evt_conn_param_update_t.    */
-  BLE_GAP_EVT_SEC_PARAMS_REQUEST,               /**< Request to provide security parameters.         \n Reply with @ref sd_ble_gap_sec_params_reply.  \n See @ref ble_gap_evt_sec_params_request_t. */
-  BLE_GAP_EVT_SEC_INFO_REQUEST,                 /**< Request to provide security information.        \n Reply with @ref sd_ble_gap_sec_info_reply.    \n See @ref ble_gap_evt_sec_info_request_t.   */
-  BLE_GAP_EVT_PASSKEY_DISPLAY,                  /**< Request to display a passkey to the user.       \n In LESC Numeric Comparison, reply with @ref sd_ble_gap_auth_key_reply. \n See @ref ble_gap_evt_passkey_display_t. */
-  BLE_GAP_EVT_KEY_PRESSED,                      /**< Notification of a keypress on the remote device.\n See @ref ble_gap_evt_key_pressed_t           */
-  BLE_GAP_EVT_AUTH_KEY_REQUEST,                 /**< Request to provide an authentication key.       \n Reply with @ref sd_ble_gap_auth_key_reply.    \n See @ref ble_gap_evt_auth_key_request_t.   */
-  BLE_GAP_EVT_LESC_DHKEY_REQUEST,               /**< Request to calculate an LE Secure Connections DHKey. \n Reply with @ref sd_ble_gap_lesc_dhkey_reply.  \n See @ref ble_gap_evt_lesc_dhkey_request_t */
-  BLE_GAP_EVT_AUTH_STATUS,                      /**< Authentication procedure completed with status. \n See @ref ble_gap_evt_auth_status_t.          */
-  BLE_GAP_EVT_CONN_SEC_UPDATE,                  /**< Connection security updated.                    \n See @ref ble_gap_evt_conn_sec_update_t.      */
-  BLE_GAP_EVT_TIMEOUT,                          /**< Timeout expired.                                \n See @ref ble_gap_evt_timeout_t.              */
-  BLE_GAP_EVT_RSSI_CHANGED,                     /**< RSSI report.                                    \n See @ref ble_gap_evt_rssi_changed_t.         */
-  BLE_GAP_EVT_ADV_REPORT,                       /**< Advertising report.                             \n See @ref ble_gap_evt_adv_report_t.           */
-  BLE_GAP_EVT_SEC_REQUEST,                      /**< Security Request.                               \n See @ref ble_gap_evt_sec_request_t.          */
-  BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST,        /**< Connection Parameter Update Request.            \n Reply with @ref sd_ble_gap_conn_param_update. \n See @ref ble_gap_evt_conn_param_update_request_t. */
-  BLE_GAP_EVT_SCAN_REQ_REPORT,                  /**< Scan request report.                            \n See @ref ble_gap_evt_scan_req_report_t. */
-  BLE_GAP_EVT_PHY_UPDATE_REQUEST,               /**< PHY Update Request.                             \n Reply with @ref sd_ble_gap_phy_update. \n See @ref ble_gap_evt_phy_update_request_t. */
-  BLE_GAP_EVT_PHY_UPDATE,                       /**< PHY Update Procedure is complete.               \n See @ref ble_gap_evt_phy_update_t.           */
-  BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST,       /**< Data Length Update Request.                     \n Reply with @ref sd_ble_gap_data_length_update.\n See @ref ble_gap_evt_data_length_update_request_t. */
-  BLE_GAP_EVT_DATA_LENGTH_UPDATE,               /**< LL Data Channel PDU payload length updated.     \n See @ref ble_gap_evt_data_length_update_t. */
+  BLE_GAP_EVT_CONNECTED                   = BLE_GAP_EVT_BASE,
+  BLE_GAP_EVT_DISCONNECTED                = BLE_GAP_EVT_BASE + 1,   /**< Disconnected from peer.                         \n See @ref ble_gap_evt_disconnected_t.         */
+  BLE_GAP_EVT_CONN_PARAM_UPDATE           = BLE_GAP_EVT_BASE + 2,   /**< Connection Parameters updated.                  \n See @ref ble_gap_evt_conn_param_update_t.    */
+  BLE_GAP_EVT_SEC_PARAMS_REQUEST          = BLE_GAP_EVT_BASE + 3,   /**< Request to provide security parameters.         \n Reply with @ref sd_ble_gap_sec_params_reply.  \n See @ref ble_gap_evt_sec_params_request_t. */
+  BLE_GAP_EVT_SEC_INFO_REQUEST            = BLE_GAP_EVT_BASE + 4,   /**< Request to provide security information.        \n Reply with @ref sd_ble_gap_sec_info_reply.    \n See @ref ble_gap_evt_sec_info_request_t.   */
+  BLE_GAP_EVT_PASSKEY_DISPLAY             = BLE_GAP_EVT_BASE + 5,   /**< Request to display a passkey to the user.       \n In LESC Numeric Comparison, reply with @ref sd_ble_gap_auth_key_reply. \n See @ref ble_gap_evt_passkey_display_t. */
+  BLE_GAP_EVT_KEY_PRESSED                 = BLE_GAP_EVT_BASE + 6,   /**< Notification of a keypress on the remote device.\n See @ref ble_gap_evt_key_pressed_t           */
+  BLE_GAP_EVT_AUTH_KEY_REQUEST            = BLE_GAP_EVT_BASE + 7,   /**< Request to provide an authentication key.       \n Reply with @ref sd_ble_gap_auth_key_reply.    \n See @ref ble_gap_evt_auth_key_request_t.   */
+  BLE_GAP_EVT_LESC_DHKEY_REQUEST          = BLE_GAP_EVT_BASE + 8,   /**< Request to calculate an LE Secure Connections DHKey. \n Reply with @ref sd_ble_gap_lesc_dhkey_reply.  \n See @ref ble_gap_evt_lesc_dhkey_request_t */
+  BLE_GAP_EVT_AUTH_STATUS                 = BLE_GAP_EVT_BASE + 9,   /**< Authentication procedure completed with status. \n See @ref ble_gap_evt_auth_status_t.          */
+  BLE_GAP_EVT_CONN_SEC_UPDATE             = BLE_GAP_EVT_BASE + 10,  /**< Connection security updated.                    \n See @ref ble_gap_evt_conn_sec_update_t.      */
+  BLE_GAP_EVT_TIMEOUT                     = BLE_GAP_EVT_BASE + 11,  /**< Timeout expired.                                \n See @ref ble_gap_evt_timeout_t.              */
+  BLE_GAP_EVT_RSSI_CHANGED                = BLE_GAP_EVT_BASE + 12,  /**< RSSI report.                                    \n See @ref ble_gap_evt_rssi_changed_t.         */
+  BLE_GAP_EVT_ADV_REPORT                  = BLE_GAP_EVT_BASE + 13,  /**< Advertising report.                             \n See @ref ble_gap_evt_adv_report_t.           */
+  BLE_GAP_EVT_SEC_REQUEST                 = BLE_GAP_EVT_BASE + 14,  /**< Security Request.                               \n See @ref ble_gap_evt_sec_request_t.          */
+  BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST   = BLE_GAP_EVT_BASE + 15,  /**< Connection Parameter Update Request.            \n Reply with @ref sd_ble_gap_conn_param_update. \n See @ref ble_gap_evt_conn_param_update_request_t. */
+  BLE_GAP_EVT_SCAN_REQ_REPORT             = BLE_GAP_EVT_BASE + 16,  /**< Scan request report.                            \n See @ref ble_gap_evt_scan_req_report_t. */
+  BLE_GAP_EVT_PHY_UPDATE_REQUEST          = BLE_GAP_EVT_BASE + 17,  /**< PHY Update Request.                             \n Reply with @ref sd_ble_gap_phy_update. \n See @ref ble_gap_evt_phy_update_request_t. */
+  BLE_GAP_EVT_PHY_UPDATE                  = BLE_GAP_EVT_BASE + 18,  /**< PHY Update Procedure is complete.               \n See @ref ble_gap_evt_phy_update_t.           */
+  BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST = BLE_GAP_EVT_BASE + 19,  /**< Data Length Update Request.                     \n Reply with @ref sd_ble_gap_data_length_update.\n See @ref ble_gap_evt_data_length_update_request_t. */
+  BLE_GAP_EVT_DATA_LENGTH_UPDATE         = BLE_GAP_EVT_BASE + 20,  /**< LL Data Channel PDU payload length updated.     \n See @ref ble_gap_evt_data_length_update_t. */
 };
 
 /**@brief GAP Option IDs.
@@ -133,13 +136,13 @@ enum BLE_GAP_EVTS
  */
 enum BLE_GAP_OPTS
 {
-  BLE_GAP_OPT_CH_MAP  = BLE_GAP_OPT_BASE,       /**< Channel Map. @ref ble_gap_opt_ch_map_t  */
-  BLE_GAP_OPT_LOCAL_CONN_LATENCY,               /**< Local connection latency. @ref ble_gap_opt_local_conn_latency_t */
-  BLE_GAP_OPT_PASSKEY,                          /**< Set passkey. @ref ble_gap_opt_passkey_t */
-  BLE_GAP_OPT_SCAN_REQ_REPORT,                  /**< Scan request report. @ref ble_gap_opt_scan_req_report_t */
-  BLE_GAP_OPT_COMPAT_MODE_1,                    /**< Compatibility mode. @ref ble_gap_opt_compat_mode_1_t */
-  BLE_GAP_OPT_AUTH_PAYLOAD_TIMEOUT,             /**< Set Authenticated payload timeout. @ref ble_gap_opt_auth_payload_timeout_t */
-  BLE_GAP_OPT_SLAVE_LATENCY_DISABLE,            /**< Disable slave latency. @ref ble_gap_opt_slave_latency_disable_t */
+  BLE_GAP_OPT_CH_MAP                 = BLE_GAP_OPT_BASE,       /**< Channel Map. @ref ble_gap_opt_ch_map_t  */
+  BLE_GAP_OPT_LOCAL_CONN_LATENCY     = BLE_GAP_OPT_BASE + 1,   /**< Local connection latency. @ref ble_gap_opt_local_conn_latency_t */
+  BLE_GAP_OPT_PASSKEY                = BLE_GAP_OPT_BASE + 2,   /**< Set passkey. @ref ble_gap_opt_passkey_t */
+  BLE_GAP_OPT_SCAN_REQ_REPORT        = BLE_GAP_OPT_BASE + 3,   /**< Scan request report. @ref ble_gap_opt_scan_req_report_t */
+  BLE_GAP_OPT_COMPAT_MODE_1          = BLE_GAP_OPT_BASE + 4,   /**< Compatibility mode. @ref ble_gap_opt_compat_mode_1_t */
+  BLE_GAP_OPT_AUTH_PAYLOAD_TIMEOUT   = BLE_GAP_OPT_BASE + 5,   /**< Set Authenticated payload timeout. @ref ble_gap_opt_auth_payload_timeout_t */
+  BLE_GAP_OPT_SLAVE_LATENCY_DISABLE  = BLE_GAP_OPT_BASE + 6,   /**< Disable slave latency. @ref ble_gap_opt_slave_latency_disable_t */
 };
 
 /**@brief GAP Configuration IDs.
@@ -148,8 +151,8 @@ enum BLE_GAP_OPTS
  */
 enum BLE_GAP_CFGS
 {
-  BLE_GAP_CFG_ROLE_COUNT = BLE_GAP_CFG_BASE,  /**< Role count configuration. */
-  BLE_GAP_CFG_DEVICE_NAME,                    /**< Device name configuration. */
+  BLE_GAP_CFG_ROLE_COUNT   = BLE_GAP_CFG_BASE,     /**< Role count configuration. */
+  BLE_GAP_CFG_DEVICE_NAME  = BLE_GAP_CFG_BASE + 1, /**< Device name configuration. */
 };
 
 /** @} */
@@ -169,7 +172,6 @@ enum BLE_GAP_CFGS
 
 
 /**@defgroup BLE_GAP_ROLES GAP Roles
- * @note Not explicitly used in peripheral API, but will be relevant for central API.
  * @{ */
 #define BLE_GAP_ROLE_INVALID     0x0            /**< Invalid Role. */
 #define BLE_GAP_ROLE_PERIPH      0x1            /**< Peripheral Role. */
@@ -494,8 +496,8 @@ enum BLE_GAP_CFGS
 #define BLE_GAP_ROLE_COUNT_CENTRAL_DEFAULT     (3)   /**< Default maximum number of connections concurrently acting as centrals. */
 #define BLE_GAP_ROLE_COUNT_CENTRAL_SEC_DEFAULT (1)   /**< Default number of SMP instances shared between all connections acting as centrals. */
 #define BLE_GAP_ROLE_COUNT_COMBINED_MAX        (20)  /**< Maximum supported number of concurrent connections in the peripheral and central roles combined. */
-/**@} */
 
+/**@} */
 
 /**@brief Automatic data length parameter. */
 #define BLE_GAP_DATA_LENGTH_AUTO 0
@@ -966,6 +968,7 @@ typedef struct
                                                   and the address is the device's identity address. */
 } ble_gap_evt_scan_req_report_t;
 
+
 /**@brief Event structure for @ref BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST. */
 typedef struct
 {
@@ -1050,9 +1053,9 @@ typedef struct
 /**
  * @brief Device name and its properties, set with @ref sd_ble_cfg_set.
  *
- * @note  If the device name is not configured, the default device name will be @ref
- *        BLE_GAP_DEVNAME_DEFAULT, the maximum device name length will be @ref
- *        BLE_GAP_DEVNAME_DEFAULT_LEN, vloc will be set to @ref BLE_GATTS_VLOC_STACK and the device name
+ * @note  If the device name is not configured, the default device name will be
+ *        @ref BLE_GAP_DEVNAME_DEFAULT, the maximum device name length will be
+ *        @ref BLE_GAP_DEVNAME_DEFAULT_LEN, vloc will be set to @ref BLE_GATTS_VLOC_STACK and the device name
  *        will have no write access.
  *
  * @note  If @ref max_len is more than @ref BLE_GAP_DEVNAME_DEFAULT_LEN and vloc is set to @ref BLE_GATTS_VLOC_STACK,
@@ -1202,6 +1205,7 @@ typedef struct
   uint8_t enable : 1; /**< Enable scan request reports. */
 } ble_gap_opt_scan_req_report_t;
 
+
 /**@brief Compatibility mode 1 option.
  *
  *        This can be used with @ref sd_ble_opt_set to enable and disable
@@ -1221,6 +1225,7 @@ typedef struct
 {
    uint8_t enable : 1;                           /**< Enable compatibility mode 1.*/
 } ble_gap_opt_compat_mode_1_t;
+
 
 /**@brief Authenticated payload timeout option.
  *
@@ -1454,8 +1459,8 @@ SVCALL(SD_BLE_GAP_ADV_DATA_SET, uint32_t, sd_ble_gap_adv_data_set(uint8_t const 
  * @endmscs
  *
  * @param[in] p_adv_params Pointer to advertising parameters structure.
- * @param[in] conn_cfg_tag Tag identifying a configuration set by @ref sd_ble_cfg_set or @ref
- *                         BLE_CONN_CFG_TAG_DEFAULT to use the default connection configuration. If
+ * @param[in] conn_cfg_tag Tag identifying a configuration set by @ref sd_ble_cfg_set or
+ *                         @ref BLE_CONN_CFG_TAG_DEFAULT to use the default connection configuration. If
  *                         @ref ble_gap_adv_params_t::type is @ref BLE_GAP_ADV_TYPE_ADV_NONCONN_IND,
  *                         this is ignored.
  *
@@ -1467,7 +1472,7 @@ SVCALL(SD_BLE_GAP_ADV_DATA_SET, uint32_t, sd_ble_gap_adv_data_set(uint8_t const 
  * @retval ::BLE_ERROR_GAP_INVALID_BLE_ADDR Invalid Bluetooth address supplied.
  * @retval ::BLE_ERROR_GAP_DISCOVERABLE_WITH_WHITELIST Discoverable mode and whitelist incompatible.
  * @retval ::NRF_ERROR_RESOURCES Not enough BLE role slots available.
- *                               Stop one or more currently active roles (Central, Peripheral or Observer) and try again
+ *                               Stop one or more currently active roles (Central, Peripheral, Broadcaster or Observer) and try again
  */
 SVCALL(SD_BLE_GAP_ADV_START, uint32_t, sd_ble_gap_adv_start(ble_gap_adv_params_t const *p_adv_params, uint8_t conn_cfg_tag));
 
@@ -1775,6 +1780,7 @@ SVCALL(SD_BLE_GAP_SEC_PARAMS_REPLY, uint32_t, sd_ble_gap_sec_params_reply(uint16
  */
 SVCALL(SD_BLE_GAP_AUTH_KEY_REPLY, uint32_t, sd_ble_gap_auth_key_reply(uint16_t conn_handle, uint8_t key_type, uint8_t const *p_key));
 
+
 /**@brief Reply with an LE Secure connections DHKey.
  *
  * @details This function is only used to reply to a @ref BLE_GAP_EVT_LESC_DHKEY_REQUEST, calling it at other times will result in an @ref NRF_ERROR_INVALID_STATE.
@@ -1808,6 +1814,7 @@ SVCALL(SD_BLE_GAP_AUTH_KEY_REPLY, uint32_t, sd_ble_gap_auth_key_reply(uint16_t c
  */
 SVCALL(SD_BLE_GAP_LESC_DHKEY_REPLY, uint32_t, sd_ble_gap_lesc_dhkey_reply(uint16_t conn_handle, ble_gap_lesc_dhkey_t const *p_dhkey));
 
+
 /**@brief Notify the peer of a local keypress.
  *
  * @mscs
@@ -1826,6 +1833,7 @@ SVCALL(SD_BLE_GAP_LESC_DHKEY_REPLY, uint32_t, sd_ble_gap_lesc_dhkey_reply(uint16
  */
 SVCALL(SD_BLE_GAP_KEYPRESS_NOTIFY, uint32_t, sd_ble_gap_keypress_notify(uint16_t conn_handle, uint8_t kp_not));
 
+
 /**@brief Generate a set of OOB data to send to a peer out of band.
  *
  * @note  The @ref ble_gap_addr_t included in the OOB data returned will be the currently active one (or, if a connection has already been established,
@@ -1836,7 +1844,7 @@ SVCALL(SD_BLE_GAP_KEYPRESS_NOTIFY, uint32_t, sd_ble_gap_keypress_notify(uint16_t
  * @mmsc{@ref BLE_GAP_CENTRAL_LESC_BONDING_OOB_MSC}
  * @endmscs
  *
- * @param[in] conn_handle Connection handle. Can be BLE_CONN_HANDLE_INVALID if a BLE connection has not been established yet.
+ * @param[in] conn_handle Connection handle. Can be @ref BLE_CONN_HANDLE_INVALID if a BLE connection has not been established yet.
  * @param[in] p_pk_own LE Secure Connections local P-256 Public Key.
  * @param[out] p_oobd_own The OOB data to be sent out of band to a peer.
  *
@@ -1873,6 +1881,7 @@ SVCALL(SD_BLE_GAP_LESC_OOB_DATA_GET, uint32_t, sd_ble_gap_lesc_oob_data_get(uint
  * @retval ::BLE_ERROR_INVALID_CONN_HANDLE Invalid connection handle supplied.
  */
 SVCALL(SD_BLE_GAP_LESC_OOB_DATA_SET, uint32_t, sd_ble_gap_lesc_oob_data_set(uint16_t conn_handle, ble_gap_lesc_oob_data_t const *p_oobd_own, ble_gap_lesc_oob_data_t const *p_oobd_peer));
+
 
 /**@brief Initiate GAP Encryption procedure.
  *
@@ -2055,8 +2064,8 @@ SVCALL(SD_BLE_GAP_SCAN_STOP, uint32_t, sd_ble_gap_scan_stop(void));
  * @param[in] p_peer_addr   Pointer to peer address. If the use_whitelist bit is set in @ref ble_gap_scan_params_t, then this is ignored.
  * @param[in] p_scan_params Pointer to scan parameters structure.
  * @param[in] p_conn_params Pointer to desired connection parameters.
- * @param[in] conn_cfg_tag  Tag identifying a configuration set by @ref sd_ble_cfg_set or @ref
- *                          BLE_CONN_CFG_TAG_DEFAULT to use the default connection configuration.
+ * @param[in] conn_cfg_tag  Tag identifying a configuration set by @ref sd_ble_cfg_set or
+ *                          @ref BLE_CONN_CFG_TAG_DEFAULT to use the default connection configuration.
  *
  * @retval ::NRF_SUCCESS Successfully initiated connection procedure.
  * @retval ::NRF_ERROR_INVALID_ADDR Invalid parameter(s) pointer supplied.
@@ -2088,16 +2097,26 @@ SVCALL(SD_BLE_GAP_CONNECT_CANCEL, uint32_t, sd_ble_gap_connect_cancel(void));
 
 /**@brief Initiate or respond to a PHY Update Procedure
  *
- * @details   This function is used to initiate or respond to a PHY Update Procedure. It will always generate a
- *            @ref BLE_GAP_EVT_PHY_UPDATE event if successfully executed. If @ref ble_gap_phys_t::tx_phys or @ref ble_gap_phys_t::rx_phys
- *            is @ref BLE_GAP_PHY_AUTO, then the stack will select a PHY for the respective direction based on the peer's PHY preferences
- *            and the local stack configuration. If the peer does not support the PHY Update Procedure, then the
- *            resulting @ref BLE_GAP_EVT_PHY_UPDATE event will have a status set to
+ * @details   This function is used to initiate or respond to a PHY Update Procedure. It will always
+ *            generate a @ref BLE_GAP_EVT_PHY_UPDATE event if successfully executed.
+ *            If this function is used to initiate a PHY Update procedure and the only option
+ *            provided in @ref ble_gap_phys_t::tx_phys and @ref ble_gap_phys_t::rx_phys is the
+ *            currently active PHYs in the respective directions, the SoftDevice will generate a
+ *            @ref BLE_GAP_EVT_PHY_UPDATE with the current PHYs set and will not initiate the
+ *            procedure in the Link Layer.
+ *            If @ref ble_gap_phys_t::tx_phys or @ref ble_gap_phys_t::rx_phys is
+ *            @ref BLE_GAP_PHY_AUTO, then the stack will select a PHY for the respective direction
+ *            based on the peer's PHY preferences and the local stack configuration.
+ *            If the peer does not support the PHY Update Procedure, then the resulting
+ *            @ref BLE_GAP_EVT_PHY_UPDATE event will have a status set to
  *            @ref BLE_HCI_UNSUPPORTED_REMOTE_FEATURE.
- *            If the PHY procedure was rejected by the peer due to a procedure collision, the status will be
- *            @ref BLE_HCI_STATUS_CODE_LMP_ERROR_TRANSACTION_COLLISION or @ref BLE_HCI_DIFFERENT_TRANSACTION_COLLISION.
- *            If the peer responds to the PHY Update procedure with invalid parameters, the status will be @ref BLE_HCI_STATUS_CODE_INVALID_LMP_PARAMETERS.
- *            If the PHY procedure was rejected by the peer for a different reason, the status will contain the reason as specified by the peer.
+ *            If the PHY procedure was rejected by the peer due to a procedure collision, the status
+ *            will be @ref BLE_HCI_STATUS_CODE_LMP_ERROR_TRANSACTION_COLLISION or
+ *            @ref BLE_HCI_DIFFERENT_TRANSACTION_COLLISION.
+ *            If the peer responds to the PHY Update procedure with invalid parameters, the status
+ *            will be @ref BLE_HCI_STATUS_CODE_INVALID_LMP_PARAMETERS.
+ *            If the PHY procedure was rejected by the peer for a different reason, the status will
+ *            contain the reason as specified by the peer.
  *
  * @events
  * @event{@ref BLE_GAP_EVT_PHY_UPDATE, Result of the PHY Update Procedure.}
@@ -2121,10 +2140,11 @@ SVCALL(SD_BLE_GAP_CONNECT_CANCEL, uint32_t, sd_ble_gap_connect_cancel(void));
  */
 SVCALL(SD_BLE_GAP_PHY_UPDATE, uint32_t, sd_ble_gap_phy_update(uint16_t conn_handle, ble_gap_phys_t const *p_gap_phys));
 
+
 /**@brief Initiate or respond to a Data Length Update Procedure.
  *
- * @note Only symmetric input parameters for the Data Length Update is supported. Only @ref
- *       BLE_GAP_DATA_LENGTH_AUTO for max_tx_time_us and max_rx_time_us is supported.
+ * @note Only symmetric input parameters for the Data Length Update is supported. Only
+ *       @ref BLE_GAP_DATA_LENGTH_AUTO for max_tx_time_us and max_rx_time_us is supported.
  *
  * @note If the application uses @ref BLE_GAP_DATA_LENGTH_AUTO for one or more members of
  *       p_dl_params, the SoftDevice will choose the highest value supported in current
@@ -2155,7 +2175,6 @@ SVCALL(SD_BLE_GAP_PHY_UPDATE, uint32_t, sd_ble_gap_phy_update(uint16_t conn_hand
  *                          pending @ref BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST event to respond.
  */
 SVCALL(SD_BLE_GAP_DATA_LENGTH_UPDATE, uint32_t, sd_ble_gap_data_length_update(uint16_t conn_handle, ble_gap_data_length_params_t const *p_dl_params, ble_gap_data_length_limitation_t *p_dl_limitation));
-
 
 
 /** @} */
