@@ -39,7 +39,6 @@
 #include "chprintf.h"
 
 #include "ble_gap_lld.h"
-#include "ble_l2cap_lld.h"
 
 #include "badge.h"
 

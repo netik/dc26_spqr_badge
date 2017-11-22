@@ -50,26 +50,26 @@
 
 #include "badge.h"
 
-uint8_t ble_rx_buf[BLE_IDES_L2CAP_LEN];
+static uint8_t ble_rx_buf[BLE_IDES_L2CAP_LEN];
 uint16_t ble_local_cid;
 
-static void bleL2CapSetupReply (void);
+static void bleL2CapSetupReply (ble_l2cap_evt_ch_setup_request_t *);
 
 void
 bleL2CapDispatch (ble_evt_t * evt)
 {
 #ifdef BLE_L2CAP_VERBOSE
 	ble_l2cap_evt_ch_setup_refused_t * refused;
-	ble_l2cap_evt_ch_setup_request_t * request;
 	ble_l2cap_evt_ch_setup_t * setup;
 #endif
+	ble_l2cap_evt_ch_setup_request_t * request;
 	ble_l2cap_evt_ch_rx_t * rx;
 	ble_data_t rx_data;
 
 	switch (evt->header.evt_id) {
 		case BLE_L2CAP_EVT_CH_SETUP_REQUEST:
-#ifdef BLE_L2CAP_VERBOSE
 			request = &evt->evt.l2cap_evt.params.ch_setup_request;
+#ifdef BLE_L2CAP_VERBOSE
 			printf ("L2CAP setup requested %x\r\n",
 			    evt->evt.l2cap_evt.local_cid);
 			printf ("MTU: %d peer MPS: %d "
@@ -81,7 +81,7 @@ bleL2CapDispatch (ble_evt_t * evt)
 			printf ("PSM: %x\r\n", request->le_psm);
 #endif
 			ble_local_cid = evt->evt.l2cap_evt.local_cid;
-			bleL2CapSetupReply ();
+			bleL2CapSetupReply (request);
 			break;
 
 		case BLE_L2CAP_EVT_CH_SETUP_REFUSED:
@@ -134,13 +134,13 @@ bleL2CapDispatch (ble_evt_t * evt)
 			break;
 
 		case BLE_L2CAP_EVT_CH_RX:
-			printf ("L2CAP SDU received\r\n");
 			rx = &evt->evt.l2cap_evt.params.rx;
-			printf ("DATA RECEIVED: [%s]\r\n", rx->sdu_buf);
+			printf ("L2CAP SDU received\r\n");
+			printf ("DATA RECEIVED: [%s]\r\n", rx->sdu_buf.p_data);
+			orchardAppRadioCallback (l2capRxEvent, evt,
+			    rx->sdu_buf.p_data, rx->sdu_buf.len);
 			rx_data.p_data = ble_rx_buf;
 			rx_data.len = BLE_IDES_L2CAP_LEN;
-			orchardAppRadioCallback (l2capRxEvent, evt,
-			    rx_data.p_data, rx_data.len);
 			sd_ble_l2cap_ch_rx (ble_conn_handle,
 			    evt->evt.l2cap_evt.local_cid, &rx_data);
 			break;
@@ -201,7 +201,7 @@ bleL2CapDisconnect (uint16_t cid)
 }
 
 static void
-bleL2CapSetupReply (void)
+bleL2CapSetupReply (ble_l2cap_evt_ch_setup_request_t * request)
 {
 	ble_l2cap_ch_setup_params_t params;
 	int r;
@@ -211,7 +211,7 @@ bleL2CapSetupReply (void)
 	params.rx_params.sdu_buf.p_data = ble_rx_buf;
 	params.rx_params.sdu_buf.len = BLE_IDES_L2CAP_LEN;
 
-	params.le_psm = BLE_IDES_PSM;
+	params.le_psm = request->le_psm;
 	params.status = 0;
 
 	r = sd_ble_l2cap_ch_setup (ble_conn_handle, &ble_local_cid, &params);
@@ -243,5 +243,6 @@ void
 bleL2CapStart (void)
 {
 	ble_local_cid = BLE_L2CAP_CID_INVALID;
+
 	return;
 }
