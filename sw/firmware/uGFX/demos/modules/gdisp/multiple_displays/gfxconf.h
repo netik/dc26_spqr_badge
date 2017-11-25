@@ -84,7 +84,7 @@
 	//#define GDISP_PIXELFORMAT     GDISP_PIXELFORMAT_RGB888
 
 #elif !defined(GDISP_TOTAL_DISPLAYS) && (!defined(GDISP_PIXELFORMAT) || !defined(GDISP_DRIVER_LIST))
-	#error "gfxconf.h: You have not defined multiple displays properly. Try defining GDISP_TOTAL_DISPLAY or, GDISP_PIXELFORMAT and GDISP_DRIVER_LIST in your makefile"
+	#error "gfxconf.h: You have not defined multiple displays properly. Try defining GDISP_TOTAL_DISPLAYS or, GDISP_PIXELFORMAT and GDISP_DRIVER_LIST in your makefile"
 #endif
 
 /*

@@ -388,6 +388,30 @@
 	#ifndef GDISP_NEED_IMAGE_BMP_32
 		#define GDISP_NEED_IMAGE_BMP_32		TRUE
 	#endif
+	/**
+	 * @brief   The BMP blit buffer size.
+	 * @details	Defaults to 32
+	 * @note 	Bigger is faster but requires more RAM.
+	 * @note 	This must be greater than 40 bytes and 32 pixels as we read our headers into this space as well.
+	 */
+	#ifndef GDISP_IMAGE_BMP_BLIT_BUFFER_SIZE
+		#define GDISP_IMAGE_BMP_BLIT_BUFFER_SIZE	32
+	#endif
+/**
+ * @}
+ *
+ * @name    GDISP GIF Image Options
+ * @pre		GDISP_NEED_IMAGE and GDISP_NEED_IMAGE_GIF must be TRUE
+ * @{
+ */
+	/**
+	 * @brief   The GIF blit buffer size.
+	 * @details	Defaults to 32
+	 * @note 	Bigger is faster but requires more RAM.
+	 */
+	#ifndef GDISP_IMAGE_GIF_BLIT_BUFFER_SIZE
+		#define GDISP_IMAGE_GIF_BLIT_BUFFER_SIZE	32
+	#endif
 /**
  * @}
  *
@@ -509,6 +533,33 @@
 	#ifndef GDISP_NEED_IMAGE_PNG_RGBALPHA_16
 		#define GDISP_NEED_IMAGE_PNG_RGBALPHA_16		TRUE
 	#endif
+	/**
+	 * @brief   The PNG blit buffer size in pixels.
+	 * @details	Defaults to 32
+	 * @note 	Bigger is faster but requires more RAM.
+	 */
+	#ifndef GDISP_IMAGE_PNG_BLIT_BUFFER_SIZE
+		#define GDISP_IMAGE_PNG_BLIT_BUFFER_SIZE	32
+	#endif
+	/**
+	 * @brief   The PNG input file buffer size in bytes.
+	 * @details	Defaults to 8
+	 * @note 	Bigger is faster but requires more RAM.
+	 * @note 	Must be >= 8
+	 */
+	#ifndef GDISP_IMAGE_PNG_FILE_BUFFER_SIZE
+		#define GDISP_IMAGE_PNG_FILE_BUFFER_SIZE	8
+	#endif
+	/**
+	 * @brief   The PNG inflate decompression buffer size in bytes.
+	 * @details	Defaults to 32768
+	 * @note 	Bigger is faster but requires more RAM.
+	 * @note 	Must be >= 32768 due to the PNG 32K sliding window.
+	 * @note 	More efficient code is generated if this value is a power of 2.
+	 */
+	#ifndef GDISP_IMAGE_PNG_Z_BUFFER_SIZE
+		#define GDISP_IMAGE_PNG_Z_BUFFER_SIZE	32768
+	#endif
 /**
  * @}
  *
@@ -522,6 +573,24 @@
 	 */
 	#ifndef GDISP_NEED_TEXT_WORDWRAP
 		#define GDISP_NEED_TEXT_WORDWRAP		FALSE
+	#endif
+	/**
+	 * @brief	Adding pixels to the left and right side of the box to pad text.
+	 * @details	Only has an effect with @p gdispGDrawStringBox() and @p gdispGFillStringBox()
+	 * @note	Can be turned off by using justifyNoPad
+	 * @details Defaults to 1
+	 */
+	#ifndef GDISP_NEED_TEXT_BOXPADLR
+		#define GDISP_NEED_TEXT_BOXPADLR		1
+	#endif
+	/**
+	 * @brief	Adding pixels to the top and bottom side of the box to pad text.
+	 * @details	Only has an effect with @p gdispGDrawStringBox() and @p gdispGFillStringBox()
+	 * @note	Can be turned off by using justifyNoPad
+	 * @details Defaults to 1
+	 */
+	#ifndef GDISP_NEED_TEXT_BOXPADTB
+		#define GDISP_NEED_TEXT_BOXPADTB		1
 	#endif
 	/**
 	 * @brief	Enable UTF-8 support for text rendering.

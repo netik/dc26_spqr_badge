@@ -40,6 +40,8 @@
 #define GFX_USE_GDISP			TRUE
 #define GFX_USE_GWIN			TRUE
 #define GFX_USE_GMISC			TRUE
+#define GFX_USE_GTIMER          TRUE
+#define GFX_USE_GQUEUE          TRUE
 
 /* Features for the GDISP sub-system. */
 #define GDISP_NEED_VALIDATION	TRUE
@@ -49,6 +51,9 @@
 /* Features for the GWIN subsystem. */
 #define GWIN_NEED_WINDOWMANAGER	TRUE
 #define GWIN_NEED_GRAPH			TRUE
+
+/* Features for the GQUEUE subsystem. */
+#define GQUEUE_NEED_ASYNC       TRUE
 
 /* Features for the GMISC subsystem. */
 #define GMISC_NEED_FASTTRIG		TRUE

@@ -742,22 +742,29 @@ static bool_t WM_Add(GHandle gh, const GWindowInit *pInit) {
 
 static void WM_Delete(GHandle gh) {
 	// Remove it from the window list
+	gfxSemWait(&gwinsem, TIME_INFINITE);
 	gfxQueueASyncRemove(&_GWINList, &gh->wmq);
+	gfxSemSignal(&gwinsem);
 }
 
 static void WM_Redraw(GHandle gh) {
+	uint32_t	flags;
+	
+	flags = gh->flags;
+	gh->flags &= ~(GWIN_FLG_NEEDREDRAW|GWIN_FLG_BGREDRAW|GWIN_FLG_PARENTREVEAL);
+	
 	#if GWIN_NEED_CONTAINERS
 		redo_redraw:
 	#endif
-	if ((gh->flags & GWIN_FLG_SYSVISIBLE)) {
+	if ((flags & GWIN_FLG_SYSVISIBLE)) {
 		if (gh->vmt->Redraw)
 			gh->vmt->Redraw(gh);
-		else if ((gh->flags & GWIN_FLG_BGREDRAW)) {
+		else if ((flags & GWIN_FLG_BGREDRAW)) {
 			// We can't redraw but we want full coverage so just clear the area
 			gdispGFillArea(gh->display, gh->x, gh->y, gh->width, gh->height, gh->bgcolor);
 
 			// Only do an after clear if this is not a parent reveal
-			if (!(gh->flags & GWIN_FLG_PARENTREVEAL) && gh->vmt->AfterClear)
+			if (!(flags & GWIN_FLG_PARENTREVEAL) && gh->vmt->AfterClear)
 				gh->vmt->AfterClear(gh);
 		}
 
@@ -765,10 +772,9 @@ static void WM_Redraw(GHandle gh) {
 			// If this is container but not a parent reveal, mark any visible children for redraw
 			//	We redraw our children here as we have overwritten them in redrawing the parent
 			//	as GDISP/GWIN doesn't support complex clipping regions.
-			if ((gh->flags & (GWIN_FLG_CONTAINER|GWIN_FLG_PARENTREVEAL)) == GWIN_FLG_CONTAINER) {
+			if ((flags & (GWIN_FLG_CONTAINER|GWIN_FLG_PARENTREVEAL)) == GWIN_FLG_CONTAINER) {
 
 				// Container redraw is done
-				gh->flags &= ~(GWIN_FLG_NEEDREDRAW|GWIN_FLG_BGREDRAW|GWIN_FLG_PARENTREVEAL);
 
 				for(gh = gwinGetFirstChild(gh); gh; gh = gwinGetSibling(gh))
 					_gwinUpdate(gh);
@@ -777,14 +783,12 @@ static void WM_Redraw(GHandle gh) {
 		#endif
 
 	} else {
-		if ((gh->flags & GWIN_FLG_BGREDRAW)) {
+		if ((flags & GWIN_FLG_BGREDRAW)) {
 			GHandle		gx;
 
 			#if GWIN_NEED_CONTAINERS
 				if (gh->parent) {
 					// Child redraw is done
-					gh->flags &= ~(GWIN_FLG_NEEDREDRAW|GWIN_FLG_BGREDRAW|GWIN_FLG_PARENTREVEAL);
-
 
 					// Get the parent to redraw the area
 					gh = gh->parent;
@@ -817,9 +821,6 @@ static void WM_Redraw(GHandle gh) {
 
 		}
 	}
-
-	// Redraw is done
-	gh->flags &= ~(GWIN_FLG_NEEDREDRAW|GWIN_FLG_BGREDRAW|GWIN_FLG_PARENTREVEAL);
 }
 
 static void WM_Size(GHandle gh, coord_t w, coord_t h) {
@@ -985,6 +986,8 @@ static void WM_Raise(GHandle gh) {
 	// Take it off the list and then put it back on top
 	// The order of the list then reflects the z-order.
 
+	gfxSemWait(&gwinsem, TIME_INFINITE);
+	
 	gfxQueueASyncRemove(&_GWINList, &gh->wmq);
 	gfxQueueASyncPut(&_GWINList, &gh->wmq);
 
@@ -1018,7 +1021,9 @@ static void WM_Raise(GHandle gh) {
 			}
 		}
 	#endif
-	
+
+	gfxSemSignal(&gwinsem);
+		
 	// Redraw the window
 	_gwinUpdate(gh);
 }

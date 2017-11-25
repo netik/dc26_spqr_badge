@@ -20,17 +20,6 @@
 	#define GDISP_STARTUP_LOGO_TIMEOUT		0
 #endif
 
-// For internal use only.
-#if GDISP_NEED_TEXT_WORDWRAP
-	typedef struct wrapParameters {
-		GDisplay* g;
-		coord_t x;
-		coord_t y;
-		font_t font;
-		justify_t justify;
-	} wrapParameters_t;
-#endif
-
 /*===========================================================================*/
 /* Driver local variables.                                                   */
 /*===========================================================================*/
@@ -190,6 +179,12 @@ static GFXINLINE void fillarea(GDisplay *g) {
 			if (gvmt(g)->fill)
 		#endif
 		{
+			#if GDISP_HARDWARE_STREAM_POS && GDISP_HARDWARE_STREAM_WRITE
+				if ((g->flags & GDISP_FLG_SCRSTREAM)) {
+					gdisp_lld_write_stop(g);
+					g->flags &= ~GDISP_FLG_SCRSTREAM;
+				}
+			#endif
 			gdisp_lld_fill_area(g);
 			return;
 		}
@@ -374,6 +369,12 @@ static void vline_clip(GDisplay *g) {
 			if (gvmt(g)->fill)
 		#endif
 		{
+			#if GDISP_HARDWARE_STREAM_POS && GDISP_HARDWARE_STREAM_WRITE
+				if ((g->flags & GDISP_FLG_SCRSTREAM)) {
+					gdisp_lld_write_stop(g);
+					g->flags &= ~GDISP_FLG_SCRSTREAM;
+				}
+			#endif
 			g->p.cy = g->p.y1 - g->p.y + 1;
 			g->p.cx = 1;
 			gdisp_lld_fill_area(g);
@@ -3340,29 +3341,24 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 	/* Callback to render string boxes with word wrap. */
 	#if GDISP_NEED_TEXT_WORDWRAP
 		static bool mf_countline_callback(mf_str line, uint16_t count, void *state) {
-			uint16_t *linecount;
 			(void) line;
 			(void) count;
 
-			linecount = (uint16_t*)state;
-			(*linecount)++;
-
+			((coord_t*)state)[0]++;
 			return TRUE;
 		}
 		static bool mf_drawline_callback(mf_str line, uint16_t count, void *state) {
-			wrapParameters_t* wrapParameters = (wrapParameters_t*)state;
-
-			mf_render_aligned(wrapParameters->font, wrapParameters->x, wrapParameters->y, wrapParameters->justify, line, count, drawcharglyph, wrapParameters->g);
-
-			wrapParameters->y += wrapParameters->font->line_height;
+			#define GD	((GDisplay *)state)
+				mf_render_aligned(GD->t.font, GD->t.wrapx, GD->t.wrapy, GD->t.lrj, line, count, drawcharglyph, state);
+				GD->t.wrapy += GD->t.font->line_height;
+			#undef GD
 			return TRUE;
 		}
 		static bool mf_fillline_callback(mf_str line, uint16_t count, void *state) {
-			wrapParameters_t* wrapParameters = (wrapParameters_t*)state;
-
-			mf_render_aligned(wrapParameters->font, wrapParameters->x, wrapParameters->y, wrapParameters->justify, line, count, fillcharglyph, wrapParameters->g);
-
-			wrapParameters->y += wrapParameters->font->line_height;
+			#define GD	((GDisplay *)state)
+				mf_render_aligned(GD->t.font, GD->t.wrapx, GD->t.wrapy, GD->t.lrj, line, count, fillcharglyph, state);
+				GD->t.wrapy += GD->t.font->line_height;
+			#undef GD
 			return TRUE;
 		}	
 	#endif
@@ -3411,7 +3407,7 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 		g->t.font = font;
 		g->t.clipx0 = x;
 		g->t.clipy0 = y;
-		g->t.clipx1 = x + mf_get_string_width(font, str, 0, 0) + font->baseline_x;
+		g->t.clipx1 = 32767;	//x + mf_get_string_width(font, str, 0, 0) + font->baseline_x;
 		g->t.clipy1 = y + font->height;
 		g->t.color = color;
 
@@ -3444,24 +3440,55 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 	}
 
 	void gdispGDrawStringBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, const char* str, font_t font, color_t color, justify_t justify) {
-		#if GDISP_NEED_TEXT_WORDWRAP
-			wrapParameters_t wrapParameters;
-			uint16_t nbrLines;
-		#endif
+		coord_t		totalHeight;
 
 		if (!font)
 			return;
 		MUTEX_ENTER(g);
 
-		g->t.font = font;
+		// Apply padding
+		#if GDISP_NEED_TEXT_BOXPADLR != 0 || GDISP_NEED_TEXT_BOXPADTB != 0
+			if (!(justify & justifyNoPad)) {
+				#if GDISP_NEED_TEXT_BOXPADLR != 0
+					x += GDISP_NEED_TEXT_BOXPADLR;
+					cx -= 2*GDISP_NEED_TEXT_BOXPADLR;
+				#endif
+				#if GDISP_NEED_TEXT_BOXPADTB != 0
+					y += GDISP_NEED_TEXT_BOXPADTB;
+					cy -= 2*GDISP_NEED_TEXT_BOXPADTB;
+				#endif
+			}
+		#endif
+			
+		// Save the clipping area
 		g->t.clipx0 = x;
 		g->t.clipy0 = y;
 		g->t.clipx1 = x+cx;
 		g->t.clipy1 = y+cy;
-		g->t.color = color;
 
-		/* Select the anchor position */
-		switch(justify) {
+		// Calculate the total text height
+		#if GDISP_NEED_TEXT_WORDWRAP
+			if (!(justify & justifyNoWordWrap)) {
+				// Count the number of lines
+				totalHeight = 0;
+				mf_wordwrap(font, cx, str, mf_countline_callback, &totalHeight);
+				totalHeight *= font->height;
+			} else
+		#endif
+		totalHeight = font->height;
+
+		// Select the anchor position
+		switch((justify & JUSTIFYMASK_TOPBOTTOM)) {
+		case justifyTop:
+			break;
+		case justifyBottom:
+			y += cy - totalHeight;
+			break;
+		default:	// justifyMiddle
+			y += (cy+1 - totalHeight)/2;
+			break;
+		}
+		switch((justify & JUSTIFYMASK_LEFTRIGHT)) {
 		case justifyCenter:
 			x += (cx + 1) / 2;
 			break;
@@ -3469,60 +3496,88 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 			x += cx;
 			break;
 		default:	// justifyLeft
-			x += font->baseline_x;
 			break;
 		}
 
 		/* Render */
+		g->t.font = font;
+		g->t.color = color;
 		#if GDISP_NEED_TEXT_WORDWRAP
-			wrapParameters.x = x;
-			wrapParameters.y = y;
-			wrapParameters.font = font;
-			wrapParameters.justify = justify;
-			wrapParameters.g = g;
-
-			// Count the number of lines
-			nbrLines = 0;
-			mf_wordwrap(font, cx, str, mf_countline_callback, &nbrLines);
-			wrapParameters.y += (cy+1 - nbrLines*font->height)/2;
-			
-			mf_wordwrap(font, cx, str, mf_fillline_callback, &wrapParameters);
-		#else
-			y += (cy+1 - font->height)/2;
-			mf_render_aligned(font, x, y, justify, str, 0, drawcharglyph, g);
+			if (!(justify & justifyNoWordWrap)) {
+				g->t.lrj = (justify & JUSTIFYMASK_LEFTRIGHT);
+				g->t.wrapx = x;
+				g->t.wrapy = y;
+				
+				mf_wordwrap(font, cx, str, mf_drawline_callback, g);
+			} else
 		#endif
+		mf_render_aligned(font, x, y, (justify & JUSTIFYMASK_LEFTRIGHT), str, 0, drawcharglyph, g);
 
 		autoflush(g);
 		MUTEX_EXIT(g);
 	}
 
 	void gdispGFillStringBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, const char* str, font_t font, color_t color, color_t bgcolor, justify_t justify) {
-		#if GDISP_NEED_TEXT_WORDWRAP
-			wrapParameters_t wrapParameters;
-			uint16_t nbrLines;
-		#endif
+		coord_t		totalHeight;
 
 		if (!font)
 			return;
 		MUTEX_ENTER(g);
 
+		g->p.x = x;
+		g->p.y = y;
 		g->p.cx = cx;
 		g->p.cy = cy;
-		g->t.font = font;
-		g->t.clipx0 = g->p.x = x;
-		g->t.clipy0 = g->p.y = y;
-		g->t.clipx1 = x+cx;
-		g->t.clipy1 = y+cy;
-		g->t.color = color;
-		g->t.bgcolor = g->p.color = bgcolor;
 
 		TEST_CLIP_AREA(g) {
 
 			// background fill
+			g->p.color = bgcolor;
 			fillarea(g);
 
-			/* Select the anchor position */
-			switch(justify) {
+			// Apply padding
+			#if GDISP_NEED_TEXT_BOXPADLR != 0 || GDISP_NEED_TEXT_BOXPADTB != 0
+				if (!(justify & justifyNoPad)) {
+					#if GDISP_NEED_TEXT_BOXPADLR != 0
+						x += GDISP_NEED_TEXT_BOXPADLR;
+						cx -= 2*GDISP_NEED_TEXT_BOXPADLR;
+					#endif
+					#if GDISP_NEED_TEXT_BOXPADTB != 0
+						y += GDISP_NEED_TEXT_BOXPADTB;
+						cy -= 2*GDISP_NEED_TEXT_BOXPADTB;
+					#endif
+				}
+			#endif
+			
+			// Save the clipping area
+			g->t.clipx0 = x;
+			g->t.clipy0 = y;
+			g->t.clipx1 = x+cx;
+			g->t.clipy1 = y+cy;
+
+			// Calculate the total text height
+			#if GDISP_NEED_TEXT_WORDWRAP
+				if (!(justify & justifyNoWordWrap)) {
+					// Count the number of lines
+					totalHeight = 0;
+					mf_wordwrap(font, cx, str, mf_countline_callback, &totalHeight);
+					totalHeight *= font->height;
+				} else
+			#endif
+			totalHeight = font->height;
+	
+			// Select the anchor position
+			switch((justify & JUSTIFYMASK_TOPBOTTOM)) {
+			case justifyTop:
+				break;
+			case justifyBottom:
+				y += cy - totalHeight;
+				break;
+			default:	// justifyMiddle
+				y += (cy+1 - totalHeight)/2;
+				break;
+			}
+			switch((justify & JUSTIFYMASK_LEFTRIGHT)) {
 			case justifyCenter:
 				x += (cx + 1) / 2;
 				break;
@@ -3530,29 +3585,23 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 				x += cx;
 				break;
 			default:	// justifyLeft
-				x += font->baseline_x;
 				break;
 			}
 
 			/* Render */
+			g->t.font = font;
+			g->t.color = color;
+			g->t.bgcolor = bgcolor;
 			#if GDISP_NEED_TEXT_WORDWRAP
-				wrapParameters.x = x;
-				wrapParameters.y = y;
-				wrapParameters.font = font;
-				wrapParameters.justify = justify;
-				wrapParameters.g = g;
-
-
-				// Count the number of lines
-				nbrLines = 0;
-				mf_wordwrap(font, cx, str, mf_countline_callback, &nbrLines);
-				wrapParameters.y += (cy+1 - nbrLines*font->height)/2;
-
-				mf_wordwrap(font, cx, str, mf_fillline_callback, &wrapParameters);
-			#else
-				y += (cy+1 - font->height)/2;
-				mf_render_aligned(font, x, y, justify, str, 0, fillcharglyph, g);
+				if (!(justify & justifyNoWordWrap)) {
+					g->t.lrj = (justify & JUSTIFYMASK_LEFTRIGHT);
+					g->t.wrapx = x;
+					g->t.wrapy = y;
+					
+					mf_wordwrap(font, cx, str, mf_fillline_callback, g);
+				} else
 			#endif
+			mf_render_aligned(font, x, y, (justify & JUSTIFYMASK_LEFTRIGHT), str, 0, fillcharglyph, g);
 		}
 
 		autoflush(g);
@@ -3600,26 +3649,77 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 	}
 #endif
 
-color_t gdispBlendColor(color_t fg, color_t bg, uint8_t alpha)
-{
-	uint16_t fg_ratio = alpha + 1;
-	uint16_t bg_ratio = 256 - alpha;
-	uint16_t r, g, b;
+#if GDISP_PIXELFORMAT == GDISP_PIXELFORMAT_RGB888
+	// Special alpha hacked version.
+	// Note: this will still work with real RGB888
+	color_t gdispBlendColor(color_t fg, color_t bg, uint8_t alpha)
+	{
+		uint32_t ratio;
+		uint32_t a1, r1, g1, b1;
+		uint32_t a2, r2, g2, b2;
 
-	r = RED_OF(fg) * fg_ratio;
-	g = GREEN_OF(fg) * fg_ratio;
-	b = BLUE_OF(fg) * fg_ratio;
+		// Ratio - add one to get 1 to 256
+		ratio = (uint32_t)alpha + 1;		// 0 to 1 in 0.8 fixed point
 
-	r += RED_OF(bg) * bg_ratio;
-	g += GREEN_OF(bg) * bg_ratio;
-	b += BLUE_OF(bg) * bg_ratio;
+		// Calculate the pre-multiplied values of r, g, b for the fg color
+		a1 = ALPHA_OF(fg);					// 0 to 1 in 0.8 fixed point
+		r1 = RED_OF(fg) * a1;				// 0 to 1 in 0.16 fixed point
+		g1 = GREEN_OF(fg) * a1;				// 0 to 1 in 0.16 fixed point
+		b1 = BLUE_OF(fg) * a1;				// 0 to 1 in 0.16 fixed point
 
-	r >>= 8;
-	g >>= 8;
-	b >>= 8;
+		// Calculate the pre-multiplied values of r, g, b for the bg color
+		a2 = ALPHA_OF(bg);					// 0 to 1 in 0.8 fixed point
+		r2 = RED_OF(bg) * a2;				// 0 to 1 in 0.16 fixed point
+		g2 = GREEN_OF(bg) * a2;				// 0 to 1 in 0.16 fixed point
+		b2 = BLUE_OF(bg) * a2;				// 0 to 1 in 0.16 fixed point
 
-	return RGB2COLOR(r, g, b);
-}
+		// Calculate the mixed color values
+		a1 = ratio * (a1 - a2) + (a2<<8);	// 0 to 1 in 0.16 fixed point
+		if (!a1) return GFXTRANSPARENT;
+		r1 = ((ratio * (r1 - r2))>>8) + r2;	// 0 to 1 in 0.16 fixed point
+		g1 = ((ratio * (g1 - g2))>>8) + g2;	// 0 to 1 in 0.16 fixed point
+		b1 = ((ratio * (b1 - b2))>>8) + b2;	// 0 to 1 in 0.16 fixed point
+
+		// Fix precision
+		#if 1
+			// Convert back to un-multiplied values
+			ratio = 0x80000000 / a1;		// Divide 1 (0.31 fixed point) by a1 (0.16 fixed point) to get the a1 reciprocal in 0.15 fixed point
+			a1 >>= 8;						// Shift to get back to 0.8 fixed point
+			r1 = (r1 * ratio) >> 23;		// Multiply by ratio to get 0.31 and then shift to get back to 0.8 fixed point
+			g1 = (g1 * ratio) >> 23;		// Multiply by ratio to get 0.31 and then shift to get back to 0.8 fixed point
+			b1 = (b1 * ratio) >> 23;		// Multiply by ratio to get 0.31 and then shift to get back to 0.8 fixed point
+		#else
+			// Leave as pre-multiplied values
+			a1 >>= 8;						// Shift to get back to 0.8 fixed point
+			r1 >>= 8;						// Shift to get back to 0.8 fixed point
+			g1 >>= 8;						// Shift to get back to 0.8 fixed point
+			b1 >>= 8;						// Shift to get back to 0.8 fixed point
+		#endif
+
+		return ARGB2COLOR(a1, r1, g1, b1);
+	}
+#else
+	color_t gdispBlendColor(color_t fg, color_t bg, uint8_t alpha)
+	{
+		uint16_t fg_ratio = alpha + 1;
+		uint16_t bg_ratio = 256 - alpha;
+		uint16_t r, g, b;
+
+		r = RED_OF(fg) * fg_ratio;
+		g = GREEN_OF(fg) * fg_ratio;
+		b = BLUE_OF(fg) * fg_ratio;
+
+		r += RED_OF(bg) * bg_ratio;
+		g += GREEN_OF(bg) * bg_ratio;
+		b += BLUE_OF(bg) * bg_ratio;
+
+		r >>= 8;
+		g >>= 8;
+		b >>= 8;
+
+		return RGB2COLOR(r, g, b);
+	}
+#endif
 
 color_t gdispContrastColor(color_t color) {
 	uint16_t r, g, b;

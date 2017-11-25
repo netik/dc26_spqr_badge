@@ -120,13 +120,6 @@ bool_t gfxSemWait(gfxSem *psem, delaytime_t ms);
 bool_t gfxSemWaitI(gfxSem *psem);
 void gfxSemSignal(gfxSem *psem);
 void gfxSemSignalI(gfxSem *psem);
-#if (CH_KERNEL_MAJOR == 2) || (CH_KERNEL_MAJOR == 3)
-#define gfxSemCounterI(psem)		((psem)->sem.s_cnt)
-#define gfxSemCounter(psem)			((psem)->sem.s_cnt)
-#elif (CH_KERNEL_MAJOR == 4)
-#define gfxSemCounterI(psem)		((psem)->sem.cnt)
-#define gfxSemCounter(psem)			((psem)->sem.cnt)
-#endif
 gfxThreadHandle gfxThreadCreate(void *stackarea, size_t stacksz, threadpriority_t prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param);
 #define gfxThreadWait(thread)		chThdWait(thread)
 #define gfxThreadMe()				chThdSelf()

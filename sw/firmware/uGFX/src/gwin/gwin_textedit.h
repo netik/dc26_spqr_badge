@@ -64,6 +64,32 @@ GHandle gwinGTexteditCreate(GDisplay* g, GTexteditObject* wt, GWidgetInit* pInit
 #define gwinTexteditCreate(wt, pInit, maxSize)			gwinGTexteditCreate(GDISP, wt, pInit, maxSize)
 
 /**
+ * @brief				Send a special key to the textedit such as GKEY_LEFT, GKEY_RIGHT, GKEY_HOME, GKEY_END
+ *
+ * @param[in] gh		The window handle (must be a textedit window)
+ * @param[in] key		The special key to send.
+ * @pre					Requires GINPUT_NEED_KEYBOARD or GWIN_NEED_KEYBOARD to be on
+ * @api
+ */
+void gwinTextEditSendSpecialKey(GHandle gh, uint8_t key);
+
+/**
+ * @brief				Send a normal utf8 character to the textedit
+ *
+ * @param[in] gh		The window handle (must be a textedit window)
+ * @param[in] pkey		The pointer to the utf8 character to send.
+ * @param[in] len		The length of the utf8 character in bytes.
+ * @note				This must ONLY be called with a single utf8 character at a time. Don't attempt to
+ *						send a string of characters in the one call.
+ * @note				Characters are interpreted as if they came directly from a keyboard ie a backspace
+ *						character will perform the backspace operation, a tab will send the focus to the next
+ *						control etc.
+ * @pre					Requires GINPUT_NEED_KEYBOARD or GWIN_NEED_KEYBOARD to be on
+ * @api
+ */
+void gwinTextEditSendKey(GHandle gh, char *pkey, unsigned len);
+
+/**
  * @defgroup Renderings_Textedit Renderings
  *
  * @brief				Built-in rendering functions for the textedit widget.

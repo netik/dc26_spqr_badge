@@ -36,8 +36,11 @@
 //#define GFX_USE_OS_RAWRTOS                           FALSE
 //#define GFX_USE_OS_ARDUINO                           FALSE
 //#define GFX_USE_OS_KEIL                              FALSE
+//#define GFX_USE_OS_RTX5                              FALSE
 //#define GFX_USE_OS_CMSIS                             FALSE
+//#define GFX_USE_OS_CMSIS2                            FALSE
 //#define GFX_USE_OS_RAW32                             FALSE
+//#define GFX_USE_OS_ZEPHYR                            FALSE
 //#define GFX_USE_OS_NIOS                              FALSE
 //#define GFX_USE_OS_QT                                FALSE
 //    #define INTERRUPTS_OFF()                         optional_code
@@ -56,6 +59,8 @@
 //    #define GFX_OS_PRE_INIT_FUNCTION                 myHardwareInitRoutine
 //    #define GFX_OS_EXTRA_INIT_FUNCTION               myOSInitRoutine
 //    #define GFX_OS_EXTRA_DEINIT_FUNCTION             myOSDeInitRoutine
+//    #define GFX_OS_CALL_UGFXMAIN                     FALSE
+//    #define GFX_OS_UGFXMAIN_STACKSIZE                0
 //    #define GFX_EMULATE_MALLOC                       FALSE
 
 
@@ -82,6 +87,8 @@
 //#define GDISP_NEED_STREAMING                         FALSE
 //#define GDISP_NEED_TEXT                              FALSE
 //    #define GDISP_NEED_TEXT_WORDWRAP                 FALSE
+//    #define GDISP_NEED_TEXT_BOXPADLR                 1
+//    #define GDISP_NEED_TEXT_BOXPADTB                 1
 //    #define GDISP_NEED_ANTIALIAS                     FALSE
 //    #define GDISP_NEED_UTF8                          FALSE
 //    #define GDISP_NEED_TEXT_KERNING                  FALSE
@@ -109,6 +116,7 @@
 //#define GDISP_NEED_IMAGE                             FALSE
 //    #define GDISP_NEED_IMAGE_NATIVE                  FALSE
 //    #define GDISP_NEED_IMAGE_GIF                     FALSE
+//        #define GDISP_IMAGE_GIF_BLIT_BUFFER_SIZE     32
 //    #define GDISP_NEED_IMAGE_BMP                     FALSE
 //        #define GDISP_NEED_IMAGE_BMP_1               TRUE
 //        #define GDISP_NEED_IMAGE_BMP_4               TRUE
@@ -118,6 +126,7 @@
 //        #define GDISP_NEED_IMAGE_BMP_16              TRUE
 //        #define GDISP_NEED_IMAGE_BMP_24              TRUE
 //        #define GDISP_NEED_IMAGE_BMP_32              TRUE
+//        #define GDISP_IMAGE_BMP_BLIT_BUFFER_SIZE     32
 //    #define GDISP_NEED_IMAGE_JPG                     FALSE
 //    #define GDISP_NEED_IMAGE_PNG                     FALSE
 //        #define GDISP_NEED_IMAGE_PNG_INTERLACED      FALSE
@@ -135,6 +144,9 @@
 //        #define GDISP_NEED_IMAGE_PNG_RGB_16          TRUE
 //        #define GDISP_NEED_IMAGE_PNG_RGBALPHA_8      TRUE
 //        #define GDISP_NEED_IMAGE_PNG_RGBALPHA_16     TRUE
+//        #define GDISP_IMAGE_PNG_BLIT_BUFFER_SIZE     32
+//        #define GDISP_IMAGE_PNG_FILE_BUFFER_SIZE     8
+//        #define GDISP_IMAGE_PNG_Z_BUFFER_SIZE        32768
 //    #define GDISP_NEED_IMAGE_ACCOUNTING              FALSE
 
 //#define GDISP_NEED_PIXMAP                            FALSE
@@ -305,6 +317,7 @@
 //#define GFILE_NEED_FATFS                             FALSE
 //#define GFILE_NEED_NATIVEFS                          FALSE
 //#define GFILE_NEED_CHBIOSFS                          FALSE
+//#define GFILE_NEED_USERFS                            FALSE
 
 //#define GFILE_ALLOW_FLOATS                           FALSE
 //#define GFILE_ALLOW_DEVICESPECIFIC                   FALSE

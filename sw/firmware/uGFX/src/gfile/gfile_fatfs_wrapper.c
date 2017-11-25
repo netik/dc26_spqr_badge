@@ -12,8 +12,8 @@
 #include "gfile_fatfs_wrapper.h"
 
 // Include the source we want
-#include "../../3rdparty/fatfs-0.10b/src/ff.c"
-#include "../../3rdparty/fatfs-0.10b/src/option/unicode.c"
+#include "../../3rdparty/fatfs-0.13/source/ff.c"
+#include "../../3rdparty/fatfs-0.13/source/ffunicode.c"
 
 // Extra operating system support
 #if _FS_REENTRANT
@@ -62,7 +62,7 @@
 	}
 #endif /* _FS_REENTRANT */
 
-#if _USE_LFN == 3	/* LFN with a working buffer on the heap */
+#if FF_USE_LFN == 3	/* LFN with a working buffer on the heap */
 	/*------------------------------------------------------------------------*/
 	/* Allocate a memory block                                                */
 	/*------------------------------------------------------------------------*/
@@ -78,6 +78,6 @@
 	{
 		gfxFree(mblock);
 	}
-#endif /* _USE_LFN == 3 */
+#endif /* FF_USE_LFN == 3 */
 
 #endif // GFX_USE_GFILE && GFILE_NEED_FATFS && !GFILE_FATFS_EXTERNAL_LIB

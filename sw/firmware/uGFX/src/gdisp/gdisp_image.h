@@ -43,6 +43,7 @@ typedef uint16_t	gdispImageError;
 	#define GDISP_IMAGE_ERR_UNSUPPORTED_OK		3
 	#define GDISP_IMAGE_ERR_NOMEMORY			(GDISP_IMAGE_ERR_UNRECOVERABLE+4)
 	#define GDISP_IMAGE_ERR_NOSUCHFILE			(GDISP_IMAGE_ERR_UNRECOVERABLE+5)
+	#define GDISP_IMAGE_ERR_NULLPOINTER         (GDISP_IMAGE_ERR_UNRECOVERABLE+6)
 
 /**
  * @brief	Image flags
@@ -68,7 +69,7 @@ typedef struct gdispImage {
 	const struct gdispImageHandlers *	fns;				/* @< Don't mess with this! */
 	void *								priv;				/* @< Don't mess with this! */
 } gdispImage;
-	
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -90,7 +91,7 @@ extern "C" {
 	 * @param[in] f			The open GFILE stream.
 	 *
 	 * @pre		The GFILE must be open for reading.
-	 * 
+	 *
 	 * @note	This determines which decoder to use and then initialises all other fields
 	 * 			in the gdispImage structure.
 	 * @note	The image background color is set to White.
@@ -152,9 +153,9 @@ extern "C" {
 
 	/**
 	 * @brief	Close an image and release any dynamically allocated working storage.
-	 * 
+	 *
 	 * @param[in] img   The image structure
-	 * 
+	 *
 	 * @pre		gdispImageOpenFile() must have returned successfully.
 	 *
 	 * @note	Also calls the IO close function (if it hasn't already been called).
@@ -186,7 +187,7 @@ extern "C" {
 	 * 			continuing with drawing that includes transparency eg some GIF animations.
 	 */
 	void gdispImageSetBgColor(gdispImage *img, color_t bgcolor);
-	
+
 	/**
 	 * @brief	Cache the image
 	 * @details	Decodes and caches the current frame into RAM.
@@ -208,13 +209,13 @@ extern "C" {
 	/**
 	 * @brief	Draw the image
 	 * @return	GDISP_IMAGE_ERR_OK (0) on success or an error code.
-	 * 
+	 *
 	 * @param[in] g   	The display to draw on
 	 * @param[in] img   The image structure
 	 * @param[in] x,y	The screen location to draw the image
 	 * @param[in] cx,cy	The area on the screen to draw
 	 * @param[in] sx,sy	The image position to start drawing at
-	 * 
+	 *
 	 * @pre		gdispImageOpen() must have returned successfully.
 	 *
 	 * @note	If sx,sy + cx,cy is outside the image boundaries the area outside the image
@@ -231,9 +232,9 @@ extern "C" {
 	 * @brief	Prepare for the next frame/page in the image file.
 	 * @return	A time in milliseconds to keep displaying the current frame before trying to draw
 	 * 			the next frame. Watch out for the special values TIME_IMMEDIATE and TIME_INFINITE.
-	 * 
+	 *
 	 * @param[in] img   The image structure
-	 * 
+	 *
 	 * @pre		gdispImageOpen() must have returned successfully.
 	 *
 	 * @note	It will return TIME_IMMEDIATE if the first frame/page hasn't been drawn or if the next frame
@@ -253,24 +254,24 @@ extern "C" {
 	 * @return	The number of entries in the color palette or 0 if the image doesn't use a color palette.
 	 *
 	 * @param[in] img	The image structure
-	 * 
+	 *
 	 * @pre		gdispImageOpen() must have returned successfully.
 	 */
 	uint16_t gdispImageGetPaletteSize(gdispImage *img);
-	
+
 	/**
 	 * @brief	Get an entry in the color palette.
 	 * @return	The color value at a given position in the color palette.
 	 *
 	 * @param[in] img	The image structure
 	 * @param[in] index	The index of the color palette entry
-	 * 
+	 *
 	 * @pre		gdispImageOpen() must have returned successfully.
 	 *
 	 * @note	This function will return 0 if the index is out of bounds or if the image doesn't use a color palette.
 	 */
 	color_t gdispImageGetPalette(gdispImage *img, uint16_t index);
-	
+
 	/**
 	 * @brief	Modify an entry in the color palette.
 	 * @return	@p TRUE on success, @p FALSE otherwise.
@@ -278,12 +279,12 @@ extern "C" {
 	 * @param[in] img		The image structure
 	 * @param[in] index		The index of the color palette entry
 	 * @param[in] newColor	The new color value of the specified entry
-	 * 
+	 *
 	 * @pre		gdispImageOpen() must have returned successfully.
 	 * @note	This function will return @p FALSE if the index is out of bounds or if the image doesn't use a color palette.
 	 */
 	bool_t gdispImageAdjustPalette(gdispImage *img, uint16_t index, color_t newColor);
-	
+
 #ifdef __cplusplus
 }
 #endif

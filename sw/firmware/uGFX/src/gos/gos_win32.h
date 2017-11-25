@@ -46,8 +46,8 @@ typedef LONG				semcount_t;
 typedef DWORD				threadreturn_t;
 typedef int					threadpriority_t;
 
-#define DECLARE_THREAD_FUNCTION(fnName, param)	threadreturn_t WINAPI fnName(void *param)
-#define DECLARE_THREAD_STACK(name, sz)			uint8_t name[0];
+#define DECLARE_THREAD_FUNCTION(fnName, param)	threadreturn_t (WINAPI fnName)(void *param)
+#define DECLARE_THREAD_STACK(name, sz)			uint8_t name[1];
 #define THREAD_RETURN(retval)					return retval
 
 #define TIME_IMMEDIATE				0
@@ -78,7 +78,6 @@ typedef HANDLE gfxThreadHandle;
 #define gfxSemWaitI(psem)				gfxSemWait((psem), TIME_IMMEDIATE)
 #define gfxSemSignal(psem)				ReleaseSemaphore(*(psem), 1, 0)
 #define gfxSemSignalI(psem)				ReleaseSemaphore(*(psem), 1, 0)
-#define gfxSemCounterI(psem)			gfxSemCounter(psem)
 #define gfxThreadMe()					GetCurrentThread()
 #define gfxThreadClose(thread)			CloseHandle(thread)
 
@@ -93,10 +92,9 @@ extern "C" {
 void gfxHalt(const char *msg);
 void gfxSleepMicroseconds(delaytime_t ms);
 bool_t gfxSemWait(gfxSem *psem, delaytime_t ms);
-semcount_t gfxSemCounter(gfxSem *pSem);
 void gfxSystemLock(void);
 void gfxSystemUnlock(void);
-gfxThreadHandle gfxThreadCreate(void *stackarea, size_t stacksz, threadpriority_t prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param);
+gfxThreadHandle gfxThreadCreate(void *stackarea, size_t stacksz, threadpriority_t prio, DECLARE_THREAD_FUNCTION(*fn,p), void *param);
 threadreturn_t gfxThreadWait(gfxThreadHandle thread);
 
 #ifdef __cplusplus

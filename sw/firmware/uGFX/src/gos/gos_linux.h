@@ -65,7 +65,6 @@ typedef pthread_mutex_t		gfxMutex;
 		sem_t			sem;
 		semcount_t		max;
 	} gfxSem;
-	#define gfxSemCounterI(psem)	gfxSemCounter(psem)
 #else
 	typedef struct gfxSem {
 		pthread_mutex_t	mtx;
@@ -73,7 +72,6 @@ typedef pthread_mutex_t		gfxMutex;
 		semcount_t		cnt;
 		semcount_t		max;
 	} gfxSem;
-	#define gfxSemCounterI(psem)	((psem)->cnt)
 #endif
 
 /*===========================================================================*/
@@ -95,7 +93,6 @@ void gfxSemInit(gfxSem *psem, semcount_t val, semcount_t limit);
 void gfxSemDestroy(gfxSem *psem);
 bool_t gfxSemWait(gfxSem *psem, delaytime_t ms);
 void gfxSemSignal(gfxSem *psem);
-semcount_t gfxSemCounter(gfxSem *pSem);
 gfxThreadHandle gfxThreadCreate(void *stackarea, size_t stacksz, threadpriority_t prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param);
 threadreturn_t gfxThreadWait(gfxThreadHandle thread);
 

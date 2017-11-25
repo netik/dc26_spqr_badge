@@ -65,7 +65,11 @@
 	 * @brief	Declare a thread stack
 	 *
 	 * @param[in] name 		The name of the stack
-	 * @param[in] sz 		The size of the stack
+	 * @param[in] sz 		The size of the stack in bytes
+	 *
+	 * @note	The size provided is just a suggestion to the required stack size.
+	 * 			Many platforms will round the size to ensure correct stack alignment.
+	 *			Other platforms may entirely ignore the suggested size.
 	 */
 	#define DECLARE_THREAD_STACK(name, sz)			uint8_t name[sz];
 
@@ -399,27 +403,6 @@
 	void gfxSemSignalI(gfxSem *psem);
 
 	/**
-	 * @brief	Get the current semaphore count
-	 * @return	The current semaphore count
-	 *
-	 * @param[in] psem		A pointer to the semaphore
-	 *
-	 * @api
-	 */
-	semcount_t gfxSemCounter(gfxSem *psem);
-
-	/**
-	 * @brief	Get the current semaphore count
-	 * @return	The current semaphore count
-	 *
-	 * @param[in] psem		A pointer to the semaphore
-	 *
-	 * @iclass
-	 * @api
-	 */
-	semcount_t gfxSemCounterI(gfxSem *psem);
-
-	/**
 	 * @brief	Start a new thread.
 	 * @return	Returns a thread handle if the thread was started, NULL on an error
 	 *
@@ -493,10 +476,16 @@
 	#include "gos_arduino.h"
 #elif GFX_USE_OS_CMSIS
  	#include "gos_cmsis.h"
+#elif GFX_USE_OS_CMSIS2
+ 	#include "gos_cmsis2.h"
 #elif GFX_USE_OS_KEIL
     #include "gos_keil.h"
+#elif GFX_USE_OS_RTX5
+    #include "gos_rtx5.h"
 #elif GFX_USE_OS_NIOS
     #include "gos_nios.h"
+#elif GFX_USE_OS_ZEPHYR
+	#include "gos_zephyr.h"
 #elif GFX_USE_OS_QT
     #include "gos_qt.h"
 #else

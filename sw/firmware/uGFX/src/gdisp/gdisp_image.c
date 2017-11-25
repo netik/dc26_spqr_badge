@@ -110,6 +110,8 @@ void gdispImageInit(gdispImage *img) {
 gdispImageError gdispImageOpenGFile(gdispImage *img, GFILE *f) {
 	gdispImageError err;
 
+	if (!img)
+		return GDISP_IMAGE_ERR_NULLPOINTER;
 	if (!f)
 		return GDISP_IMAGE_ERR_NOSUCHFILE;
 	img->f = f;
@@ -141,6 +143,8 @@ unrecoverable:
 }
 
 void gdispImageClose(gdispImage *img) {
+	if (!img)
+		return;
 	if (img->fns)
 		img->fns->close(img);
 	gfileClose(img->f);
@@ -151,19 +155,23 @@ void gdispImageClose(gdispImage *img) {
 }
 
 bool_t gdispImageIsOpen(gdispImage *img) {
-	return img->type != GDISP_IMAGE_TYPE_UNKNOWN && img->fns != 0;
+	return img && img->type != GDISP_IMAGE_TYPE_UNKNOWN && img->fns != 0;
 }
 
 void gdispImageSetBgColor(gdispImage *img, color_t bgcolor) {
+	if (!img)
+		return;
 	img->bgcolor = bgcolor;
 }
 
 gdispImageError gdispImageCache(gdispImage *img) {
+	if (!img) return GDISP_IMAGE_ERR_NULLPOINTER;
 	if (!img->fns) return GDISP_IMAGE_ERR_BADFORMAT;
 	return img->fns->cache(img);
 }
 
 gdispImageError gdispGImageDraw(GDisplay *g, gdispImage *img, coord_t x, coord_t y, coord_t cx, coord_t cy, coord_t sx, coord_t sy) {
+	if (!img) return GDISP_IMAGE_ERR_NULLPOINTER;
 	if (!img->fns) return GDISP_IMAGE_ERR_BADFORMAT;
 
 	// Check on window
@@ -179,24 +187,25 @@ gdispImageError gdispGImageDraw(GDisplay *g, gdispImage *img, coord_t x, coord_t
 }
 
 delaytime_t gdispImageNext(gdispImage *img) {
+	if (!img) return GDISP_IMAGE_ERR_NULLPOINTER;
 	if (!img->fns) return GDISP_IMAGE_ERR_BADFORMAT;
 	return img->fns->next(img);
 }
 
 uint16_t gdispImageGetPaletteSize(gdispImage *img) {
-	if (!img->fns) return 0;
+	if (!img || !img->fns) return 0;
 	if (!img->fns->getPaletteSize) return 0;
 	return img->fns->getPaletteSize(img);
 }
 
 color_t gdispImageGetPalette(gdispImage *img, uint16_t index) {
-	if (!img->fns) return 0;
+	if (!img || !img->fns) return 0;
 	if (!img->fns->getPalette) return 0;
 	return img->fns->getPalette(img, index);
 }
 
 bool_t gdispImageAdjustPalette(gdispImage *img, uint16_t index, color_t newColor) {
-	if (!img->fns) return FALSE;
+	if (!img || !img->fns) return FALSE;
 	if (!img->fns->adjustPalette) return FALSE;
 	return img->fns->adjustPalette(img, index, newColor);
 }

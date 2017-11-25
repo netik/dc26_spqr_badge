@@ -44,7 +44,7 @@ typedef cyg_handle_t		gfxThreadHandle;
 #define NORMAL_PRIORITY				(CYGNUM_KERNEL_SCHED_PRIORITIES/2)
 #define HIGH_PRIORITY				0
 
-#define DECLARE_THREAD_STACK(name, sz)			struct { cyg_thread t; unsigned char stk[sz]; } name[1]
+#define DECLARE_THREAD_STACK(name, sz)			struct { cyg_thread t; unsigned char stk[(sz) & ~3]; } name[1]
 #define DECLARE_THREAD_FUNCTION(fnName, param)	threadreturn_t fnName(cyg_addrword_t param)
 #define THREAD_RETURN(retval)
 
@@ -91,8 +91,6 @@ bool_t gfxSemWait(gfxSem *psem, delaytime_t ms);
 bool_t gfxSemWaitI(gfxSem *psem);
 void gfxSemSignal(gfxSem *psem);
 void gfxSemSignalI(gfxSem *psem);
-semcount_t gfxSemCounterI(gfxSem *psem);
-#define gfxSemCounter(psem)			gfxSemCounterI(psem)
 
 gfxThreadHandle gfxThreadCreate(void *stackarea, size_t stacksz, threadpriority_t prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param);
 #define gfxThreadWait(thread)		NOTIMPLEMENTED_YET

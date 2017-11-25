@@ -94,7 +94,7 @@ typedef struct fatfsList {
 	gfileList	fl;					// This must be the first element.
 	DIR			dir;
 	FILINFO		fno;
-	#if _USE_LFN
+	#if FF_USE_LFN
 		char	lfn[_MAX_LFN + 1];   /* Buffer to store the LFN */
 	#endif
 } fatfsList;
@@ -112,7 +112,7 @@ static BYTE fatfs_flags2mode(GFILE* f)
 	if (f->flags & GFILEFLG_WRITE)
 		mode |= FA_WRITE;
 	if (f->flags & GFILEFLG_APPEND)
-		mode |= 0;  // ToDo
+		mode |= FA_OPEN_APPEND;
 	if (f->flags & GFILEFLG_TRUNC)
 		mode |= FA_CREATE_ALWAYS;
 
@@ -315,7 +315,7 @@ static bool_t fatfsSync(GFILE *f)
 		#define ffl		((fatfsList *)pfl)
 
 		while(1) {
-			#if _USE_LFN
+			#if FF_USE_LFN
 				ffl->fno.lfname = ffl->lfn;
 				ffl->fno.lfsize = sizeof(ffl->lfn);
 			#endif
@@ -337,7 +337,7 @@ static bool_t fatfsSync(GFILE *f)
 			}
 		}
 
-		#if _USE_LFN
+		#if FF_USE_LFN
 			return ffl->fno.lfname[0] ? ffl->fno.lfname : ffl->fno.fname;
 		#else
 			return ffl->fno.fname;

@@ -44,7 +44,6 @@ typedef pthread_mutex_t		gfxMutex;
 #define gfxMutexExit(pmtx)				pthread_mutex_unlock(pmtx)
 #define gfxSemWaitI(psem)				gfxSemWait(psem, TIME_IMMEDIATE)
 #define gfxSemSignalI(psem)				gfxSemSignal(psem)
-#define gfxSemCounterI(pSem)			((pSem)->cnt)
 
 #define TIME_IMMEDIATE				0
 #define TIME_INFINITE				((delaytime_t)-1)
@@ -78,7 +77,6 @@ void gfxSemInit(gfxSem *psem, semcount_t val, semcount_t limit);
 void gfxSemDestroy(gfxSem *psem);
 bool_t gfxSemWait(gfxSem *psem, delaytime_t ms);
 void gfxSemSignal(gfxSem *psem);
-semcount_t gfxSemCounter(gfxSem *pSem);
 gfxThreadHandle gfxThreadCreate(void *stackarea, size_t stacksz, threadpriority_t prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param);
 threadreturn_t gfxThreadWait(gfxThreadHandle thread);
 

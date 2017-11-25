@@ -31,7 +31,7 @@ typedef int				threadreturn_t;
 typedef int				threadpriority_t;
 
 #define DECLARE_THREAD_FUNCTION(fnName, param)	threadreturn_t fnName(void *param)
-#define DECLARE_THREAD_STACK(name, sz)			uint8_t name[sz];
+#define DECLARE_THREAD_STACK(name, sz)			uint8_t name[(sz) & ~3];
 #define THREAD_RETURN(retval)					return retval
 
 #define TIME_IMMEDIATE				0
@@ -79,10 +79,6 @@ extern "C" {
 	bool_t gfxSemWaitI(gfxSem *psem);
 	void gfxSemSignal(gfxSem *psem);
 	void gfxSemSignalI(gfxSem *psem);
-
-	// Deprecated Semaphore functions (they still work here)
-	#define gfxSemCounter(psem)			((psem)->cnt)
-	#define gfxSemCounterI(psem)		((psem)->cnt)
 
 	// Threads
 	gfxThreadHandle gfxThreadCreate(void *stackarea, size_t stacksz, threadpriority_t prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param);

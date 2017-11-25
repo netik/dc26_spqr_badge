@@ -19,6 +19,10 @@
 #define gw	((GImageObject *)gh)
 
 static void ImageDestroy(GWindowObject *gh) {
+	// Stop the timer
+	#if GWIN_NEED_IMAGE_ANIMATION
+		gtimerStop(&gw->timer);
+	#endif
 	if (gdispImageIsOpen(&gw->image))
 		gdispImageClose(&gw->image);
 }
@@ -129,7 +133,7 @@ GHandle gwinGImageCreate(GDisplay *g, GImageObject *gobj, GWindowInit *pInit) {
 	#if GWIN_NEED_IMAGE_ANIMATION
 		gtimerInit(&gobj->timer);
 	#endif
-	
+
 	gwinSetVisible((GHandle)gobj, pInit->show);
 
 	return (GHandle)gobj;

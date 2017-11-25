@@ -77,25 +77,25 @@ int main(void) {
         wi.height = gdispGetHeight();
         gh = gwinGraphCreate(0, &wi);
     }
- 
+
     // Set the graph origin and style
     gwinGraphSetOrigin(gh, gwinGetWidth(gh)/2, gwinGetHeight(gh)/2);
     gwinGraphSetStyle(gh, &GraphStyle1);
     gwinGraphDrawAxis(gh);
- 
+
     // Draw a sine wave
     for(i = 0; i < gwinGetWidth(gh); i++) {
-        gwinGraphDrawPoint(gh, i-gwinGetWidth(gh)/2, 80*sin(2*0.2*M_PI*i/180));
+        gwinGraphDrawPoint(gh, i-gwinGetWidth(gh)/2, 80*sin(2*0.2*GFX_PI*i/180));
     }
- 
+
     // Modify the style
     gwinGraphStartSet(gh);
     GraphStyle1.point.color = Green;
     gwinGraphSetStyle(gh, &GraphStyle1);
- 
+
     // Draw a different sine wave
     for(i = 0; i < gwinGetWidth(gh)*5; i++) {
-        gwinGraphDrawPoint(gh, i/5-gwinGetWidth(gh)/2, 95*sin(2*0.2*M_PI*i/180));
+        gwinGraphDrawPoint(gh, i/5-gwinGetWidth(gh)/2, 95*sin(2*0.2*GFX_PI*i/180));
     }
 
     // Change to a completely different style
@@ -104,7 +104,7 @@ int main(void) {
 
     // Draw a set of points
     gwinGraphDrawPoints(gh, data, sizeof(data)/sizeof(data[0]));
- 
+
     while(TRUE) {
         gfxSleepMilliseconds(100);
     }

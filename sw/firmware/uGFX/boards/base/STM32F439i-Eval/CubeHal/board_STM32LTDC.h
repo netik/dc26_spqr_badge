@@ -17,6 +17,8 @@
 #include "stm32f4xx_hal.h"
 #include "stm324x9i_eval_sdram.h"
 
+#define ALLOW_2ND_LAYER		TRUE
+
 // Panel parameters
 // This panel is a AMPIRE640480 panel.
 
@@ -35,8 +37,8 @@ static const ltdcConfig driverCfg = {
 		LTDC_PIXELFORMAT,					// Pixel format
 		0, 0,								// Start pixel position (x, y)
 		640, 480,							// Size of virtual layer (cx, cy)
-		LTDC_COLOR_FUCHSIA,					// Default color (ARGB8888)
-		0x980088,							// Color key (RGB888)
+		0x00000000,							// Default color (ARGB8888)
+		0x000000,							// Color key (RGB888)
 		LTDC_BLEND_FIX1_FIX2,				// Blending factors
 		0,									// Palette (RGB888, can be NULL)
 		0,									// Palette length
@@ -44,7 +46,25 @@ static const ltdcConfig driverCfg = {
 		LTDC_LEF_ENABLE						// Layer configuration flags
 	},
 
-	LTDC_UNUSED_LAYER_CONFIG				// Foreground layer config
+#if ALLOW_2ND_LAYER
+	{										// Foreground layer config (if turned on)
+		(LLDCOLOR_TYPE *)(SDRAM_DEVICE_ADDR+(640 * 480 * LTDC_PIXELBYTES)), // Frame buffer address
+		640, 480,							// Width, Height (pixels)
+		640 * LTDC_PIXELBYTES,				// Line pitch (bytes)
+		LTDC_PIXELFORMAT,					// Pixel format
+		0, 0,								// Start pixel position (x, y)
+		640, 480,							// Size of virtual layer (cx, cy)
+		0x00000000,							// Default color (ARGB8888)
+		0x000000,							// Color key (RGB888)
+		LTDC_BLEND_MOD1_MOD2,				// Blending factors
+		0,									// Palette (RGB888, can be NULL)
+		0,									// Palette length
+		0xFF,								// Constant alpha factor
+		LTDC_LEF_ENABLE						// Layer configuration flags
+	}
+#else
+	LTDC_UNUSED_LAYER_CONFIG
+#endif
 };
 
 // LCD Clock values
@@ -56,10 +76,10 @@ static void configureLcdClock(void)
 {
 	#if 1
 		RCC_PeriphCLKInitTypeDef	periph_clk_init_struct;
-		
+
 		periph_clk_init_struct.PLLSAI.PLLSAIN = LCD_PLLSAIN_VALUE;
-		periph_clk_init_struct.PeriphClockSelection = RCC_PERIPHCLK_LTDC;    
-		periph_clk_init_struct.PLLSAI.PLLSAIR = LCD_PLLSAIR_VALUE;    
+		periph_clk_init_struct.PeriphClockSelection = RCC_PERIPHCLK_LTDC;
+		periph_clk_init_struct.PLLSAI.PLLSAIR = LCD_PLLSAIR_VALUE;
 		periph_clk_init_struct.PLLSAIDivR = LCD_PLLSAIDIVR_VALUE;
 		HAL_RCCEx_PeriphCLKConfig(&periph_clk_init_struct);
 	#else
@@ -77,59 +97,52 @@ static void configureLcdPins(void)
 	GPIO_InitTypeDef			GPIO_Init_Structure;
 
 	// Enable peripheral clocks
-	__GPIOI_CLK_ENABLE(); 
+	__GPIOI_CLK_ENABLE();
 	__GPIOJ_CLK_ENABLE();
-	__GPIOK_CLK_ENABLE(); 
+	__GPIOK_CLK_ENABLE();
 
 	/*** LTDC Pins configuration ***/
 	// GPIOI
-	GPIO_Init_Structure.Pin       = GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15; 
+	GPIO_Init_Structure.Pin       = GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
 	GPIO_Init_Structure.Mode      = GPIO_MODE_AF_PP;
 	GPIO_Init_Structure.Pull      = GPIO_NOPULL;
 	GPIO_Init_Structure.Speed     = GPIO_SPEED_FAST;
-	GPIO_Init_Structure.Alternate = GPIO_AF14_LTDC;  
+	GPIO_Init_Structure.Alternate = GPIO_AF14_LTDC;
 	HAL_GPIO_Init(GPIOI, &GPIO_Init_Structure);
 
-	// GPIOJ  
+	// GPIOJ
 	GPIO_Init_Structure.Pin       = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | \
 	                                GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7 | \
 	                                GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | \
-	                                GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15; 
+	                                GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
 	GPIO_Init_Structure.Mode      = GPIO_MODE_AF_PP;
 	GPIO_Init_Structure.Pull      = GPIO_NOPULL;
 	GPIO_Init_Structure.Speed     = GPIO_SPEED_FAST;
-	GPIO_Init_Structure.Alternate = GPIO_AF14_LTDC;  
-	HAL_GPIO_Init(GPIOJ, &GPIO_Init_Structure);  
+	GPIO_Init_Structure.Alternate = GPIO_AF14_LTDC;
+	HAL_GPIO_Init(GPIOJ, &GPIO_Init_Structure);
 
-	// GPIOK configuration 
+	// GPIOK configuration
 	GPIO_Init_Structure.Pin       = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | \
-	                                GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7; 
+	                                GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7;
 	GPIO_Init_Structure.Mode      = GPIO_MODE_AF_PP;
 	GPIO_Init_Structure.Pull      = GPIO_NOPULL;
 	GPIO_Init_Structure.Speed     = GPIO_SPEED_FAST;
-	GPIO_Init_Structure.Alternate = GPIO_AF14_LTDC;  
+	GPIO_Init_Structure.Alternate = GPIO_AF14_LTDC;
 	HAL_GPIO_Init(GPIOK, &GPIO_Init_Structure);
 }
 
 static GFXINLINE void init_board(GDisplay* g)
 {
-	// As we are not using multiple displays we set g->board to NULL as we don't use it
-	g->board = 0;
+	(void) g;
 
-	switch(g->controllerdisplay) {
-		case 0:
+	// Set LCD pixel clock rate
+	configureLcdClock();
 
-		// Set LCD pixel clock rate
-		configureLcdClock();
-		
-		// Set pin directions
-		configureLcdPins();
+	// Set pin directions
+	configureLcdPins();
 
-		// Initialise the SDRAM
-		BSP_SDRAM_Init();
-
-		break;
-	}
+	// Initialise the SDRAM
+	BSP_SDRAM_Init();
 }
 
 static GFXINLINE void post_init_board(GDisplay* g)

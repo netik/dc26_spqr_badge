@@ -2,6 +2,70 @@
 *** Releases                                                              ***
 *****************************************************************************
 
+*** Release 2.8 ***
+FEATURE:	Added support for 128x32 SSD1306 based displays
+FIX:		Fixed recursion bug in console history
+FIX:		Multithreading issue with slow window redraws and large images
+FIX:		Ensure valid thread stack sizes on platforms where it matters
+FEATURE:	Added support for a GFILE user provided file system
+FEATURE:	Added gwinListItemSetText() to replace text in a GWIN list item
+FEATURE:	Added GDISP_IMAGE_BMP_BLIT_BUFFER_SIZE configuration option
+FEATURE:	Added GDISP_IMAGE_PNG_BLIT_BUFFER_SIZE configuration option
+FEATURE:	Added GDISP_IMAGE_PNG_FILE_BUFFER_SIZE configuration option
+FEATURE:	Added GDISP_IMAGE_PNG_Z_BUFFER_SIZE configuration option
+FEATURE:	Added GDISP_IMAGE_GIF_BLIT_BUFFER_SIZE configuration option
+FIX:		Fixed extra dots when drawing anti-aliased fonts with wordwrap
+FEATURE:	Increase non-UTF8 font support to 0 to 255 rather than just the true ascii set
+FEATURE:	Added Fb24bpp driver for RGB888 and BGR888 packed framebuffer displays
+FEATURE:	Added UC8173 driver
+FEATURE:	Added complete support for Altera Terasic MAX10 NEEK board
+FEATURE:	Significantly improved the FreeRTOS port
+FEATURE:	Added support for operating system initialisation in FreeRTOS
+FEATURE:	Added GFX_OS_CALL_UGFXMAIN configuration option to allow uGFXMain() to be automatically called
+FEATURE:	Added GFX_OS_UGFXMAIN_STACKSIZE configuration option to control uGFXMain() stack size
+FIX:		Fixed where a font with more than 255 glyphs could fail to display some glyphs
+FIX:		Fixed where a font with a large x baseline could be incorrectly clipped or word-wrapped
+IMPROVE:	Significantly decrease the stack usage required for word-wrapping
+FEATURE:	Added justifyTop, justifyMiddle & justifyBottom text justification to GDISP
+FEATURE:	Added justifyWordWrap, justifyNoWordWrap text justification to GDISP (requires GDISP_NEED_TEXT_WORDWRAP)
+FEATURE:	Added justifyPad, justifyNoPad text justification to GDISP
+FEATURE:	Added GDISP_NEED_TEXT_BOXPADLR and GDISP_NEED_TEXT_BOXPADTB configuration options
+FIX:		Fixed an issue on FreeRTOS where thread stacks were being created too large
+FEATURE:	Added UC1601s driver
+FIX:		Fixed issues with the STM746-Discovery board with ChibiOS
+FEATURE:	Added partial definition for the STM32F469i-Discovery board
+FIX:		Fixed issue where the variable type of the syncflags of the STM32LTDC driver was too small
+FEATURE:	Added KS0108 driver
+FEATURE:	Added RA6963 driver
+FIX:		Fixed clipping issue in gdispGDrawString()
+CHANGE:		Upgrade GFILE FATFS support from V0.10b to V0.13
+FEATURE:	Added UC1610 driver
+FIX:		Fixed to allow gwinSetText with static text on a TextEdit control
+FIX:		Fixed to ChibiOS realloc on a TextEdit control
+FEATURE:	Added support for CMSIS V2.0 operating systems (eg RTX5)
+REMOVED:	Removed long deprecated functions gfxSemCounter() and gfxSemCounterI()
+FIX:		gwinDetachToggle() is now a visible part of the API
+CHANGE:		Update OSX makefiles (allows for 64bit building)
+FIX:		Fixed resetting a timer on gwinImage objects when using animated GIFs
+FEATURE:	Added gwinTextEditSendKey() and gwinTextEditSendSpecialKey()
+FEATURE:	Implemented the JPG image decoder
+FEATURE:	Added SSD1322 driver
+FEATURE:    Added support for Zephyr operating system
+FEATURE:	STM32LTDC driver now supports using both layers as seperate displays. The 2nd display is the foreground layer
+CHANGE:		STM32LTDC driver now uses RGB888 pixel format by default
+FEATURE:	Added GDISP_LTDC_USE_RGB565 config variable to force STM32LTDC driver to use RGB565 pixel format
+FEATURE:	The STM32LTDC 2nd display (the foreground layer) supports alpha.
+FEATURE:	The STM32 board files for known boards have been updated to contain support for the 2nd layer.
+FEATURE:	Added AHTML2COLOR() and ARGB2COLOR() to support alpha. This is currently only supported for the RGB888 pixel format.
+FEATURE:	Added the new color GFXTRANSPARENT - only available for RGB888 pixel format on alpha capable displays.
+NOTE:		Alpha support in RGB888 requies an alpha capable display (STM32LTDC 2nd display only currently)
+NOTE:		Alpha support in RGB888 is NOT the standard ARGB8888 format. Only use AHTML2COLOR() and ARGB2COLOR() to create alpha colors.
+FEATURE:    Added nullpointer checks to GDISP image functions (with new error code GDISP_IMAGE_ERR_NULLPOINTER)
+FIX:		Add cache flushing to the ChibiOS FATFS/PETITFS block drivers. Needed for STM32F7 chips. This should really be in the ChibiOS DMA routines.
+FIX:		Add cache flushing to enable DMA2D accelerated bitblits in the STM32LTDC driver on the STM32F7 cpu.
+FIX:		Improved STM32F469i-Discovery board support.
+FIX:		Improved STM32F746G-Discovery board support.
+
 
 *** Release 2.7 ***
 FEATURE:	Added EXC7200 driver
@@ -54,7 +118,7 @@ FEATURE:	Added support for IAR and EDG compilers
 FIX:		Fixed crash when loading GIF image without enough memory available
 FEATURE:	Added games/minesweeper demo
 FEATURE:	Added games/justget10 demo
-		
+
 
 *** Release 2.5 ***
 FEATURE:	Added support for numerous compilers

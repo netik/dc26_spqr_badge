@@ -63,8 +63,6 @@ bool_t gfxSemWait(gfxSem *psem, delaytime_t ms);
 bool_t gfxSemWaitI(gfxSem *psem);
 void gfxSemSignal(gfxSem *psem);
 void gfxSemSignalI(gfxSem *psem);
-semcount_t gfxSemCounter(gfxSem *psem);
-semcount_t gfxSemCounterI(gfxSem *psem);
 gfxThreadHandle gfxThreadCreate(void *stackarea, size_t stacksz, threadpriority_t prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param);
 threadreturn_t gfxThreadWait(gfxThreadHandle thread);
 gfxThreadHandle gfxThreadMe(void);

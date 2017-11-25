@@ -34,7 +34,7 @@ extern "C" {
 	 * @param[in] width  	The width of the pixmap to be created
 	 * @param[in] height  	The height of the pixmap to be created
 	 *
-	 * @return 	The created GDisplay representing the pixmap
+	 * @return 	The created GDisplay representing the pixmap or 0 if the pixmap couldn't be created.
 	 *
 	 * @note	Once created, an off-screen pixmap can be drawn on using the standard gdispGxxxx calls.
 	 * @note	It must be destroyed using @p gdispDeleteOffscreenPixmap
@@ -81,7 +81,7 @@ extern "C" {
 		 */
 		void *gdispPixmapGetMemoryImage(GDisplay *g);
 	#endif
-	
+
 #ifdef __cplusplus
 }
 #endif

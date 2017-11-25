@@ -21,6 +21,10 @@ void _gosInit(void)
 	/* No initialization of the operating system itself is needed */
 }
 
+void _gosPostInit(void)
+{
+}
+
 void _gosDeinit(void)
 {
 
@@ -74,7 +78,7 @@ bool_t gfxSemWait(gfxSem *psem, delaytime_t ms) {
 	return WaitForSingleObject(*psem, ms) == WAIT_OBJECT_0;
 }
 
-typedef LONG __stdcall (*_NtQuerySemaphore)(
+typedef LONG (__stdcall *_NtQuerySemaphore)(
     HANDLE SemaphoreHandle,
     DWORD SemaphoreInformationClass, /* Would be SEMAPHORE_INFORMATION_CLASS */
     PVOID SemaphoreInformation,      /* but this is to much to dump here     */
@@ -82,6 +86,7 @@ typedef LONG __stdcall (*_NtQuerySemaphore)(
     PULONG ReturnLength OPTIONAL
 );
 
+/* - Left here simply because of its undocumented cleverness...
 semcount_t gfxSemCounter(gfxSem *pSem) {
 	static _NtQuerySemaphore NtQuerySemaphore;
 	struct _SEMAPHORE_BASIC_INFORMATION {
@@ -96,13 +101,14 @@ semcount_t gfxSemCounter(gfxSem *pSem) {
 
     return BasicInfo.CurrentCount;
 }
+*/
 
-gfxThreadHandle gfxThreadCreate(void *stackarea, size_t stacksz, threadpriority_t prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param) {
+gfxThreadHandle gfxThreadCreate(void *stackarea, size_t stacksz, threadpriority_t prio, DECLARE_THREAD_FUNCTION(*fn,p), void *param) {
 	(void)	stackarea;
 	HANDLE	thd;
 
 	if (!(thd = CreateThread(0, stacksz, fn, param, CREATE_SUSPENDED, 0)))
-		return FALSE;
+		return 0;
 
 	SetThreadPriority(thd, prio);
 	ResumeThread(thd);
