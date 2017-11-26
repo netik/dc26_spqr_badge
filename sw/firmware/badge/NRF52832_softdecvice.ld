@@ -135,6 +135,7 @@ SECTIONS
 
     .text ALIGN(16) : ALIGN(16)
     {
+	KEEP(*(.fwversion))
         *(.text)
         *(.text.*)
         KEEP(*(SORT(.chibi_list*)));

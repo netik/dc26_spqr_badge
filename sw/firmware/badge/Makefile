@@ -147,6 +147,7 @@ CSRC += main.c \
 	app-test.c \
 	app-video.c \
 	app-chat.c \
+	app-update.c \
 	async_io_lld.c \
 	ble_gap_lld.c \
 	ble_l2cap_lld.c \
@@ -268,8 +269,17 @@ ULIBS = -L$(CHIBIOS)/../SoftDevice/lib -lsoftdevice -lc_nano -lnosys
 # End of user defines
 ##############################################################################
 
+.PHONY: updatebuildtime
+
 RULESPATH = $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC/
 include $(RULESPATH)/rules.mk
+
+PRE_MAKE_ALL_RULE_HOOK: buildtime.h
+ 
+buildtime.h: updatebuildtime
+	echo "#define BUILDTIME \"Built: `/bin/date` (`/bin/hostname -s`)\"" > $@
+	echo "#define BUILDVER `/bin/date +%s`" >> $@
+	echo "#define BUILDMAGIC 0xCAFEBABE" >> $@
 
 OHEX = $(BUILDDIR)/$(PROJECT).hex
 OELF = $(BUILDDIR)/$(PROJECT).elf
