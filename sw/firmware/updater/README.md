@@ -1,5 +1,5 @@
 This directory contains the code to build a firmware updater utility
-for the Defcon 25 badge.
+for the Defcon 26 badge.
 
 To build the updater, just type "make." The result should be a binary
 called updater.bin.
