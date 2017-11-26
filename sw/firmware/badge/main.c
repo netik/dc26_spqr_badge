@@ -160,6 +160,8 @@ SVC_Handler (void)
  */
 int main(void)
 {
+    uint32_t info;
+    uint8_t * p;
 #ifdef CRT0_VTOR_INIT
     __disable_irq();
     SCB->VTOR = 0;
@@ -187,9 +189,17 @@ int main(void)
 		      Thread1, NULL);
 
     chThdSleep(2);
-    printf("SYSTEM START\r\n");
+    printf ("SYSTEM START\r\n");
+    info = NRF_FICR->INFO.VARIANT;
+    p = (uint8_t *)&info;
+    printf ("Nordic Semiconductor nRF%x Variant: %c%c%c%c ",
+        NRF_FICR->INFO.PART, p[3], p[2], p[1], p[0]);
+    printf ("RAM: %dKB Flash: %dKB\r\n", NRF_FICR->INFO.RAM,
+        NRF_FICR->INFO.FLASH);
+    printf ("Device ID: %x%x\r\n", NRF_FICR->DEVICEID[0],
+        NRF_FICR->DEVICEID[1]);
     chThdSleep(2);
-    printf(PORT_INFO "\r\n");
+    printf (PORT_INFO "\r\n");
     chThdSleep(2);
 
     printf("Priority levels %d\r\n", CORTEX_PRIORITY_LEVELS);
