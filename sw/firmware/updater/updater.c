@@ -136,26 +136,6 @@ chMtxObjectInit (mutex_t *mp)
 
 extern void Vector68 (void);
 
-#ifdef notdef
-static void
-gpt_lld_serve_interrupt(GPTDriver *gptp)
-{
-	gptp->tim->EVENTS_COMPARE[gptp->cc_int] = 0;
-	(void)gptp->tim->EVENTS_COMPARE[gptp->cc_int];
-	if (gptp->state == GPT_ONESHOT)
-		gptp->state = GPT_READY; /* Back in GPT_READY state.     */
-	gptp->config->callback (gptp);
-	return;
-}
-
-static void
-gptIntr (void)
-{
-	gpt_lld_serve_interrupt(&GPTD3);
-	return;
-}
-#endif
-
 static const GPTConfig gpt2_config = {
     .frequency  = NRF5_GPT_FREQ_62500HZ,
     .callback   = mmc_callback,
@@ -174,7 +154,8 @@ SPIConfig spi1_config = {
 	0xFF			/* dummy data for spiIgnore() */
 };
 
-int updater (void)
+int
+updater (void)
 {
 	FIL f;
 	UINT br;
