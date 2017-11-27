@@ -48,7 +48,7 @@
 #else
 #define NRF5_RNG_USE_RNG0		TRUE
 #endif
-#define NRF5_GPT_USE_TIMER1		TRUE
+#define NRF5_GPT_USE_TIMER1		FALSE
 #define NRF5_GPT_USE_TIMER2		TRUE
 
 #define NRF5_QEI_USE_QDEC0		TRUE
