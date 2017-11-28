@@ -46,8 +46,9 @@ CFLAGS+=  -mcpu=cortex-m4 -Os -ggdb -fomit-frame-pointer		\
 	-falign-functions=4 -nostdlib -DBIG_ENDIAN=0 -DLITTLE_ENDIAN=1	\
 	-Dasm=__asm__ -ansi -ffunction-sections				\
 	-DUPDATER -fdata-sections -fno-common -std=c99			\
-	-Wall -Wextra -Wstrict-prototypes		\
+	-Wall -Wextra -Wstrict-prototypes				\
 	-DCORTEX_USE_FPU=TRUE -DTHUMB_PRESENT -mno-thumb-interwork	\
+	-D__VTOR_PRESENT=1						\
 	-DTHUMB_NO_INTERWORKING -mthumb -DTHUMB -I.			\
 	-I../badge -I../ChibiOS/os/license				\
 	-I../ChibiOS-Contrib/os/hal/ports/NRF5/NRF52832			\
@@ -61,7 +62,6 @@ CFLAGS+=  -mcpu=cortex-m4 -Os -ggdb -fomit-frame-pointer		\
 	-I../ChibiOS/os/hal/osal/rt  					\
 	-I../ChibiOS/os/common/oslib/include  				\
 	-I../ChibiOS/os/hal/include 					\
-	-D__VTOR_PRESENT=1						\
 	-I../ChibiOS-Contrib/os/hal/boards/NONSTANDARD_NRF52_IDES_OF_DEFCON \
 	-I../FatFs/source -DDRV_MMC=0 -UDRV_CFC -flto
 
