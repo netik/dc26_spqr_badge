@@ -1,4 +1,4 @@
-# Copyright (c) 2016
+# Copyright (c) 2016-2017
 #      Bill Paul <wpaul@windriver.com>.  All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -67,10 +67,9 @@ CFLAGS+=  -mcpu=cortex-m4 -Os -ggdb -fomit-frame-pointer		\
 
 ASFLAGS= $(CFLAGS)
 
-#	-mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mthumb -flto			
 updater: $(OBJS)
 	$(CC) $(OBJS) -ggdb -nostdlib -nostartfiles			\
-	-mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mthumb 			\
+	-mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mthumb -flto			\
 	-Wl,--no-warn-mismatch,-Tlink.lds -lc -lgcc -o $@
 	$(OBJCOPY) -O binary $@ updater.bin
 
