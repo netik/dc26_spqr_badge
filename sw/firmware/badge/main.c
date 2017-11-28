@@ -35,7 +35,7 @@ orchard_command_end();
 
 bool watchdog_started = false;
 
-SPIConfig spi1_config = {
+static const SPIConfig spi1_config = {
 	NULL,			/* enc_cp */
 	NRF5_SPI_FREQ_8MBPS,	/* freq */
 	IOPORT1_SPI_SCK,	/* sckpad */
@@ -47,20 +47,20 @@ SPIConfig spi1_config = {
 	0xFF			/* dummy data for spiIgnore() */
 };
 
-I2CConfig i2c2_config = {
+static const I2CConfig i2c2_config = {
 	100000,			/* clock */
 	IOPORT1_I2C_SCK,	/* scl_pad */
 	IOPORT1_I2C_SDA		/* sda_pad */
 };
 
-void
+static void
 gpt_callback(GPTDriver *gptp)
 {
 	(void)gptp;
 	return;
 }
 
-void
+static void
 mmc_callback(GPTDriver *gptp)
 {
 	(void)gptp;
