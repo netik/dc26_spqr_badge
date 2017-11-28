@@ -157,7 +157,7 @@ static const GPTConfig gpt2_config = {
     .resolution = 32,
 };
 
-SPIConfig spi1_config = {
+static const SPIConfig spi1_config = {
  	NULL,			/* enc_cp */
 	NRF5_SPI_FREQ_8MBPS,	/* freq */
 	IOPORT1_SPI_SCK,	/* sckpad */
