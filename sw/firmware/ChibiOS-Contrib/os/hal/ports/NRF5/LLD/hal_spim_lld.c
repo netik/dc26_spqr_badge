@@ -277,12 +277,13 @@ void spi_lld_start(SPIDriver *spip)
 #ifdef NRF5_SPIM_USE_ANOM58_WAR
 
 	/*
-	 * Workaround for NRF52832 anomaly 58. The SPI controller
-	 * always sends a second byte when asked to receive only
-	 * one byte: it always clocks out enough bits for two bytes.
-	 * This can cause problems with some devices, notable SD
-	 * cards. To work around this, we set up a PPI event
-	 * to stop the channel after the SPI clock pin changes
+	 * Workaround for NRF52832 anomaly 58. The SPIM controller
+	 * always clocks out enough bits for two bytes when asked 
+	 * transfer only one bytes. This can cause problems with some
+	 * slave devices, notably SD cards.
+	 *
+	 * To work around this, we set up a PPI event to
+	 * stop the channel after the SPI clock pin changes
 	 * state. The controller can't be stopped mid-byte, so
 	 * the first byte will always complete and then the spurious
 	 * second byte will be suppressed. This requires the use of
