@@ -344,7 +344,7 @@ uint32_t
 bleGapAdvBlockFind (uint8_t ** pkt, uint8_t * len, uint8_t id)
 {
 	uint8_t * p;
-	uint8_t l;
+	uint8_t l = 0;
 	uint8_t t = 0;
 
 	if (*len == 0 || *len > BLE_GAP_ADV_MAX_SIZE)
@@ -367,7 +367,7 @@ bleGapAdvBlockFind (uint8_t ** pkt, uint8_t * len, uint8_t id)
 			p += (l + 1);
 	}
 
-	if (t == id) {
+	if (t == id && l != 0) {
 		*pkt = p + 2;
 		*len = l - 1;
 		return (NRF_SUCCESS);
