@@ -149,7 +149,9 @@ CSRC += main.c \
 	app-chat.c \
 	app-update.c \
 	app-email.c \
+	app-ledsign.c \
 	async_io_lld.c \
+	scroll_lld.c \
 	ble_gap_lld.c \
 	ble_l2cap_lld.c \
 	ble_lld.c \

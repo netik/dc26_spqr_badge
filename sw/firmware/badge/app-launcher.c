@@ -59,7 +59,7 @@ draw_launcher_buttons(struct launcher_list * list)
 	wi.g.x = 0;
 	wi.g.y = 0;
 	wi.g.width = 160;
-	wi.g.height = 20;
+	wi.g.height = -1;
 	wi.text = "BETA" /*config->name*/;
 	wi.customDraw = gwinLabelDrawJustifiedLeft;
 	wi.customParam = 0;
@@ -78,6 +78,7 @@ draw_launcher_buttons(struct launcher_list * list)
 	wi.g.show = TRUE;
 	wi.g.x = 150;
 	wi.g.width = 170;
+	wi.g.height = -1;
 	wi.text = tmp;
 	wi.customDraw = gwinLabelDrawJustifiedRight;
 	list->ghTitleR = gwinLabelCreate (0, &wi);
