@@ -114,9 +114,13 @@ include $(GFXLIB)/boards/base/Nonstandard-NRF52-Ides-Of-Defcon/board.mk
 include $(GFXLIB)/drivers/gdisp/ILI9341/driver.mk
 include $(GFXLIB)/drivers/ginput/touch/MCU/driver.mk
 
-#FatFS library
+# FatFS library
 FATFS = $(CHIBIOS)/../FatFs
 include $(FATFS)/build.mk
+
+# Atari 2600 emulator
+V2600 = $(CHIBIOS)/../v2600
+include $(V2600)/build.mk
 
 # Define linker script file here
 LDSCRIPT= NRF52832_softdecvice.ld
@@ -166,7 +170,8 @@ CSRC += main.c \
 	strtoq.c \
 	strtouq.c \
         $(GFXSRC) \
-	$(FATFSSRC)
+	$(FATFSSRC) \
+	$(V2600SRC)
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -200,7 +205,7 @@ ASMXSRC = $(STARTUPASM) $(PORTASM) $(OSALASM)
 INCDIR = $(CHIBIOS)/os/license \
          $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) $(TESTINC) \
-	 $(SHELLINC) $(GFXINC) $(FATFSINC) \
+	 $(SHELLINC) $(GFXINC) $(FATFSINC) $(V2600INC) \
 	 $(CHIBIOS)/os/hal/lib/streams $(CHIBIOS)/os/various
 
 
