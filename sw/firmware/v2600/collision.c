@@ -110,11 +110,10 @@ init_collisions(void)
     col_table[i] = set_collisions(i);
 
   /* Stop memory leaking */
-  if(colvect!=0)
-    free(colvect);
+  /*if(colvect!=0)
+    free(colvect);*/
 
   /* Get the colvect 8 byte aligned */
   /*colvect=(BYTE *)calloc(28, 8);*/
-  colvect = chHeapAlloc (NULL, 160);
   reset_collisions();
 }

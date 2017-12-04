@@ -17,7 +17,7 @@
 #include "realjoy.h"
 #include "config.h"
 #include "vmachine.h"
-#include "profile.h"
+#include "collision.h"
 #include "options.h"
 
 /* The mainloop from cpu.c */
@@ -36,7 +36,7 @@ static THD_FUNCTION(atariThread, arg)
 	chRegSetThreadName ("Atari");
 
 	theCart = (BYTE *)0x20000100;
-	vscreen = (BYTE *)(0x20000100 + 8192);
+	colvect = (BYTE *)(0x20000100 + 8192);
 	base_opts.rr = 1;
 	base_opts.magstep = 1;
 	base_opts.bank = 1;

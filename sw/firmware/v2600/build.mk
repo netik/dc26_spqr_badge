@@ -5,7 +5,6 @@ V2600SRC+=					\
 	$(V2600)/raster.c			\
 	$(V2600)/collision.c			\
 	$(V2600)/limiter.c			\
-	$(V2600)/table.c			\
 	$(V2600)/keyboard.c			\
 	$(V2600)/options.c			\
 	$(V2600)/misc.c				\

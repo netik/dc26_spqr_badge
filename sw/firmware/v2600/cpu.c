@@ -456,7 +456,7 @@ mainloop (void)
 /* ORA,    INDIRECT_Y */
 	      {
 		BYTE p1 = LOAD (PC + 1);
-		register ADDRESS p2 = LOAD_ZERO_ADDR (p1);
+		ADDRESS p2 = LOAD_ZERO_ADDR (p1);
 		unsigned int src = LOAD (p2 + YR);
 		PC += 2;
 
@@ -1030,7 +1030,7 @@ mainloop (void)
 /*  AND,    INDIRECT_Y */
 	      {
 		BYTE p1 = LOAD (PC + 1);
-		register ADDRESS p2 = LOAD_ZERO_ADDR (p1);
+		ADDRESS p2 = LOAD_ZERO_ADDR (p1);
 		unsigned int src = LOAD (p2 + YR);
 		PC += 2;
 		if (pagetest (p2, YR))
@@ -2335,7 +2335,7 @@ mainloop (void)
 	    case 113:
 	      {
 		BYTE p1 = LOAD (PC + 1);
-		register ADDRESS p2 = LOAD_ZERO_ADDR (p1);
+		ADDRESS p2 = LOAD_ZERO_ADDR (p1);
 		unsigned int src = LOAD (p2 + YR);
 		unsigned int temp = src + AC + (IF_CARRY ()? 1 : 0);
 		PC += 2;
@@ -2998,7 +2998,7 @@ mainloop (void)
 /*  BCC,    RELATIVE */
 	      {
 		BYTE p1 = LOAD (PC + 1);
-		register ADDRESS hb;
+		ADDRESS hb;
 		unsigned int src = p1;
 		PC += 2;
 		/* Branch if carry flag is clear. */
@@ -3487,7 +3487,7 @@ mainloop (void)
 /*   LDA,    INDIRECT_Y */
 	      {
 		BYTE p1 = LOAD (PC + 1);
-		register ADDRESS p2 = LOAD_ZERO_ADDR (p1);
+		ADDRESS p2 = LOAD_ZERO_ADDR (p1);
 		unsigned int src = LOAD (p2 + YR);
 		PC += 2;
 
@@ -3525,7 +3525,7 @@ mainloop (void)
 /*   LAX,    INDIRECT_Y */
 	      {
 		BYTE p1 = LOAD (PC + 1);
-		register ADDRESS p2 = LOAD_ZERO_ADDR (p1);
+		ADDRESS p2 = LOAD_ZERO_ADDR (p1);
 		unsigned int src = LOAD (p2 + YR);
 		PC += 2;
 		if (pagetest (p2, YR))
@@ -4036,7 +4036,7 @@ mainloop (void)
 /*   CMP,    INDIRECT_Y */
 	      {
 		BYTE p1 = LOAD (PC + 1);
-		register ADDRESS p2 = LOAD_ZERO_ADDR (p1);
+		ADDRESS p2 = LOAD_ZERO_ADDR (p1);
 		unsigned int src = LOAD (p2 + YR);
 		PC += 2;
 		if (pagetest (p2, YR))
@@ -4693,7 +4693,7 @@ mainloop (void)
 	    case 241:
 	      {
 		BYTE p1 = LOAD (PC + 1);
-		register ADDRESS p2 = LOAD_ZERO_ADDR (p1);
+		ADDRESS p2 = LOAD_ZERO_ADDR (p1);
 		unsigned int src = LOAD (p2 + YR);
 		unsigned int temp = AC - src - (IF_CARRY ()? 0 : 1);
 		PC += 2;
