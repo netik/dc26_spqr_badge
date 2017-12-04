@@ -30,8 +30,10 @@
 /**
  * @brief   Enables the community subsystem.
  */
-#ifndef NRF5_RAND_SOFTDEVICE
 #if !defined(HAL_USE_RNG) || defined(__DOXYGEN__)
+#ifdef NRF5_RAND_SOFTDEVICE
+#define HAL_USE_RNG                 FALSE
+#else
 #define HAL_USE_RNG                 TRUE
 #endif
 #endif

@@ -14,12 +14,10 @@
 ******************************************************************************/
 
 /* Raster graphics procedures */
-#include "ch.h"
-#include "hal.h"
-#include "badge.h"
+
 #include "config.h"
 
-/*#include <stdio.h>*/
+#include <stdio.h>
 #include <string.h>
 #include "types.h"
 #include "address.h"
@@ -31,6 +29,7 @@
 #include "collision.h"
 
 extern void tv_drawline (int line);
+extern void tv_drawpixel (uint16_t);
 
 /* Color lookup tables. Used to speed up rendering */
 /* The current colour lookup table */
@@ -587,10 +586,10 @@ tv_rasterise (int line)
 {
 #ifdef notdef
   line_ptr = vscreen + line * vwidth * base_opts.magstep * tv_bytes_pp;
-#endif
   line_ptr = vscreen;
+#endif
   /* Draw the playfield first */
-  draw_playfield (); 
+  draw_playfield ();
   
   /* Do the ball */
   draw_ball ();
@@ -624,8 +623,9 @@ draw_vector_q (void)
   int uct = 0;
   int colind, colval;
   unsigned int pad;
+#ifdef notdef
   unsigned short *tv_ptr = (unsigned short *) line_ptr;
-
+#endif
   /* Check for scores */
   if(scores_val ==2) 
     {
@@ -650,9 +650,12 @@ draw_vector_q (void)
 	colind=colour_lookup[colval];
 	pad=colour_table[colind];
       } else
-	pad=colour_table[BK_COLOUR];      
+	pad=colour_table[BK_COLOUR];
 
+#ifdef notdef
       tv_ptr[i] = pad;
+#endif
+      tv_drawpixel (pad);
     }
 
   /* Check for scores */
@@ -674,9 +677,12 @@ draw_vector_q (void)
 	colind=colour_lookup[colval];
 	pad=colour_table[colind];
       } else
-	pad=colour_table[BK_COLOUR];      
+	pad=colour_table[BK_COLOUR];
 
+      tv_drawpixel (pad);
+#ifdef notdef
       tv_ptr[i] = pad;
+#endif
     }
 
   while (uct < unified_count)
@@ -1012,67 +1018,15 @@ update_registers (void)
 void
 tv_raster (int line)
 {
-  int j;
-  if ((tv_counter % base_opts.rr != 0)  || (line > theight) )
+  if ((tv_counter % base_opts.rr != 0)  || (line > theight))
     {
       update_registers ();
     }
   else
     {
-      reset_vector();
+      reset_vector ();
       tv_rasterise (line);
-      
-      switch( tv_depth )
-	{
-	case 8: 
-	  {
-	    switch (base_opts.magstep)
-	      {
-	      case 1:
-		draw_vector_q ();
-		break;
-	      case 2:
-		draw_vector_2 ();
-		/* Duplicate line if magnifying */
-		memcpy (line_ptr + vwidth,
-			line_ptr, vwidth);
-		
-		break;
-	      case 3:
-		draw_vector (3);
-		/* Duplicate line if magnifying */
-		for (j = 0; j < 2; j++)
-		  {
-		    memcpy (line_ptr + vwidth,
-			    line_ptr, vwidth);
-		  }
-		break;
-	      }	    
-	    break;
-	  }
-	case 16:
-	  {	   
-	    /* Magstep is not doubled */
-	    draw_vector_true_color16(base_opts.magstep);
-	    break;
-	  }
-	case 32:
-	  {
-	    /* Magstep is doubled */
-	    draw_vector_true_color24(base_opts.magstep*2);
-	    break;
-	  }	
-	}
-#ifdef XDEBUGGER
-      if (debugf_raster)
-	{
-	  *(line_ptr + 320) = 0;
-	  *(line_ptr + 321) = colour_table[P0M0_COLOUR];
-	  tv_display ();
-	  debugf_halt = 1;
-	}
-#endif
-    tv_drawline (line);
+      draw_vector_q ();
     }
 }
 

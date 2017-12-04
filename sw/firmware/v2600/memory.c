@@ -74,6 +74,7 @@ bank_switch_write (ADDRESS a, BYTE b)
 	}
       break;
 
+#ifdef notdef
     case 2:
       /* Atari 16k F6 */
       switch (a)
@@ -92,7 +93,7 @@ bank_switch_write (ADDRESS a, BYTE b)
 	  break;
 	}
       break;
-
+#endif
 #ifdef notdef
     case 3:
       /* Parker Brothers 8k E0 */
@@ -185,7 +186,7 @@ bank_switch_read (ADDRESS a)
 	}
       res=theRom[a];
       break;
-
+#ifdef notdef
     case 2:
       /* Atari 16k F6 */
       switch (a)
@@ -205,7 +206,7 @@ bank_switch_read (ADDRESS a)
 	}
       res=theRom[a];
       break;
-
+#endif
 #ifdef notdef
     case 3:
       /* Parker Brothers 8k E0 */
@@ -771,8 +772,8 @@ decRead (ADDRESS a)
 	  res = riotRead[SWCHB];
 	  break;
 	default:
-	  printf ("Unknown read 0x%x\n", a & 0x2ff);
-	  show ();
+	  /*printf ("Unknown read 0x%x\n", a & 0x2ff);
+	  show ();*/
 	  res = 65;
 	  break;
 	}

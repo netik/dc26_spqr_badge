@@ -116,9 +116,8 @@ create_window (void)
 int
 tv_on (int argc, char **argv)
 {
-
 	GDISP->p.x = 0;
-	GDISP->p.y = 0;
+	GDISP->p.y = 24;
 
 	GDISP->p.cx = vwidth * 2;
 	GDISP->p.cy = vheight + 1;
@@ -180,5 +179,14 @@ tv_drawline (int line)
 		gdisp_lld_write_color (GDISP);
 	}
 
+	return;
+}
+
+void
+tv_drawpixel (pixel_t pixel)
+{
+	GDISP->p.color = colors[pixel];
+	gdisp_lld_write_color (GDISP);
+	gdisp_lld_write_color (GDISP);
 	return;
 }
