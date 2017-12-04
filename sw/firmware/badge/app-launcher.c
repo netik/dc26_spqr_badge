@@ -412,6 +412,7 @@ launcher_event (OrchardAppContext *context, const OrchardAppEvent *event)
 				/* remove the box before update  */
 				draw_box (list, Black);
 				list->page++;
+				redraw_list (list);
 			}
 		}
 
@@ -420,6 +421,7 @@ launcher_event (OrchardAppContext *context, const OrchardAppEvent *event)
 				/* remove the box before update  */
 				draw_box (list, Black);
 				list->page--;
+				redraw_list (list);
 			}
 		}
 	}
@@ -431,9 +433,6 @@ launcher_event (OrchardAppContext *context, const OrchardAppEvent *event)
   
 	if (list->selected >= list->total)
 		list->selected = 0;
-  
-	if (event->type == ugfxEvent || event->type == keyEvent)
-		redraw_list (list);
 
 	return;
 }
