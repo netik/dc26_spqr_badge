@@ -1,0 +1,3 @@
+#define BUILDTIME "Built: Sat Sep  8 16:57:34 PDT 2018 (optiplex)"
+#define BUILDVER 1536451054
+#define BUILDMAGIC 0xCAFEBABE
