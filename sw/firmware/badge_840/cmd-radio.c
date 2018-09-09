@@ -125,7 +125,8 @@ cmd_radio (BaseSequentialStream *chp, int argc, char *argv[])
 		chprintf(chp, "send [msg]           Transmit to peer\r\n");
 		chprintf(chp, "enable               Enable BLE radio\r\n");
 		chprintf(chp, "disable              Disable BLE radio\r\n");
-		chprintf(chp, "peerlist             Display nearby peers\n");
+		chprintf(chp, "peerlist             Display nearby peers\r\n");
+		return;
 	}
 
 	if (strcmp (argv[0], "connect") == 0)
