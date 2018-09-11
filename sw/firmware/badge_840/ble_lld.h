@@ -33,7 +33,7 @@
 #ifndef _BLE_LLD_H_
 #define _BLE_LLD_H_
 
-#define BLE_APPEARANCE_DC26	0xDC20
+#define BLE_APPEARANCE_DC26	0xDC1B
 #define BLE_COMPANY_ID_IDES	0x1D35
 #define BLE_NAME_IDES		"DC27 IDES"
 
