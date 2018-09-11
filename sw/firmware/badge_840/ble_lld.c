@@ -129,7 +129,7 @@ bleEventDispatch (ble_evt_t * evt)
 * RETURNS: N/A
 */
 
-static THD_WORKING_AREA(waSdThread, 256);
+static THD_WORKING_AREA(waSdThread, 384);
 static THD_FUNCTION(sdThread, arg)
 {
 	uint8_t * p_dest;
@@ -258,7 +258,7 @@ bleEnable (void)
 		printf ("SoftDevice version %d.%d.%d enabled.\r\n",
 		    SD_MAJOR_VERSION, SD_MINOR_VERSION, SD_BUGFIX_VERSION);
 	else {
-		printf ("Enabling softdevice failed (%x)\r\n", r);
+		printf ("Enabling softdevice failed (0x%x)\r\n", r);
 		return;
 	}
 
@@ -266,6 +266,8 @@ bleEnable (void)
 	 * Set up SoftDevice internal configuration to support
 	 * L2CAP connections.
 	 */
+
+	/* Set GAP options */
 
 	memset (&cfg, 0, sizeof(cfg));
 
@@ -276,12 +278,25 @@ bleEnable (void)
 
 	r = sd_ble_cfg_set (BLE_CONN_CFG_GAP, &cfg, ram_start);
 
+	/* Set GAP role counts */
+
 	memset (&cfg, 0, sizeof(cfg));
 
-	cfg.conn_cfg.conn_cfg_tag = BLE_IDES_APP_TAG;
+	cfg.gap_cfg.role_count_cfg.periph_role_count = 1;
+	cfg.gap_cfg.role_count_cfg.central_role_count = 1;
+	cfg.gap_cfg.role_count_cfg.central_sec_count = 1;
+
+	r = sd_ble_cfg_set (BLE_GAP_CFG_ROLE_COUNT, &cfg, ram_start);
+
+	/* Set UUID count */
+
+	memset (&cfg, 0, sizeof(cfg));
+
 	cfg.common_cfg.vs_uuid_cfg.vs_uuid_count = 0;
 
 	r = sd_ble_cfg_set (BLE_COMMON_CFG_VS_UUID, &cfg, ram_start);
+
+	/* Set L2CAP connection limits. */
 
 	memset (&cfg, 0, sizeof(cfg));
 
@@ -290,7 +305,7 @@ bleEnable (void)
 	cfg.conn_cfg.params.l2cap_conn_cfg.tx_mps = BLE_IDES_L2CAP_LEN;
 	cfg.conn_cfg.params.l2cap_conn_cfg.rx_queue_size = 1;
 	cfg.conn_cfg.params.l2cap_conn_cfg.tx_queue_size = 1;
-	cfg.conn_cfg.params.l2cap_conn_cfg.ch_count = 2;
+	cfg.conn_cfg.params.l2cap_conn_cfg.ch_count = 1;
 
 	r = sd_ble_cfg_set (BLE_CONN_CFG_L2CAP, &cfg, ram_start);
 
@@ -299,10 +314,10 @@ bleEnable (void)
 	r = sd_ble_enable (&ram_start);
 
 	if (r == NRF_SUCCESS)
-		printf ("Bluetooth LE enabled. (RAM base: %x)\r\n",
+		printf ("Bluetooth LE enabled. (RAM base: 0x%x)\r\n",
 		    ram_start);
 	else {
-		printf ("Enabling BLE failed (%x %x)\r\n", r, ram_start);
+		printf ("Enabling BLE failed (0x%x 0x%x)\r\n", r, ram_start);
 		return;
 	}
 
@@ -324,7 +339,7 @@ bleDisable (void)
 	if (r == NRF_SUCCESS)
 		printf ("Bluetooth LE disabled\r\n");
 	else
-		printf ("Disaabling BLE failed (%x)\r\n", r);
+		printf ("Disaabling BLE failed (0x%x)\r\n", r);
 
 	return;
 }

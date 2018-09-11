@@ -37,7 +37,17 @@ extern uint16_t ble_conn_handle;
 extern uint8_t ble_gap_role;
 extern ble_gap_addr_t ble_peer_addr;
 
-#define BLE_IDES_SCAN_TIMEOUT		30
+/*
+ * SoftDevice 6 supports extended advertisements. The macro
+ * BLE_GAP_ADV_MAX_SIZE was removed and replaced with a different
+ * one. We add a compatibility definition here.
+ */
+
+#ifndef BLE_GAP_ADV_MAX_SIZE
+#define BLE_GAP_ADV_MAX_SIZE BLE_GAP_ADV_SET_DATA_SIZE_MAX
+#endif
+
+#define BLE_IDES_SCAN_TIMEOUT		60
 #define BLE_IDES_ADV_TIMEOUT		30
 #define BLE_IDES_CONNECT_TIMEOUT	5
 

@@ -47,7 +47,7 @@
 
 #define MAX_PEERS	50
 #define PEER_ADDR_LEN	12 + 5
-#define MAX_PEERMEM	(PEER_ADDR_LEN + BLE_GAP_ADV_MAX_SIZE + 1)
+#define MAX_PEERMEM	(PEER_ADDR_LEN + BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED + 1)
 
 typedef struct _ChatHandles {
 	char *			listitems[MAX_PEERS + 2];
@@ -79,8 +79,8 @@ insert_peer (OrchardAppContext * context, ble_evt_t * evt)
 	if (p->peers == (MAX_PEERS + 2))
 		return (-1);
 
-	len = evt->evt.gap_evt.params.adv_report.dlen;
-	name = evt->evt.gap_evt.params.adv_report.data;
+	len = evt->evt.gap_evt.params.adv_report.data.len;
+	name = evt->evt.gap_evt.params.adv_report.data.p_data;
 	if (bleGapAdvBlockFind (&name, &len,
 	    BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME) != NRF_SUCCESS) {
 		name = (uint8_t *)"";

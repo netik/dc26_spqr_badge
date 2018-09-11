@@ -182,7 +182,7 @@ bleL2CapConnect (uint16_t psm)
 	r = sd_ble_l2cap_ch_setup (ble_conn_handle, &cid, &params);
 
 	if (r != NRF_SUCCESS)
-		printf ("L2CAP connect failed (%x)\r\n", r);
+		printf ("L2CAP connect failed (0x%x)\r\n", r);
 
 	return (r);
 }
@@ -195,7 +195,7 @@ bleL2CapDisconnect (uint16_t cid)
 	r = sd_ble_l2cap_ch_release (ble_conn_handle, cid);
 
 	if (r != NRF_SUCCESS)
-		printf ("L2CAP disconnect failed (%x)\r\n", r);
+		printf ("L2CAP disconnect failed (0x%x)\r\n", r);
 
 	return (r);
 }
@@ -217,7 +217,7 @@ bleL2CapSetupReply (ble_l2cap_evt_ch_setup_request_t * request)
 	r = sd_ble_l2cap_ch_setup (ble_conn_handle, &ble_local_cid, &params);
 
 	if (r != NRF_SUCCESS)
-		printf ("L2CAP reply failed (%x)\r\n", r);
+		printf ("L2CAP reply failed (0x%x)\r\n", r);
 
 	return;
 }
@@ -234,7 +234,7 @@ bleL2CapSend (char * str)
 	r = sd_ble_l2cap_ch_tx (ble_conn_handle, ble_local_cid, &data);
 
 	if (r != NRF_SUCCESS)
-		printf ("L2CAP tx failed (%x)\r\n", r);
+		printf ("L2CAP tx failed (0x%x)\r\n", r);
 
 	return (r);
 }

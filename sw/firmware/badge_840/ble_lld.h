@@ -33,11 +33,11 @@
 #ifndef _BLE_LLD_H_
 #define _BLE_LLD_H_
 
-#define BLE_APPEARANCE_DC26	0xDC19
+#define BLE_APPEARANCE_DC26	0xDC20
 #define BLE_COMPANY_ID_IDES	0x1D35
-#define BLE_NAME_IDES		"DC26 IDES"
+#define BLE_NAME_IDES		"DC27 IDES"
 
-#define BLE_IDES_APP_TAG	0x01
+#define BLE_IDES_APP_TAG	1
 
 extern uint8_t ble_station_addr[];
 

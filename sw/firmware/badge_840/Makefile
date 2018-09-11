@@ -265,13 +265,13 @@ UDEFS =
 UADEFS =
 
 # List all user directories here
-UINCDIR = $(CHIBIOS)/../SoftDevice/include
+UINCDIR = $(CHIBIOS)/../SoftDevice_S140/include
 
 # List the user directory to look for the libraries here
 ULIBDIR =
 
 # List all user libraries here
-ULIBS = -L$(CHIBIOS)/../SoftDevice/lib -lsoftdevice -lc_nano -lnosys
+ULIBS = -L$(CHIBIOS)/../SoftDevice_S140/lib -lsoftdevice -lc_nano -lnosys
 
 #
 # End of user defines
