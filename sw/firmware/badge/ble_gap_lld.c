@@ -109,7 +109,7 @@ bleGapAdvStart (void)
 
 	sd_ble_gap_device_name_get (ble_name, &len);
 
-	r = bleGapAdvBlockAdd (ble_name, strlen ((char *)ble_name),
+	r = bleGapAdvBlockAdd (ble_name, len,
 	    BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME, pkt, &size);
 
 	if (r != NRF_SUCCESS)
@@ -411,17 +411,16 @@ bleGapConnect (ble_gap_addr_t * peer)
 	sparams.active = FALSE;
 	sparams.use_whitelist = FALSE;
 	sparams.adv_dir_report = FALSE;
-	sparams.timeout = BLE_IDES_CONNECT_TIMEOUT; /* Timeout in seconds */
+	sparams.timeout = BLE_IDES_SCAN_TIMEOUT;
 	sparams.interval = MSEC_TO_UNITS(1000, UNIT_0_625_MS);
 	sparams.window = MSEC_TO_UNITS(50, UNIT_0_625_MS);
 
 	cparams.min_conn_interval = MSEC_TO_UNITS(10, UNIT_1_25_MS);
-	cparams.max_conn_interval = MSEC_TO_UNITS(100, UNIT_1_25_MS);
+	cparams.max_conn_interval = MSEC_TO_UNITS(10, UNIT_1_25_MS);
 	cparams.slave_latency = 0;
 	cparams.conn_sup_timeout = MSEC_TO_UNITS(400, UNIT_10_MS);
 
-	r = sd_ble_gap_connect (peer, &sparams,
-	    &cparams, BLE_IDES_APP_TAG);
+	r = sd_ble_gap_connect (peer, &sparams, &cparams, BLE_IDES_APP_TAG);
 
 	if (r != NRF_SUCCESS) {
 		printf ("GAP connect failed: %x\r\n", r);
