@@ -34,10 +34,10 @@
 #define BTN3           24U
 #define BTN4           25U
 #define BTN5           18U
-#define LED1           17U
-#define LED2           18U
-#define LED3           19U
-#define LED4           20U
+#define LED1           12U
+#define LED2           14U
+#define LED3           15U
+#define LED4           16U
 #define UART_RTS        5U
 #define UART_TX         6U
 #define UART_CTS        7U

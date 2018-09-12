@@ -37,12 +37,12 @@ const PALConfig pal_default_config =
         PAL_MODE_UNCONNECTED,         /* P0.8 : I2C SDA        */
         PAL_MODE_INPUT_PULLUP,        /* P0.9 : BTN5           */
         PAL_MODE_UNCONNECTED,         /* P0.10:                */
-        PAL_MODE_INPUT_PULLUP,       /* P0.11: screen WR      */
-        PAL_MODE_INPUT_PULLUP,       /* P0.12: screen CD      */
-        PAL_MODE_INPUT_PULLUP,        /* P0.13: BTN1           */
-        PAL_MODE_INPUT_PULLUP,        /* P0.14: BTN2           */
-        PAL_MODE_INPUT_PULLUP,        /* P0.15: BTN3           */
-        PAL_MODE_INPUT_PULLUP,        /* P0.16: BTN4           */
+        PAL_MODE_INPUT_PULLUP,        /* P0.11: BTN1           */
+        PAL_MODE_INPUT_PULLUP,        /* P0.12: BTN2           */
+        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.13: LED1           */
+        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.14: LED1           */
+        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.15: LED1           */
+        PAL_MODE_OUTPUT_PUSHPULL,     /* P0.16: LED1           */
         PAL_MODE_OUTPUT_PUSHPULL,     /* P0.17:                */
         PAL_MODE_OUTPUT_PUSHPULL,     /* P0.18:                */
         PAL_MODE_OUTPUT_PUSHPULL,     /* P0.18:                */
@@ -50,8 +50,8 @@ const PALConfig pal_default_config =
         PAL_MODE_UNCONNECTED,         /* P0.21: RESET          */
         PAL_MODE_UNCONNECTED,         /* P0.22: SPI_MOSI       */
         PAL_MODE_UNCONNECTED,         /* P0.23: SPI_MISO       */
-        PAL_MODE_INPUT_PULLUP,       /* P0.24: screen D0      */
-        PAL_MODE_INPUT_PULLUP,       /* P0.25: screen D1      */
+        PAL_MODE_INPUT_PULLUP,        /* P0.24: BTN3           */
+        PAL_MODE_INPUT_PULLUP,        /* P0.25: BTN4           */
         PAL_MODE_OUTPUT_PULLUP,       /* P0.26: screen D2      */
         PAL_MODE_OUTPUT_PULLUP,       /* P0.27: screen D3      */
         PAL_MODE_OUTPUT_PULLUP,       /* P0.28: screen D4      */

@@ -183,12 +183,10 @@ int main(void)
     gptStart (&GPTD2, &gpt1_config);
     gptStart (&GPTD3, &gpt2_config);
 
-#ifdef notyet
     /* Launch test blinker thread. */
     
     chThdCreateStatic(waThread1, sizeof(waThread1), NORMALPRIO+1,
 		      Thread1, NULL);
-#endif
 
     chThdSleep(2);
     printf ("SYSTEM START\r\n");
