@@ -205,9 +205,6 @@ bleGapDispatch (ble_evt_t * evt)
 			ble_conn_handle = BLE_CONN_HANDLE_INVALID;
 			orchardAppRadioCallback (disconnectEvent, evt,
 			    NULL, 0);
-#ifdef notdef
-			bleGapStart ();
-#endif
 			r = sd_ble_gap_adv_start (ble_adv_handle,
 			    BLE_IDES_APP_TAG);
 			if (r != NRF_SUCCESS) {
