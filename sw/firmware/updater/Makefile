@@ -32,7 +32,7 @@
 VPATH= ../ChibiOS-Contrib/os/hal/ports/NRF5/NRF52832 			\
 	../ChibiOS-Contrib/os/hal/ports/NRF5/LLD			\
 	../ChibiOS/os/hal/ports/common/ARMCMx				\
-	../ChibiOS/os/hal/src ../FatFs/source ../badge
+	../ChibiOS/os/hal/src ../FatFs/source ../badge_840
 
 OBJS=	entry.o updater.o nvic.o ff.o diskio.o mmc_spi_lld.o	\
 	flash.o hal_gpt_lld.o hal_spi_lld.o hal_gpt.o hal_spi.o
@@ -50,7 +50,7 @@ CFLAGS+=  -mcpu=cortex-m4 -Os -ggdb -fomit-frame-pointer		\
 	-DCORTEX_USE_FPU=TRUE -DTHUMB_PRESENT -mno-thumb-interwork	\
 	-D__VTOR_PRESENT=1						\
 	-DTHUMB_NO_INTERWORKING -mthumb -DTHUMB -I.			\
-	-I../badge -I../ChibiOS/os/license				\
+	-I../badge_840 -I../ChibiOS/os/license				\
 	-I../ChibiOS-Contrib/os/hal/ports/NRF5/NRF52832			\
 	-I../ChibiOS-Contrib/os/hal/ports/NRF5/LLD			\
 	-I../ChibiOS-Contrib/os/hal/include				\
@@ -62,7 +62,7 @@ CFLAGS+=  -mcpu=cortex-m4 -Os -ggdb -fomit-frame-pointer		\
 	-I../ChibiOS/os/hal/osal/rt  					\
 	-I../ChibiOS/os/common/oslib/include  				\
 	-I../ChibiOS/os/hal/include 					\
-	-I../ChibiOS-Contrib/os/hal/boards/NONSTANDARD_NRF52_IDES_OF_DEFCON \
+	-I../ChibiOS-Contrib/os/hal/boards/NONSTANDARD_NRF52840_IDES_OF_DEFCON \
 	-I../FatFs/source -DDRV_MMC=0 -UDRV_CFC -flto
 
 ASFLAGS= $(CFLAGS)
